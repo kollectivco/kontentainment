@@ -99,29 +99,49 @@ endif; ?>
                     <?php echo wp_kses_post($overview); ?>
                 </p>
             </div>
+
+            <div style="margin-top: 20px; font-size: 0.95em; line-height: 1.5; color: #444;">
+                <?php if ($director): ?>
+                <p style="margin-bottom: 5px;"><strong>Director:</strong>
+                    <strong>
+                        <?php echo esc_html($director); ?>
+                    </strong>
+                </p>
+                <?php
+endif; ?>
+                <?php if (!empty($writers) && is_array($writers)): ?>
+                <p style="margin-top: 0;"><strong>Writers:</strong>
+                    <strong>
+                        <?php echo esc_html(implode(', ', $writers)); ?>
+                    </strong>
+                </p>
+                <?php
+endif; ?>
+            </div>
         </div>
     </header>
 
     <section class="ktn-media-credits" style="margin-top: 40px;">
-        <h2>Top Cast</h2>
+        <h2 style="margin-bottom: 20px; font-size: 2em; font-weight: bold;">Cast</h2>
         <?php if ($cast_json):
     $cast = json_decode($cast_json, true);
     if (!empty($cast)): ?>
-        <div style="display: flex; gap: 15px; overflow-x: auto; padding-bottom: 20px;">
+        <div style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 25px; scroll-snap-type: x mandatory;">
             <?php foreach ($cast as $actor):
             $term_link = get_term_link($actor['name'], 'ktn_cast');
             $actor_url = is_wp_error($term_link) ? '#' : esc_url($term_link);
-            $actor_img = $actor['profile_path'] ? "https://image.tmdb.org/t/p/w185" . $actor['profile_path'] : "https://via.placeholder.com/138x175?text=No+Photo";
+            $actor_img = $actor['profile_path'] ? "https://image.tmdb.org/t/p/w185" . $actor['profile_path'] : "https://via.placeholder.com/185x278?text=No+Photo";
 ?>
             <a href="<?php echo $actor_url; ?>"
-                style="text-decoration: none; flex: 0 0 138px; border: 1px solid #eaeaea; border-radius: 8px; overflow: hidden; color: inherit; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s;">
+                style="scroll-snap-align: start; text-decoration: none; flex: 0 0 160px; background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; overflow: hidden; color: inherit; display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s;">
                 <img src="<?php echo esc_url($actor_img); ?>" alt="<?php echo esc_attr($actor['name']); ?>"
-                    style="width: 138px; height: 175px; object-fit: cover; display: block;">
-                <div style="padding: 10px;">
-                    <strong style="display: block; font-size: 0.9em; margin-bottom: 4px; color: #000;">
+                    style="width: 100%; height: 240px; object-fit: cover; display: block;">
+                <div style="padding: 15px 12px;">
+                    <strong
+                        style="display: block; font-size: 1.05em; margin-bottom: 5px; color: #222; line-height: 1.2;">
                         <?php echo esc_html($actor['name']); ?>
                     </strong>
-                    <span style="display: block; font-size: 0.8em; color: #666;">
+                    <span style="display: block; font-size: 0.85em; color: #777; line-height: 1.3;">
                         <?php echo esc_html($actor['character']); ?>
                     </span>
                 </div>
@@ -132,21 +152,6 @@ endif; ?>
         <?php
     endif;
 endif; ?>
-
-        <div style="margin-top: 20px;">
-            <?php if ($director): ?>
-            <p><strong>Director:</strong>
-                <?php echo esc_html($director); ?>
-            </p>
-            <?php
-endif; ?>
-            <?php if (!empty($writers) && is_array($writers)): ?>
-            <p><strong>Writers:</strong>
-                <?php echo esc_html(implode(', ', $writers)); ?>
-            </p>
-            <?php
-endif; ?>
-        </div>
     </section>
 
     <?php if ($trailer_url): ?>
@@ -193,19 +198,27 @@ if ($related_query->have_posts()):
     $section_title = $post_type === 'tv_show' ? 'Related TV Shows' : 'Related Movies';
 ?>
     <section class="ktn-related-media" style="margin-top: 50px;">
-        <h2 style="margin-bottom: 25px; font-size: 2em; font-weight: bold;"><?php echo esc_html($section_title); ?></h2>
+        <h2 style="margin-bottom: 25px; font-size: 2em; font-weight: bold;">
+            <?php echo esc_html($section_title); ?>
+        </h2>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px;">
             <?php while ($related_query->have_posts()):
         $related_query->the_post();
         $rel_poster_path = get_post_meta(get_the_ID(), '_movie_poster_path', true);
         $rel_poster_url = $rel_poster_path ? "https://image.tmdb.org/t/p/w500" . $rel_poster_path : "https://via.placeholder.com/500x750?text=No+Poster";
 ?>
-                <a href="<?php the_permalink(); ?>" class="ktn-related-card" style="text-decoration: none; color: inherit; display: block; position: relative; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;">
-                    <img src="<?php echo esc_url($rel_poster_url); ?>" alt="<?php the_title_attribute(); ?>" style="width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block;">
-                    <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 40px 15px 15px; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%); display: flex; align-items: flex-end; justify-content: center;">
-                        <strong style="color: #fff; font-size: 1.1em; text-align: center; line-height: 1.2; text-shadow: 0 2px 4px rgba(0,0,0,0.5);"><?php the_title(); ?></strong>
-                    </div>
-                </a>
+            <a href="<?php the_permalink(); ?>" class="ktn-related-card"
+                style="text-decoration: none; color: inherit; display: block; position: relative; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;">
+                <img src="<?php echo esc_url($rel_poster_url); ?>" alt="<?php the_title_attribute(); ?>"
+                    style="width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block;">
+                <div
+                    style="position: absolute; bottom: 0; left: 0; right: 0; padding: 40px 15px 15px; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%); display: flex; align-items: flex-end; justify-content: center;">
+                    <strong
+                        style="color: #fff; font-size: 1.1em; text-align: center; line-height: 1.2; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                        <?php the_title(); ?>
+                    </strong>
+                </div>
+            </a>
             <?php
     endwhile;
     wp_reset_postdata(); ?>

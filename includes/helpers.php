@@ -17,6 +17,18 @@ function ktn_load_single_template($template)
     return $template;
 }
 
+add_filter('template_include', 'ktn_load_taxonomy_template');
+function ktn_load_taxonomy_template($template)
+{
+    if (is_tax('ktn_cast')) {
+        $custom_template = KTN_PLUGIN_DIR . 'templates/taxonomy-ktn_cast.php';
+        if (file_exists($custom_template)) {
+            return $custom_template;
+        }
+    }
+    return $template;
+}
+
 function ktn_sideload_image($url, $post_id, $set_as_thumbnail = false)
 {
     if (!function_exists('media_handle_sideload')) {
