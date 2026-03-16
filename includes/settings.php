@@ -23,7 +23,6 @@ function ktn_register_settings() {
 	register_setting( 'ktn_settings_group', 'ktn_auto_set_featured_image', array( 'default' => 0 ) );
 	register_setting( 'ktn_settings_group', 'ktn_cast_limit', array( 'default' => 10 ) );
 	register_setting( 'ktn_settings_group', 'ktn_prevent_duplicates', array( 'default' => 1 ) );
-	register_setting( 'ktn_settings_group', 'ktn_github_repo', array( 'default' => '' ) );
 	register_setting( 'ktn_settings_group', 'ktn_github_token', array( 'default' => '' ) );
 }
 
@@ -86,15 +85,9 @@ function ktn_settings_page_html() {
 			</table>
 
 			<h2><?php esc_html_e( 'Auto-Update from GitHub', 'kontentainment' ); ?></h2>
-			<p>If you upload your plugin to GitHub, you can receive automatic updates directly in WordPress by adding your repository link here.</p>
+			<p>This plugin is configured to automatically download updates from its official GitHub repository.</p>
 			
 			<table class="form-table">
-				<tr valign="top">
-					<th scope="row"><?php esc_html_e( 'GitHub Repository URL', 'kontentainment' ); ?></th>
-					<td>
-						<input type="url" name="ktn_github_repo" value="<?php echo esc_attr( get_option('ktn_github_repo') ); ?>" class="regular-text" placeholder="https://github.com/username/repository" />
-					</td>
-				</tr>
 				<tr valign="top">
 					<th scope="row"><?php esc_html_e( 'GitHub Token (Optional)', 'kontentainment' ); ?></th>
 					<td>
