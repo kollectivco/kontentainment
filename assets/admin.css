@@ -1,0 +1,14 @@
+.ktn-metabox-wrapper {
+    padding: 10px;
+}
+
+.ktn-metabox-wrapper button.ktn-import-btn {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.ktn-metabox-wrapper .description {
+    color: #666;
+    font-style: italic;
+    font-size: 13px;
+}
