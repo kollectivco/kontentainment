@@ -167,12 +167,52 @@ endif; ?>
     <?php
 endif; ?>
 
-    <footer style="margin-top: 40px; border-top: 1px solid #ccc; padding-top: 20px; font-size: 0.8em; color: #777;">
-        <p>IMDb ID:
-            <?php echo esc_html($imdb_id); ?> | TMDB ID:
-            <?php echo esc_html($tmdb_id); ?>
-        </p>
-    </footer>
+    <?php
+// --- Related Media Section ---
+$genre_terms = wp_get_post_terms($post_id, 'ktn_genre', array('fields' => 'ids'));
+$related_args = array(
+    'post_type' => $post_type,
+    'posts_per_page' => 4,
+    'post__not_in' => array($post_id),
+    'orderby' => 'rand'
+);
+
+if (!empty($genre_terms) && !is_wp_error($genre_terms)) {
+    $related_args['tax_query'] = array(
+            array(
+            'taxonomy' => 'ktn_genre',
+            'field' => 'term_id',
+            'terms' => $genre_terms,
+        )
+    );
+}
+
+$related_query = new WP_Query($related_args);
+
+if ($related_query->have_posts()):
+    $section_title = $post_type === 'tv_show' ? 'Related TV Shows' : 'Related Movies';
+?>
+    <section class="ktn-related-media" style="margin-top: 50px;">
+        <h2 style="margin-bottom: 25px; font-size: 2em; font-weight: bold;"><?php echo esc_html($section_title); ?></h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px;">
+            <?php while ($related_query->have_posts()):
+        $related_query->the_post();
+        $rel_poster_path = get_post_meta(get_the_ID(), '_movie_poster_path', true);
+        $rel_poster_url = $rel_poster_path ? "https://image.tmdb.org/t/p/w500" . $rel_poster_path : "https://via.placeholder.com/500x750?text=No+Poster";
+?>
+                <a href="<?php the_permalink(); ?>" class="ktn-related-card" style="text-decoration: none; color: inherit; display: block; position: relative; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;">
+                    <img src="<?php echo esc_url($rel_poster_url); ?>" alt="<?php the_title_attribute(); ?>" style="width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block;">
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 40px 15px 15px; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%); display: flex; align-items: flex-end; justify-content: center;">
+                        <strong style="color: #fff; font-size: 1.1em; text-align: center; line-height: 1.2; text-shadow: 0 2px 4px rgba(0,0,0,0.5);"><?php the_title(); ?></strong>
+                    </div>
+                </a>
+            <?php
+    endwhile;
+    wp_reset_postdata(); ?>
+        </div>
+    </section>
+    <?php
+endif; ?>
 
 </div>
 <?php get_footer(); ?>
