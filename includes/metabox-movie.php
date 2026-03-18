@@ -65,6 +65,7 @@ function ktn_add_movie_details_metaboxes()
  */
 function ktn_movie_basic_info_html($post)
 {
+    $movie_title    = $post->post_title;
     $original_title = get_post_meta($post->ID, '_movie_original_title', true);
     $tagline        = get_post_meta($post->ID, '_movie_tagline', true);
     $release_date   = get_post_meta($post->ID, '_movie_release_date', true);
@@ -76,6 +77,11 @@ function ktn_movie_basic_info_html($post)
     wp_nonce_field('ktn_save_movie_meta', 'ktn_movie_meta_nonce');
     ?>
     <div class="ktn-admin-form-row">
+        <label><strong><?php esc_html_e('Movie Title:', 'kontentainment'); ?></strong></label>
+        <input type="text" name="ktn_movie_title" value="<?php echo esc_attr($movie_title); ?>" class="widefat" placeholder="Main display title" />
+    </div>
+
+    <div class="ktn-admin-form-row" style="margin-top: 15px;">
         <label><strong><?php esc_html_e('Original Title:', 'kontentainment'); ?></strong></label>
         <input type="text" name="ktn_original_title" value="<?php echo esc_attr($original_title); ?>" class="widefat" />
     </div>
@@ -309,6 +315,22 @@ function ktn_save_movie_details($post_id)
 
     if (!current_user_can('edit_post', $post_id)) {
         return;
+    }
+
+    // Sync Movie Title with check to avoid infinite loops
+    if (isset($_POST['ktn_movie_title'])) {
+        $new_title = sanitize_text_field($_POST['ktn_movie_title']);
+        $current_post = get_post($post_id);
+        if ($current_post && $current_post->post_title !== $new_title && !empty($new_title)) {
+            // Unhook to avoid recursion during wp_update_post
+            remove_action('save_post', 'ktn_save_movie_details');
+            wp_update_post(array(
+                'ID'         => $post_id,
+                'post_title' => $new_title,
+                'post_name'  => sanitize_title($new_title)
+            ));
+            add_action('save_post', 'ktn_save_movie_details');
+        }
     }
 
     // Basic fields

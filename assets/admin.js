@@ -29,9 +29,29 @@ jQuery(document).ready(function ($) {
                 btn.prop('disabled', false);
                 if (response.success) {
                     statusDiv.html('<span style="color:green;">' + response.data.message + '</span>');
+                    
+                    // Update DOM fields directly for immediate feedback
+                    if (response.data.title && $('#title').length) {
+                        $('#title').val(response.data.title);
+                        // Trigger input event for any listeners (like title-to-permalink)
+                        $('#title').trigger('input');
+                    }
+                    
+                    // WP Classic Editor content
+                    if (response.data.content && typeof tinyMCE !== 'undefined' && tinyMCE.get('content')) {
+                        tinyMCE.get('content').setContent(response.data.content);
+                    } else if (response.data.content && $('#content').length) {
+                        $('#content').val(response.data.content);
+                    }
+
+                    // Excerpt
+                    if (response.data.excerpt && $('#excerpt').length) {
+                        $('#excerpt').val(response.data.excerpt);
+                    }
+
                     setTimeout(function () {
                         window.location.href = response.data.redirect;
-                    }, 1500);
+                    }, 2000);
                 } else {
                     statusDiv.html('<span style="color:red;">Error: ' + response.data.message + '</span>');
                 }

@@ -56,14 +56,17 @@ function ktn_ajax_import_media()
         wp_send_json_error(array('message' => $media_data->get_error_message()));
     }
 
-    $success = ktn_process_and_save_data($target_post_id, $media_data, $imdb_id, $type);
-    if (is_wp_error($success)) {
-        wp_send_json_error(array('message' => $success->get_error_message()));
+    $result = ktn_process_and_save_data($target_post_id, $media_data, $imdb_id, $type);
+    if (is_wp_error($result)) {
+        wp_send_json_error(array('message' => $result->get_error_message()));
     }
 
     wp_send_json_success(array(
         'message' => __('Media imported successfully!', 'kontentainment'),
         'target_post_id' => $target_post_id,
+        'title'   => $result['title'],
+        'content' => $result['content'],
+        'excerpt' => $result['excerpt'],
         'redirect' => get_edit_post_link($target_post_id, 'raw')
     ));
 }
@@ -82,7 +85,7 @@ function ktn_get_tmdb_id_by_imdb($imdb_id, $token, $language)
             'Authorization' => 'Bearer ' . $token,
             'Accept' => 'application/json',
         ),
-        'timeout' => 20
+        'timeout' => 25
     );
 
     $response = wp_remote_get($url, $args);
@@ -96,7 +99,7 @@ function ktn_get_tmdb_id_by_imdb($imdb_id, $token, $language)
     }
 
     $body = wp_remote_retrieve_body($response);
-    $data = json_decode($body, true);
+    $data = JSON_decode($body, true);
 
     if (!empty($data['movie_results']) && isset($data['movie_results'][0]['id'])) {
         $res = array('id' => $data['movie_results'][0]['id'], 'type' => 'movie');
@@ -132,7 +135,7 @@ function ktn_get_tmdb_media_details($tmdb_id, $type, $token, $language)
             'Authorization' => 'Bearer ' . $token,
             'Accept' => 'application/json',
         ),
-        'timeout' => 20
+        'timeout' => 25
     );
 
     $response = wp_remote_get($url, $args);
@@ -141,7 +144,7 @@ function ktn_get_tmdb_media_details($tmdb_id, $type, $token, $language)
     }
 
     $body = wp_remote_retrieve_body($response);
-    $data = json_decode($body, true);
+    $data = JSON_decode($body, true);
 
     set_transient($cache_key, $data, 6 * HOUR_IN_SECONDS);
 
@@ -156,6 +159,10 @@ function ktn_process_and_save_data($post_id, $data, $imdb_id, $type)
     $overview        = $data['overview'] ?? '';
     $tagline         = $data['tagline'] ?? '';
 
+    if (empty($title)) {
+        return new WP_Error('missing_data', __('Import failed: TMDB did not return a title.', 'kontentainment'));
+    }
+
     $runtime = 0;
     if ($type === 'tv' && !empty($data['episode_run_time'])) {
         $runtime = $data['episode_run_time'][0];
@@ -166,23 +173,28 @@ function ktn_process_and_save_data($post_id, $data, $imdb_id, $type)
 
     $post_type_slug = $type === 'tv' ? 'tv_show' : 'movie';
 
+    $current_status = get_post_status($post_id);
+    // If it's a new post (auto-draft), set it to publish so the title is visible
+    $new_status = ($current_status === 'auto-draft' || !$current_status) ? 'publish' : $current_status;
+
     // Build Post Data
     $post_arr = array(
         'ID'           => $post_id,
         'post_type'    => $post_type_slug,
         'post_title'   => sanitize_text_field($title),
         'post_content' => wp_kses_post($overview),
-        'post_status'  => get_post_status($post_id) ?: 'publish',
+        'post_status'  => $new_status,
+        'post_name'    => sanitize_title($title), // Ensure permalink matches the title
     );
 
     if (!empty($tagline)) {
         $post_arr['post_excerpt'] = sanitize_text_field($tagline);
     }
     else {
-        $post_arr['post_excerpt'] = wp_trim_words(wp_kses_post($overview), 55);
+        $post_arr['post_excerpt'] = wp_trim_words(wp_kses_post($overview), 35);
     }
 
-    // Update Post
+    // Force title update even if we are in a hook
     wp_update_post($post_arr);
 
     // Save Meta Data
@@ -305,5 +317,9 @@ function ktn_process_and_save_data($post_id, $data, $imdb_id, $type)
 
     update_post_meta($post_id, '_movie_last_imported_at', time());
 
-    return true;
+    return array(
+        'title'   => $title,
+        'content' => $overview,
+        'excerpt' => $post_arr['post_excerpt']
+    );
 }
