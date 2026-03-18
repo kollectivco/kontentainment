@@ -5,9 +5,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 add_action( 'admin_menu', 'ktn_add_settings_page' );
 function ktn_add_settings_page() {
-	add_options_page(
+	add_submenu_page(
+		'edit.php?post_type=movie',
 		__( 'Kontentainment Settings', 'kontentainment' ),
-		__( 'Kontentainment Importer', 'kontentainment' ),
+		__( 'Settings', 'kontentainment' ),
 		'manage_options',
 		'kontentainment-settings',
 		'ktn_settings_page_html'
