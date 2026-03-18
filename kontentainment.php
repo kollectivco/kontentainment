@@ -33,6 +33,9 @@ require_once KTN_PLUGIN_DIR . 'includes/importer-cinema.php';
 require_once KTN_PLUGIN_DIR . 'includes/metabox-cinema.php';
 require_once KTN_PLUGIN_DIR . 'includes/admin-showtimes.php';
 
+// Elementor Integration
+require_once KTN_PLUGIN_DIR . 'elementor/manager.php';
+
 // Plugin Update Checker setup
 require_once KTN_PLUGIN_DIR . 'includes/plugin-update-checker/plugin-update-checker.php';
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
