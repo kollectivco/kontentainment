@@ -39,4 +39,21 @@ function ktn_register_taxonomies()
         'rewrite' => array('slug' => 'cast'),
     );
     register_taxonomy('ktn_cast', array('movie', 'tv_show'), $cast_args);
+
+    // Cinema Area Taxonomy
+    $area_labels = array(
+        'name' => _x('Cinema Areas', 'taxonomy general name', 'kontentainment'),
+        'singular_name' => _x('Cinema Area', 'taxonomy singular name', 'kontentainment'),
+        'menu_name' => __('Cinema Areas', 'kontentainment'),
+    );
+
+    $area_args = array(
+        'hierarchical' => true,
+        'labels' => $area_labels,
+        'show_ui' => true,
+        'show_admin_column' => true,
+        'query_var' => true,
+        'rewrite' => array('slug' => 'cinemas', 'with_front' => false),
+    );
+    register_taxonomy('cinema_area', array('ktn_cinema'), $area_args);
 }

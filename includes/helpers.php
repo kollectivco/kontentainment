@@ -25,8 +25,8 @@ function ktn_load_single_template($template)
     return $template;
 }
 
-add_filter('template_include', 'ktn_load_taxonomy_template');
-function ktn_load_taxonomy_template($template)
+add_filter('template_include', 'ktn_load_custom_templates');
+function ktn_load_custom_templates($template)
 {
     if (is_tax('ktn_cast')) {
         $custom_template = KTN_PLUGIN_DIR . 'templates/taxonomy-ktn_cast.php';
@@ -34,6 +34,35 @@ function ktn_load_taxonomy_template($template)
             return $custom_template;
         }
     }
+
+    if (is_tax('cinema_area')) {
+        $custom_template = KTN_PLUGIN_DIR . 'templates/taxonomy-cinema_area.php';
+        if (file_exists($custom_template)) {
+            return $custom_template;
+        }
+    }
+
+    if (is_post_type_archive('ktn_cinema')) {
+        $custom_template = KTN_PLUGIN_DIR . 'templates/archive-cinema.php';
+        if (file_exists($custom_template)) {
+            return $custom_template;
+        }
+    }
+
+    if (get_query_var('movies_status') === 'now-playing') {
+        $custom_template = KTN_PLUGIN_DIR . 'templates/page-now-playing.php';
+        if (file_exists($custom_template)) {
+            return $custom_template;
+        }
+    }
+
+    if (get_query_var('movies_status') === 'coming-soon') {
+        $custom_template = KTN_PLUGIN_DIR . 'templates/page-coming-soon.php';
+        if (file_exists($custom_template)) {
+            return $custom_template;
+        }
+    }
+
     return $template;
 }
 

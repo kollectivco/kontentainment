@@ -80,15 +80,24 @@ function ktn_register_post_types()
         'publicly_queryable' => true,
         'show_ui' => true,
         'show_in_menu' => 'edit.php?post_type=movie',
-        'rewrite' => array('slug' => 'cinema'),
-        'has_archive' => true,
+        'rewrite' => array('slug' => 'cinema', 'with_front' => false),
+        'has_archive' => 'cinemas',
         'capability_type' => 'post',
         'hierarchical' => false,
         'supports' => array('title')
     );
     register_post_type('ktn_cinema', $cinema_args);
+
+    // Custom rewrite rules for movies statuses
+    add_rewrite_rule('^movies/now-playing/?$', 'index.php?post_type=movie&movies_status=now-playing', 'top');
+    add_rewrite_rule('^movies/coming-soon/?$', 'index.php?post_type=movie&movies_status=coming-soon', 'top');
 }
 
+add_filter('query_vars', 'ktn_add_query_vars');
+function ktn_add_query_vars($vars) {
+    $vars[] = 'movies_status';
+    return $vars;
+}
 add_filter('manage_movie_posts_columns', 'ktn_media_columns');
 add_filter('manage_tv_show_posts_columns', 'ktn_media_columns');
 function ktn_media_columns($columns)
