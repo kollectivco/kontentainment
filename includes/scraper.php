@@ -156,49 +156,42 @@ class Ktn_Cinema_Scraper
         $scraped_at = current_time('mysql');
 
         // Parse initial page
-        $initial_results = self::extractShowtimesFromHtml($html, $cinema_id, $url, $scraped_at);
-        if (!empty($initial_results)) {
-            $results = array_merge($results, $initial_results);
+        $initial_data = self::extractShowtimesFromHtml($html, $cinema_id, $url, $scraped_at);
+        $cinema_metadata = $initial_data['metadata'];
+        if (!empty($initial_data['showtimes'])) {
+            $results = array_merge($results, $initial_data['showtimes']);
         }
 
         // Find more dates - Look for date tabs or dropdowns
         $date_urls = array();
-        // Regex to find ?date=YYYY-MM-DD in hrefs
         if (preg_match_all('/href="([^"]*[\?&]date=([0-9]{4}-[0-9]{2}-[0-9]{2}))"/i', $html, $matches)) {
             $base_url = 'https://elcinema.com';
             foreach ($matches[1] as $relative_url) {
                 $full_url = (strpos($relative_url, 'http') === 0) ? $relative_url : $base_url . $relative_url;
-                
-                // Avoid redundant scraping of the same URL or the initial URL
                 if ($full_url !== $url && !in_array($full_url, $date_urls)) {
                     $date_urls[] = $full_url;
                 }
             }
         }
         
-        // Sometimes dates are in a dropdown or other list without full ?date= suffix but different IDs
-        // But for elCinema, the ?date= param is the standard way.
-        
         $date_urls = array_unique($date_urls);
-        $date_urls = array_slice($date_urls, 0, 10); // Look ahead up to 10 days if available
+        $date_urls = array_slice($date_urls, 0, 10); 
 
         foreach ($date_urls as $date_url) {
-            // Add slight delay to avoid being blocked
-            usleep(200000); // 200ms
-            
+            usleep(200000); 
             $date_response = wp_remote_get($date_url, $args);
             if (!is_wp_error($date_response)) {
                 $date_html = wp_remote_retrieve_body($date_response);
                 if ($date_html) {
-                    $date_results = self::extractShowtimesFromHtml($date_html, $cinema_id, $date_url, $scraped_at);
-                    if (!empty($date_results)) {
-                        $results = array_merge($results, $date_results);
+                    $date_data = self::extractShowtimesFromHtml($date_html, $cinema_id, $date_url, $scraped_at);
+                    if (!empty($date_data['showtimes'])) {
+                        $results = array_merge($results, $date_data['showtimes']);
                     }
                 }
             }
         }
 
-        // Final deduplication of results in memory just in case
+        // Final deduplication
         $final_results = array();
         $seen_keys = array();
         foreach($results as $res) {
@@ -210,64 +203,72 @@ class Ktn_Cinema_Scraper
         }
 
         update_post_meta($cinema_id, '_ktn_last_error', 'Scraped ' . (count($date_urls) + 1) . ' pages. Found ' . count($final_results) . ' total unique showtimes.');
-        return $final_results;
+        
+        return array(
+            'metadata' => $cinema_metadata,
+            'showtimes' => $final_results
+        );
     }
 
     private static function extractShowtimesFromHtml($html, $cinema_id, $url, $scraped_at)
     {
-        $results = array();
+        $showtimes = array();
         
-        // Find cinema name
+        // Find Cinema Metadata (Name, Arabic Name, Image, Address)
         $cinema_name = '';
+        $arabic_name = '';
+        $logo_url = '';
+        $address = '';
+
         if (preg_match('/<h[12][^>]*>(.*?)<\/h[12]>/is', $html, $m)) {
             $cinema_name = trim(strip_tags($m[1]));
+            $arabic_name = $cinema_name; 
         }
 
-        // --- Date Extraction Strategy ---
+        if (preg_match('/<img[^>]*class="[^"]*cinema-logo[^"]*"[^>]*src="([^"]*)"/i', $html, $m)) {
+            $logo_url = $m[1];
+        } elseif (preg_match('/<div[^>]*class="[^"]*cinema-image[^"]*"[^>]*>.*?<img[^>]*src="([^"]*)"/is', $html, $m)) {
+            $logo_url = $m[1];
+        }
+
+        if (preg_match('/<div[^>]*class="[^"]*description[^"]*"[^>]*>(.*?)<\/div>/is', $html, $m)) {
+            $address = trim(strip_tags($m[1]));
+        } elseif (preg_match('/<span[^>]*class="[^"]*address[^"]*"[^>]*>(.*?)<\/span>/is', $html, $m)) {
+            $address = trim(strip_tags($m[1]));
+        }
+
+        // --- Date Extraction ---
         $current_date = '';
-        
-        // 1. Try to extract date from the URL if it has ?date=YYYY-MM-DD
         if (preg_match('/[\?&]date=([0-9]{4}-[0-9]{2}-[0-9]{2})/', $url, $urlDateMatch)) {
-            $current_date = $urlDateMatch[1]; // Use YYYY-MM-DD directly
+            $current_date = $urlDateMatch[1];
         }
 
-        // 2. If no URL date, try to find the active date tab in the HTML
         if (!$current_date) {
             if (preg_match('/<li[^>]*class="active"[^>]*>.*?<a[^>]*>(.*?)<\/a>/is', $html, $activeDateMatch)) {
                 $found_date = self::translateDate(strip_tags($activeDateMatch[1]));
-                // Normalize "Today" or other strings to YYYY-MM-DD if possible
                 if ($found_date) {
                     $ts = strtotime($found_date);
-                    if ($ts) {
-                        $current_date = date('Y-m-d', $ts);
-                    } else {
-                        $current_date = $found_date;
-                    }
+                    if ($ts) $current_date = date('Y-m-d', $ts);
+                    else $current_date = $found_date;
                 }
             }
         }
 
-        // 3. Last fallback: if it's the main page and no date found, it's likely Today
         if (!$current_date) {
             $current_date = date('Y-m-d');
         }
 
-        // Split by row to mimic looping over movies
         $blocks = explode('class="row"', $html);
         foreach ($blocks as $block) {
-            // If the row contains a sub-header with a date, it overrides for this block (unlikely on elCinema but safe)
             if (preg_match('/<h2[^>]*class="[^"]*section-title[^"]*"[^>]*>(.*?)<\/h2>/is', $block, $dateMatch)) {
                 $h2Title = trim(strip_tags($dateMatch[1]));
                 $trans = self::translateDate($h2Title);
                 if ($trans) {
                     $ts = strtotime($trans);
-                    if ($ts) {
-                        $current_date = date('Y-m-d', $ts);
-                    }
+                    if ($ts) $current_date = date('Y-m-d', $ts);
                 }
             }
 
-            // Find Movie Title
             if (preg_match('/(?:<h3|<h2).*?<a[^>]*href="[^"]*\/work\/[^"]*"[^>]*>(.*?)<\/a>.*?(?:<\/h3>|<\/h2>)/is', $block, $m)) {
                 $movieTitle = trim(strip_tags($m[1]));
 
@@ -277,9 +278,9 @@ class Ktn_Cinema_Scraper
                         $normText = self::normalizeArabicDigits($listText);
 
                         if ($listText && preg_match('/\d+:\d+/', $normText)) {
-                            $showtimes = self::parseShowtimeBlock($listText);
-                            foreach ($showtimes as $show) {
-                                $results[] = array(
+                            $parsed_times = self::parseShowtimeBlock($listText);
+                            foreach ($parsed_times as $show) {
+                                $showtimes[] = array(
                                     'cinema_id' => $cinema_id,
                                     'cinema_name' => $cinema_name,
                                     'source_url' => $url,
@@ -296,6 +297,15 @@ class Ktn_Cinema_Scraper
                 }
             }
         }
-        return $results;
+        
+        return array(
+            'metadata' => array(
+                'name' => $cinema_name,
+                'arabic_name' => $arabic_name,
+                'logo' => $logo_url,
+                'address' => $address
+            ),
+            'showtimes' => $showtimes
+        );
     }
 }

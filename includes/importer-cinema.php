@@ -9,7 +9,6 @@ class Ktn_Cinema_Importer
     public static function normalizeTitle($title)
     {
         $title = strtolower(trim($title));
-        // Remove punctuation
         $title = preg_replace('/[^\w\s-]/u', '', $title);
         $title = preg_replace('/\s+/', ' ', $title);
         return trim($title);
@@ -23,17 +22,14 @@ class Ktn_Cinema_Importer
         if (empty($norm_scraped))
             return null;
 
-        // 1. Exact match against post_title
         $exact = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title = %s LIMIT 1", $scraped_title));
         if ($exact)
             return $exact;
 
-        // 2. Exact match against _movie_original_title
         $meta_exact = $wpdb->get_var($wpdb->prepare("SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_movie_original_title' AND meta_value = %s LIMIT 1", $scraped_title));
         if ($meta_exact)
             return $meta_exact;
 
-        // 3. Normalized match
         $all_movies = $wpdb->get_results("SELECT ID, post_title FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish'");
 
         foreach ($all_movies as $movie) {
@@ -51,7 +47,7 @@ class Ktn_Cinema_Importer
             }
         }
 
-        return null; // Unmatched
+        return null;
     }
 
     public static function syncCinema($post_id)
@@ -59,7 +55,6 @@ class Ktn_Cinema_Importer
         global $wpdb;
         $table_name = $wpdb->prefix . 'ktn_showtimes';
 
-        // FORCE TABLE CREATION (Bypass dbDelta strictness in MySQL 8)
         if ($wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") != $table_name) {
             $charset_collate = $wpdb->get_charset_collate();
             $sql = "CREATE TABLE $table_name (
@@ -90,19 +85,35 @@ class Ktn_Cinema_Importer
         if (!$source_url || $status === 'inactive')
             return false;
 
-        $results = array();
+        $sync_data = array();
         if ($source_type === 'elcinema_theater' || empty($source_type)) {
-            $results = Ktn_Cinema_Scraper::fetch_from_elcinema($post_id, $source_url);
+            $sync_data = Ktn_Cinema_Scraper::fetch_from_elcinema($post_id, $source_url);
         }
 
-        if ($results === false || empty($results)) {
+        if ($sync_data === false || empty($sync_data['showtimes'])) {
             return false;
         }
 
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'ktn_showtimes';
+        $results = $sync_data['showtimes'];
+        $metadata = $sync_data['metadata'];
 
-        // Cleanup old showtimes for this cinema before syncing fresh data
+        // Auto-populate cinema metadata if available and not already set manually
+        if (!empty($metadata['arabic_name'])) {
+             if (!get_post_meta($post_id, '_ktn_cinema_arabic_name', true)) {
+                 update_post_meta($post_id, '_ktn_cinema_arabic_name', sanitize_text_field($metadata['arabic_name']));
+             }
+        }
+        if (!empty($metadata['logo'])) {
+             if (!get_post_meta($post_id, '_ktn_cinema_logo', true)) {
+                 update_post_meta($post_id, '_ktn_cinema_logo', esc_url_raw($metadata['logo']));
+             }
+        }
+        if (!empty($metadata['address'])) {
+             if (!get_post_meta($post_id, '_ktn_cinema_address', true)) {
+                 update_post_meta($post_id, '_ktn_cinema_address', sanitize_text_field($metadata['address']));
+             }
+        }
+
         $wpdb->query($wpdb->prepare("DELETE FROM $table_name WHERE cinema_id = %d", $post_id));
 
         $added = 0;
@@ -121,7 +132,6 @@ class Ktn_Cinema_Importer
                 $wpdb->update(
                     $table_name,
                     array(
-                    // Only update matched ID if it was unmatched or we found a new match
                     'matched_movie_id' => $matched_id ? $matched_id : null,
                     'experience' => $row['experience'],
                     'price_text' => $row['price_text'],
@@ -131,7 +141,7 @@ class Ktn_Cinema_Importer
                 );
             }
             else {
-                $insert_res = $wpdb->insert(
+                $wpdb->insert(
                     $table_name,
                     array(
                     'cinema_id' => $row['cinema_id'],
@@ -148,18 +158,8 @@ class Ktn_Cinema_Importer
                     'updated_at' => current_time('mysql')
                 )
                 );
-
-                if ($insert_res === false && !empty($wpdb->last_error)) {
-                    update_post_meta($post_id, '_ktn_last_error', 'DB Insert Error: ' . $wpdb->last_error);
-                    return false;
-                }
                 $added++;
             }
-        }
-
-        $prev_error = get_post_meta($post_id, '_ktn_last_error', true);
-        if (strpos($prev_error, 'DB Insert Error') === false) {
-            update_post_meta($post_id, '_ktn_last_error', $prev_error . " | Inserted/Updated DB rows successfully.");
         }
 
         update_post_meta($post_id, '_ktn_cinema_last_sync', current_time('mysql'));

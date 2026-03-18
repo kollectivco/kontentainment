@@ -67,24 +67,33 @@ function ktn_register_post_types()
 
     // Cinema Sources Post Type
     $cinema_labels = array(
-        'name' => _x('Cinema Sources', 'post type general name', 'kontentainment'),
-        'singular_name' => _x('Cinema Source', 'post type singular name', 'kontentainment'),
-        'menu_name' => _x('Cinema Sources', 'admin menu', 'kontentainment'),
-        'add_new' => _x('Add New Source', 'cinema', 'kontentainment'),
-        'all_items' => __('Cinema Sources', 'kontentainment'),
+        'name'               => _x('Cinemas', 'post type general name', 'kontentainment'),
+        'singular_name'      => _x('Cinema', 'post type singular name', 'kontentainment'),
+        'menu_name'          => _x('Cinemas', 'admin menu', 'kontentainment'),
+        'name_admin_bar'     => _x('Cinema', 'add new on admin bar', 'kontentainment'),
+        'add_new'            => _x('Add New Cinema', 'cinema', 'kontentainment'),
+        'add_new_item'       => __('Add New Cinema', 'kontentainment'),
+        'new_item'           => __('New Cinema', 'kontentainment'),
+        'edit_item'          => __('Edit Cinema Details', 'kontentainment'),
+        'view_item'          => __('View Cinema', 'kontentainment'),
+        'all_items'          => __('All Cinemas', 'kontentainment'),
+        'search_items'       => __('Search Cinemas', 'kontentainment'),
+        'not_found'          => __('No cinemas found.', 'kontentainment'),
+        'not_found_in_trash' => __('No cinemas found in Trash.', 'kontentainment')
     );
 
     $cinema_args = array(
-        'labels' => $cinema_labels,
-        'public' => true,
+        'labels'             => $cinema_labels,
+        'public'             => true,
         'publicly_queryable' => true,
-        'show_ui' => true,
-        'show_in_menu' => 'edit.php?post_type=movie',
-        'rewrite' => array('slug' => 'cinema', 'with_front' => false),
-        'has_archive' => 'cinemas',
-        'capability_type' => 'post',
-        'hierarchical' => false,
-        'supports' => array('title')
+        'show_ui'            => true,
+        'show_in_menu'       => 'edit.php?post_type=movie',
+        'rewrite'            => array('slug' => 'cinema', 'with_front' => false),
+        'has_archive'        => 'cinemas',
+        'capability_type'    => 'post',
+        'hierarchical'       => false,
+        'menu_icon'          => 'dashicons-location',
+        'supports'           => array('title', 'editor', 'thumbnail')
     );
     register_post_type('ktn_cinema', $cinema_args);
 
