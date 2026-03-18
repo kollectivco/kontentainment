@@ -25,6 +25,11 @@ require_once KTN_PLUGIN_DIR . 'includes/metabox-import.php';
 require_once KTN_PLUGIN_DIR . 'includes/importer-tmdb.php';
 require_once KTN_PLUGIN_DIR . 'includes/save-meta.php';
 require_once KTN_PLUGIN_DIR . 'includes/admin-notices.php';
+require_once KTN_PLUGIN_DIR . 'includes/database.php';
+require_once KTN_PLUGIN_DIR . 'includes/scraper.php';
+require_once KTN_PLUGIN_DIR . 'includes/importer-cinema.php';
+require_once KTN_PLUGIN_DIR . 'includes/metabox-cinema.php';
+require_once KTN_PLUGIN_DIR . 'includes/admin-showtimes.php';
 
 // Plugin Update Checker setup
 require_once KTN_PLUGIN_DIR . 'includes/plugin-update-checker/plugin-update-checker.php';
@@ -62,4 +67,5 @@ register_deactivation_hook(__FILE__, 'ktn_deactivate_plugin');
 function ktn_deactivate_plugin()
 {
     flush_rewrite_rules();
+}   flush_rewrite_rules();
 }

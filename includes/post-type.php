@@ -57,6 +57,27 @@ function ktn_register_post_types()
         'supports' => array('title', 'editor', 'excerpt', 'thumbnail')
     );
     register_post_type('tv_show', $tv_args);
+
+    // Cinema Sources Post Type
+    $cinema_labels = array(
+        'name' => _x('Cinema Sources', 'post type general name', 'kontentainment'),
+        'singular_name' => _x('Cinema Source', 'post type singular name', 'kontentainment'),
+        'menu_name' => _x('Cinema Sources', 'admin menu', 'kontentainment'),
+        'add_new' => _x('Add New Source', 'cinema', 'kontentainment'),
+        'all_items' => __('Cinema Sources', 'kontentainment'),
+    );
+
+    $cinema_args = array(
+        'labels' => $cinema_labels,
+        'public' => false,
+        'publicly_queryable' => false,
+        'show_ui' => true,
+        'show_in_menu' => 'edit.php?post_type=movie',
+        'capability_type' => 'post',
+        'hierarchical' => false,
+        'supports' => array('title')
+    );
+    register_post_type('ktn_cinema', $cinema_args);
 }
 
 add_filter('manage_movie_posts_columns', 'ktn_media_columns');

@@ -154,6 +154,65 @@ endif; ?>
 endif; ?>
     </section>
 
+    <?php
+// --- Cinema Showtimes Section ---
+global $wpdb;
+$table_showtimes = $wpdb->prefix . 'ktn_showtimes';
+// Suppress errors initially in case table doesn't exist yet on frontend load before activation hook fixes it, though the plugin handles it.
+$suppress = $wpdb->suppress_errors(true);
+$showtimes = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_showtimes WHERE matched_movie_id = %d ORDER BY cinema_name ASC, show_date ASC, show_time ASC", $post_id));
+$wpdb->suppress_errors($suppress);
+
+if (!empty($showtimes) && !is_wp_error($showtimes)):
+    // Group by cinema and date
+    $grouped_showtimes = array();
+    foreach ($showtimes as $st) {
+        $grouped_showtimes[$st->cinema_name][$st->show_date][] = $st;
+    }
+?>
+    <section class="ktn-media-showtimes" style="margin-top: 40px;">
+        <h2 style="margin-bottom: 20px; font-size: 2em; font-weight: bold;">Playing Near You</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+            <?php foreach ($grouped_showtimes as $cinema => $dates): ?>
+            <div class="ktn-cinema-card"
+                style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee;">
+                <h3
+                    style="margin-top: 0; margin-bottom: 15px; font-size: 1.3em; color: #c4302b; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">
+                    <?php echo esc_html($cinema); ?>
+                </h3>
+
+                <?php foreach ($dates as $date => $times): ?>
+                <div class="ktn-show-date" style="margin-bottom: 15px;">
+                    <h4
+                        style="margin: 0 0 10px 0; font-size: 1em; color: #444; background: #f9f9f9; padding: 5px 10px; border-radius: 4px; border-left: 3px solid #ccc;">
+                        <?php echo esc_html($date); ?>
+                    </h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <?php foreach ($times as $t): ?>
+                        <div
+                            style="background: #fafafa; border: 1px solid #eaeaea; padding: 6px 12px; border-radius: 6px; text-align: center; flex: 1 1 auto; min-width: 80px;">
+                            <strong style="font-size: 1.05em; color: #111;">
+                                <?php echo esc_html($t->show_time); ?>
+                            </strong>
+                            <span
+                                style="display:block; font-size: 0.75em; color: #888; margin-top:3px; text-transform: uppercase;">
+                                <?php echo esc_html($t->experience) . ($t->price_text ? ' &bull; ' . esc_html($t->price_text) : ''); ?>
+                            </span>
+                        </div>
+                        <?php
+            endforeach; ?>
+                    </div>
+                </div>
+                <?php
+        endforeach; ?>
+            </div>
+            <?php
+    endforeach; ?>
+        </div>
+    </section>
+    <?php
+endif; ?>
+
     <?php if ($trailer_url): ?>
     <section class="ktn-media-trailer" style="margin-top: 40px;">
         <h2>Trailer</h2>
