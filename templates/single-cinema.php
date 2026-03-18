@@ -39,9 +39,14 @@ global $wpdb;
 $table_showtimes = $wpdb->prefix . 'ktn_showtimes';
 
 $suppress = $wpdb->suppress_errors(true);
+$today = date('Y-m-d');
 $showtimes = $wpdb->get_results($wpdb->prepare(
-    "SELECT * FROM $table_showtimes WHERE cinema_id = %d ORDER BY show_date ASC, movie_title_scraped ASC, show_time ASC",
-    $post_id
+    "SELECT * FROM $table_showtimes 
+     WHERE cinema_id = %d 
+     AND (show_date >= %s OR show_date = 'Today')
+     ORDER BY show_date ASC, movie_title_scraped ASC, show_time ASC",
+    $post_id,
+    $today
 ));
 $wpdb->suppress_errors($suppress);
 
@@ -52,9 +57,14 @@ wp_enqueue_script('ktn-showtimes-js', KTN_PLUGIN_URL . 'assets/js/kontentainment
 $grouped_by_date = array();
 if (!empty($showtimes) && !is_wp_error($showtimes)) {
     foreach ($showtimes as $st) {
-        $grouped_by_date[$st->show_date][$st->movie_title_scraped][] = $st;
+        $date_key = $st->show_date;
+        if ($date_key === 'Today') {
+            $date_key = date('Y-m-d');
+        }
+        $grouped_by_date[$date_key][$st->movie_title_scraped][] = $st;
     }
 }
+ksort($grouped_by_date);
 $unique_dates = array_keys($grouped_by_date);
 ?>
 
@@ -92,9 +102,6 @@ $unique_dates = array_keys($grouped_by_date);
                 <div class="ktn-cinema-hero-actions">
                     <?php if ($map_link): ?>
                         <a href="<?php echo esc_url($map_link); ?>" target="_blank" class="ktn-cinema-btn-primary">Get Directions</a>
-                    <?php endif; ?>
-                    <?php if ($source_type): ?>
-                        <span class="ktn-cinema-badge">Source: <?php echo esc_html(str_replace('_', ' ', ucfirst($source_type))); ?></span>
                     <?php endif; ?>
                 </div>
             </div>

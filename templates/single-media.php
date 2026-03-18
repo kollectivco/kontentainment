@@ -160,9 +160,14 @@ global $wpdb;
 $table_showtimes = $wpdb->prefix . 'ktn_showtimes';
 
 $suppress = $wpdb->suppress_errors(true);
+$today = date('Y-m-d');
 $showtimes = $wpdb->get_results($wpdb->prepare(
-    "SELECT * FROM $table_showtimes WHERE matched_movie_id = %d ORDER BY show_date ASC, cinema_name ASC, show_time ASC",
-    $post_id
+    "SELECT * FROM $table_showtimes 
+     WHERE matched_movie_id = %d 
+     AND (show_date >= %s OR show_date = 'Today')
+     ORDER BY show_date ASC, cinema_name ASC, show_time ASC",
+    $post_id,
+    $today
 ));
 $wpdb->suppress_errors($suppress);
 
@@ -173,8 +178,13 @@ if (!empty($showtimes) && !is_wp_error($showtimes)):
     // Group by date and then cinema
     $grouped_by_date = array();
     foreach ($showtimes as $st) {
-        $grouped_by_date[$st->show_date][$st->cinema_name][] = $st;
+        $date_key = $st->show_date;
+        if ($date_key === 'Today') {
+            $date_key = date('Y-m-d');
+        }
+        $grouped_by_date[$date_key][$st->cinema_name][] = $st;
     }
+    ksort($grouped_by_date);
 
     $unique_dates = array_keys($grouped_by_date);
 ?>

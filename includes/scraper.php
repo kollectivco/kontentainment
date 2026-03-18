@@ -136,13 +136,13 @@ class Ktn_Cinema_Scraper
                 'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
                 'Accept-Language' => 'en-US,en;q=0.9,ar;q=0.8'
             ),
-            'timeout' => 25,
+            'timeout' => 30,
             'sslverify' => false
         );
 
         $response = wp_remote_get($url, $args);
         if (is_wp_error($response)) {
-            update_post_meta($cinema_id, '_ktn_last_error', 'WP Error: ' . $response->get_error_message());
+            update_post_meta($cinema_id, '_ktn_last_error', 'Scraper Error: ' . $response->get_error_message());
             return false;
         }
 
@@ -162,23 +162,30 @@ class Ktn_Cinema_Scraper
         }
 
         // Find more dates - Look for date tabs or dropdowns
-        // Pattern: <a href="/theater/1000000/?date=2024-03-20">
         $date_urls = array();
-        if (preg_match_all('/href="([^"]*[\?&]date=[0-9]{4}-[0-9]{2}-[0-9]{2})"/i', $html, $matches)) {
+        // Regex to find ?date=YYYY-MM-DD in hrefs
+        if (preg_match_all('/href="([^"]*[\?&]date=([0-9]{4}-[0-9]{2}-[0-9]{2}))"/i', $html, $matches)) {
             $base_url = 'https://elcinema.com';
             foreach ($matches[1] as $relative_url) {
                 $full_url = (strpos($relative_url, 'http') === 0) ? $relative_url : $base_url . $relative_url;
-                if ($full_url !== $url) {
+                
+                // Avoid redundant scraping of the same URL or the initial URL
+                if ($full_url !== $url && !in_array($full_url, $date_urls)) {
                     $date_urls[] = $full_url;
                 }
             }
         }
+        
+        // Sometimes dates are in a dropdown or other list without full ?date= suffix but different IDs
+        // But for elCinema, the ?date= param is the standard way.
+        
         $date_urls = array_unique($date_urls);
-
-        // Limit to next 7 days maximum to avoid massive overload
-        $date_urls = array_slice($date_urls, 0, 7);
+        $date_urls = array_slice($date_urls, 0, 10); // Look ahead up to 10 days if available
 
         foreach ($date_urls as $date_url) {
+            // Add slight delay to avoid being blocked
+            usleep(200000); // 200ms
+            
             $date_response = wp_remote_get($date_url, $args);
             if (!is_wp_error($date_response)) {
                 $date_html = wp_remote_retrieve_body($date_response);
@@ -191,37 +198,72 @@ class Ktn_Cinema_Scraper
             }
         }
 
-        update_post_meta($cinema_id, '_ktn_last_error', 'Successfully scraped all dates (' . count($date_urls) + 1 . ' total pages). Extracted ' . count($results) . ' showtimes.');
-        return $results;
+        // Final deduplication of results in memory just in case
+        $final_results = array();
+        $seen_keys = array();
+        foreach($results as $res) {
+            $key = md5($res['cinema_id'] . $res['movie_title_scraped'] . $res['show_date'] . $res['show_time']);
+            if (!isset($seen_keys[$key])) {
+                $final_results[] = $res;
+                $seen_keys[$key] = true;
+            }
+        }
+
+        update_post_meta($cinema_id, '_ktn_last_error', 'Scraped ' . (count($date_urls) + 1) . ' pages. Found ' . count($final_results) . ' total unique showtimes.');
+        return $final_results;
     }
 
     private static function extractShowtimesFromHtml($html, $cinema_id, $url, $scraped_at)
     {
         $results = array();
         
-        // Find cinema name via Regex
+        // Find cinema name
         $cinema_name = '';
         if (preg_match('/<h[12][^>]*>(.*?)<\/h[12]>/is', $html, $m)) {
             $cinema_name = trim(strip_tags($m[1]));
         }
-        if (!$cinema_name && preg_match('/class="panel"[^>]*>.*?<a[^>]*unstyled[^>]*>(.*?)<\/a>/is', $html, $m)) {
-            $cinema_name = trim(strip_tags($m[1]));
-        }
 
+        // --- Date Extraction Strategy ---
         $current_date = '';
-        // Try to find the active date if it's not in the section title (sometimes it's marked as active in a list)
-        if (preg_match('/<li[^>]*class="active"[^>]*>.*?<a[^>]*>(.*?)<\/a>/is', $html, $activeDateMatch)) {
-             $current_date = self::translateDate(strip_tags($activeDateMatch[1]));
+        
+        // 1. Try to extract date from the URL if it has ?date=YYYY-MM-DD
+        if (preg_match('/[\?&]date=([0-9]{4}-[0-9]{2}-[0-9]{2})/', $url, $urlDateMatch)) {
+            $current_date = $urlDateMatch[1]; // Use YYYY-MM-DD directly
         }
 
-        // Split by row to mimic looping over .row independently of DOM nesting
+        // 2. If no URL date, try to find the active date tab in the HTML
+        if (!$current_date) {
+            if (preg_match('/<li[^>]*class="active"[^>]*>.*?<a[^>]*>(.*?)<\/a>/is', $html, $activeDateMatch)) {
+                $found_date = self::translateDate(strip_tags($activeDateMatch[1]));
+                // Normalize "Today" or other strings to YYYY-MM-DD if possible
+                if ($found_date) {
+                    $ts = strtotime($found_date);
+                    if ($ts) {
+                        $current_date = date('Y-m-d', $ts);
+                    } else {
+                        $current_date = $found_date;
+                    }
+                }
+            }
+        }
+
+        // 3. Last fallback: if it's the main page and no date found, it's likely Today
+        if (!$current_date) {
+            $current_date = date('Y-m-d');
+        }
+
+        // Split by row to mimic looping over movies
         $blocks = explode('class="row"', $html);
         foreach ($blocks as $block) {
-            // Find Date in section title
+            // If the row contains a sub-header with a date, it overrides for this block (unlikely on elCinema but safe)
             if (preg_match('/<h2[^>]*class="[^"]*section-title[^"]*"[^>]*>(.*?)<\/h2>/is', $block, $dateMatch)) {
                 $h2Title = trim(strip_tags($dateMatch[1]));
-                if ($h2Title) {
-                    $current_date = self::translateDate($h2Title);
+                $trans = self::translateDate($h2Title);
+                if ($trans) {
+                    $ts = strtotime($trans);
+                    if ($ts) {
+                        $current_date = date('Y-m-d', $ts);
+                    }
                 }
             }
 
@@ -242,7 +284,7 @@ class Ktn_Cinema_Scraper
                                     'cinema_name' => $cinema_name,
                                     'source_url' => $url,
                                     'movie_title_scraped' => $movieTitle,
-                                    'show_date' => $current_date ? $current_date : 'Today',
+                                    'show_date' => $current_date,
                                     'experience' => $show['experience'],
                                     'show_time' => $show['show_time'],
                                     'price_text' => $show['price_text'],

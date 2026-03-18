@@ -102,6 +102,9 @@ class Ktn_Cinema_Importer
         global $wpdb;
         $table_name = $wpdb->prefix . 'ktn_showtimes';
 
+        // Cleanup old showtimes for this cinema before syncing fresh data
+        $wpdb->query($wpdb->prepare("DELETE FROM $table_name WHERE cinema_id = %d", $post_id));
+
         $added = 0;
         foreach ($results as $row) {
             $matched_id = self::matchMovieTitle($row['movie_title_scraped']);
