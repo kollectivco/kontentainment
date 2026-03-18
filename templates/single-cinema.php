@@ -38,11 +38,6 @@ $unique_dates = array_keys($grouped_by_date);
         <h1>
             <?php echo esc_html($cinema_name); ?>
         </h1>
-        <?php if ($source_url): ?>
-        <p><a href="<?php echo esc_url($source_url); ?>" target="_blank"
-                style="color: #6b7280; text-decoration: none;">Information Source &rarr;</a></p>
-        <?php
-endif; ?>
     </div>
 
     <?php if (empty($grouped_by_date)): ?>

@@ -196,22 +196,12 @@ if (!empty($showtimes) && !is_wp_error($showtimes)):
     foreach ($grouped_by_date as $date_str => $cinemas): ?>
             <div class="ktn-st-date-group <?php echo $is_first ? 'active' : ''; ?>"
                 id="date-<?php echo esc_attr(md5($date_str)); ?>">
-                <?php foreach ($cinemas as $cinema_name => $times):
-            // Find cinema source URL optionally
-            $c_url = '';
-            if (!empty($times[0]->source_url))
-                $c_url = $times[0]->source_url;
-?>
+                <?php foreach ($cinemas as $cinema_name => $times): ?>
                 <div class="ktn-st-cinema-row">
                     <div class="ktn-st-cinema-info">
                         <h3>
                             <?php echo esc_html($cinema_name); ?>
                         </h3>
-                        <?php if ($c_url): ?>
-                        <p><a href="<?php echo esc_url($c_url); ?>" target="_blank"
-                                style="color: #6b7280; text-decoration: none;">View original source</a></p>
-                        <?php
-            endif; ?>
                     </div>
                     <div class="ktn-st-chips-wrapper">
                         <?php foreach ($times as $t): ?>
