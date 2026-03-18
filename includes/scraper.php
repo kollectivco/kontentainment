@@ -132,85 +132,84 @@ class Ktn_Cinema_Scraper
         $args = array(
             'headers' => array(
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'Accept-Language' => 'en-US,en;q=0.9,ar;q=0.8'
             ),
-            'timeout' => 15,
+            'timeout' => 20,
             'sslverify' => false
         );
         $response = wp_remote_get($url, $args);
 
         if (is_wp_error($response)) {
+            update_post_meta($cinema_id, '_ktn_last_error', 'WP Error: ' . $response->get_error_message());
             return false;
         }
 
         $html = wp_remote_retrieve_body($response);
         if (!$html) {
+            update_post_meta($cinema_id, '_ktn_last_error', 'Empty HTML body returned. Response code: ' . wp_remote_retrieve_response_code($response));
             return false;
         }
-
-        $dom = new DOMDocument();
-        libxml_use_internal_errors(true);
-        $dom->loadHTML('<?xml encoding="UTF-8">' . ltrim(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8')));
-        libxml_clear_errors();
-        $xpath = new DOMXPath($dom);
 
         $results = array();
         $scraped_at = current_time('mysql');
 
-        // Extract Cinema Name from CPT if empty or use scraped
-        $cinema_name_node = $xpath->query('//h1 | //h2')->item(0);
-        $cinema_name = $cinema_name_node ? trim($cinema_name_node->nodeValue) : '';
-
-        if (!$cinema_name) {
-            $panel_a = $xpath->query('//div[contains(@class, "panel")]//a[contains(@class, "unstyled")]')->item(0);
-            if ($panel_a) {
-                $cinema_name = trim($panel_a->nodeValue);
-            }
+        // Find cinema name via Regex
+        $cinema_name = '';
+        if (preg_match('/<h[12][^>]*>(.*?)<\/h[12]>/is', $html, $m)) {
+            $cinema_name = trim(strip_tags($m[1]));
+        }
+        if (!$cinema_name && preg_match('/class="panel"[^>]*>.*?<a[^>]*unstyled[^>]*>(.*?)<\/a>/is', $html, $m)) {
+            $cinema_name = trim(strip_tags($m[1]));
         }
 
         $current_date = '';
 
-        $rows = $xpath->query('//div[contains(@class, "row")]');
-        foreach ($rows as $row) {
-            $h2TitleNodes = $xpath->query('.//h2[contains(@class, "section-title")]', $row);
-            if ($h2TitleNodes->length > 0) {
-                $h2Title = trim($h2TitleNodes->item(0)->nodeValue);
+        // Split by row to mimic looping over .row independently of DOM nesting
+        $blocks = explode('class="row"', $html);
+        foreach ($blocks as $block) {
+            // Find Date
+            if (preg_match('/<h2[^>]*class="[^"]*section-title[^"]*"[^>]*>(.*?)<\/h2>/is', $block, $dateMatch)) {
+                $h2Title = trim(strip_tags($dateMatch[1]));
                 if ($h2Title) {
                     $current_date = self::translateDate($h2Title);
                 }
             }
 
-            $movieTags = $xpath->query('.//h3//a[contains(@href, "/work/")] | .//h2//a[contains(@href, "/work/")]', $row);
-            $isMovieRow = $movieTags->length > 0;
+            // Find Movie Title (Only if the row contains an href to /work/)
+            if (preg_match('/(?:<h3|<h2).*?<a[^>]*href="[^"]*\/work\/[^"]*"[^>]*>(.*?)<\/a>.*?(?:<\/h3>|<\/h2>)/is', $block, $m)) {
+                $movieTitle = trim(strip_tags($m[1]));
 
-            if ($isMovieRow) {
-                $movieTitle = trim($movieTags->item(0)->nodeValue);
+                // Find all UI blocks in this row
+                if (preg_match_all('/<ul[^>]*>(.*?)<\/ul>/is', $block, $ulMatches)) {
+                    foreach ($ulMatches[1] as $ulContent) {
+                        // Ensure spacing between list elements
+                        $listText = trim(strip_tags(str_replace('><', '> <', $ulContent)));
+                        $normText = self::normalizeArabicDigits($listText);
 
-                $ulTags = $xpath->query('.//ul | .//*[contains(@class, "unstyled")]', $row);
-                foreach ($ulTags as $ul) {
-                    $listText = trim($ul->nodeValue);
-                    $normText = self::normalizeArabicDigits($listText);
-                    if ($listText && preg_match('/\d+:\d+/', $normText)) {
-                        $showtimes = self::parseShowtimeBlock($listText);
-
-                        foreach ($showtimes as $show) {
-                            $results[] = array(
-                                'cinema_id' => $cinema_id,
-                                'cinema_name' => $cinema_name,
-                                'source_url' => $url,
-                                'movie_title_scraped' => $movieTitle,
-                                'show_date' => $current_date ? $current_date : 'Today',
-                                'experience' => $show['experience'],
-                                'show_time' => $show['show_time'],
-                                'price_text' => $show['price_text'],
-                                'scraped_at' => $scraped_at
-                            );
+                        // Check if it's a showtime string
+                        if ($listText && preg_match('/\d+:\d+/', $normText)) {
+                            $showtimes = self::parseShowtimeBlock($listText);
+                            foreach ($showtimes as $show) {
+                                $results[] = array(
+                                    'cinema_id' => $cinema_id,
+                                    'cinema_name' => $cinema_name,
+                                    'source_url' => $url,
+                                    'movie_title_scraped' => $movieTitle,
+                                    'show_date' => $current_date ? $current_date : 'Today',
+                                    'experience' => $show['experience'],
+                                    'show_time' => $show['show_time'],
+                                    'price_text' => $show['price_text'],
+                                    'scraped_at' => $scraped_at
+                                );
+                            }
                         }
                     }
                 }
             }
         }
 
+        update_post_meta($cinema_id, '_ktn_last_error', 'HTML fetched successfully (Length: ' . strlen($html) . '). Total showtimes extracted: ' . count($results));
         return $results;
     }
 }

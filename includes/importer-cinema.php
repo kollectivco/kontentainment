@@ -56,6 +56,33 @@ class Ktn_Cinema_Importer
 
     public static function syncCinema($post_id)
     {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'ktn_showtimes';
+
+        // FORCE TABLE CREATION (Bypass dbDelta strictness in MySQL 8)
+        if ($wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") != $table_name) {
+            $charset_collate = $wpdb->get_charset_collate();
+            $sql = "CREATE TABLE $table_name (
+                id bigint(20) NOT NULL AUTO_INCREMENT,
+                cinema_id bigint(20) NOT NULL,
+                cinema_name varchar(255) NOT NULL,
+                source_url text NOT NULL,
+                movie_title_scraped varchar(255) NOT NULL,
+                matched_movie_id bigint(20) DEFAULT NULL,
+                show_date varchar(100) NOT NULL,
+                show_time varchar(100) NOT NULL,
+                experience varchar(100) DEFAULT 'Standard',
+                price_text varchar(100) DEFAULT '',
+                source_type varchar(100) DEFAULT 'elcinema_theater',
+                scraped_at datetime NOT NULL,
+                updated_at datetime NOT NULL,
+                PRIMARY KEY  (id),
+                KEY cinema_id (cinema_id),
+                KEY matched_movie_id (matched_movie_id)
+            ) $charset_collate;";
+            $wpdb->query($sql);
+        }
+
         $source_url = get_post_meta($post_id, '_ktn_cinema_url', true);
         $source_type = get_post_meta($post_id, '_ktn_cinema_type', true);
         $status = get_post_meta($post_id, '_ktn_cinema_status', true);
@@ -101,7 +128,7 @@ class Ktn_Cinema_Importer
                 );
             }
             else {
-                $wpdb->insert(
+                $insert_res = $wpdb->insert(
                     $table_name,
                     array(
                     'cinema_id' => $row['cinema_id'],
@@ -118,8 +145,18 @@ class Ktn_Cinema_Importer
                     'updated_at' => current_time('mysql')
                 )
                 );
+
+                if ($insert_res === false && !empty($wpdb->last_error)) {
+                    update_post_meta($post_id, '_ktn_last_error', 'DB Insert Error: ' . $wpdb->last_error);
+                    return false;
+                }
                 $added++;
             }
+        }
+
+        $prev_error = get_post_meta($post_id, '_ktn_last_error', true);
+        if (strpos($prev_error, 'DB Insert Error') === false) {
+            update_post_meta($post_id, '_ktn_last_error', $prev_error . " | Inserted/Updated DB rows successfully.");
         }
 
         update_post_meta($post_id, '_ktn_cinema_last_sync', current_time('mysql'));
