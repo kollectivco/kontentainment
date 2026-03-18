@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment
  * Plugin URI:  #
  * Description: A custom movie and TV show system that imports media data from TMDB using an IMDb ID.
- * Version:     1.2.2
+ * Version:     1.2.5
  * Author:      Antigravity
  * License:     GPL2
  * Text Domain: kontentainment
@@ -39,21 +39,21 @@ use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 add_action('plugins_loaded', 'ktn_init_github_updater');
 function ktn_init_github_updater()
 {
-    $github_repo = get_option('ktn_github_repo');
-    if (!empty($github_repo) && strpos($github_repo, 'github.com/') !== false) {
-        $ktnUpdateChecker = PucFactory::buildUpdateChecker(
-            esc_url_raw($github_repo),
-            __FILE__,
-            'kontentainment'
-        );
+    // Hardcoded repo URL to ensure updates always work
+    $github_repo = 'https://github.com/kollectivco/kontentainment';
+    
+    $ktnUpdateChecker = PucFactory::buildUpdateChecker(
+        $github_repo,
+        __FILE__,
+        'kontentainment'
+    );
 
-        $github_token = get_option('ktn_github_token');
-        if (!empty($github_token)) {
-            $ktnUpdateChecker->setAuthentication($github_token);
-        }
-
-        $ktnUpdateChecker->setBranch('main');
+    $github_token = get_option('ktn_github_token');
+    if (!empty($github_token)) {
+        $ktnUpdateChecker->setAuthentication($github_token);
     }
+
+    $ktnUpdateChecker->setBranch('main');
 }
 
 register_activation_hook(__FILE__, 'ktn_activate_plugin');
