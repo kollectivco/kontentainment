@@ -61,8 +61,8 @@ function ktn_admin_enqueue_scripts( $hook ) {
 	global $post;
 	if ( $hook == 'post-new.php' || $hook == 'post.php' ) {
 		if ( in_array( $post->post_type, array('movie', 'tv_show') ) ) {
-			wp_enqueue_style( 'ktn-admin-css', KTN_PLUGIN_URL . 'assets/admin.css', array(), '1.1.0' );
-			wp_enqueue_script( 'ktn-admin-js', KTN_PLUGIN_URL . 'assets/admin.js', array( 'jquery' ), '1.1.0', true );
+			wp_enqueue_style( 'ktn-admin-css', KTN_PLUGIN_URL . 'assets/admin.css', array(), KTN_PLUGIN_VERSION );
+			wp_enqueue_script( 'ktn-admin-js', KTN_PLUGIN_URL . 'assets/admin.js', array( 'jquery' ), KTN_PLUGIN_VERSION, true );
 			
 			wp_localize_script( 'ktn-admin-js', 'ktnAdminObj', array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),

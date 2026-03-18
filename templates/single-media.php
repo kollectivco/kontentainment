@@ -172,8 +172,8 @@ $showtimes = $wpdb->get_results($wpdb->prepare(
 $wpdb->suppress_errors($suppress);
 
 if (!empty($showtimes) && !is_wp_error($showtimes)):
-    wp_enqueue_style('ktn-showtimes-css', KTN_PLUGIN_URL . 'assets/css/kontentainment-showtimes.css', array(), '1.2.0');
-    wp_enqueue_script('ktn-showtimes-js', KTN_PLUGIN_URL . 'assets/js/kontentainment-showtimes.js', array('jquery'), '1.2.0', true);
+    wp_enqueue_style('ktn-showtimes-css', KTN_PLUGIN_URL . 'assets/css/kontentainment-showtimes.css', array(), KTN_PLUGIN_VERSION);
+    wp_enqueue_script('ktn-showtimes-js', KTN_PLUGIN_URL . 'assets/js/kontentainment-showtimes.js', array('jquery'), KTN_PLUGIN_VERSION, true);
 
     // Group by date and then cinema
     $grouped_by_date = array();
