@@ -150,9 +150,11 @@ function ktn_get_tmdb_media_details($tmdb_id, $type, $token, $language)
 
 function ktn_process_and_save_data($post_id, $data, $imdb_id, $type)
 {
-    $title = $type === 'tv' ? ($data['name'] ?? '') : ($data['title'] ?? '');
-    $original_title = $type === 'tv' ? ($data['original_name'] ?? '') : ($data['original_title'] ?? '');
-    $release_date = $type === 'tv' ? ($data['first_air_date'] ?? '') : ($data['release_date'] ?? '');
+    $title           = $type === 'tv' ? ($data['name'] ?? '') : ($data['title'] ?? '');
+    $original_title  = $type === 'tv' ? ($data['original_name'] ?? '') : ($data['original_title'] ?? '');
+    $release_date    = $type === 'tv' ? ($data['first_air_date'] ?? '') : ($data['release_date'] ?? '');
+    $overview        = $data['overview'] ?? '';
+    $tagline         = $data['tagline'] ?? '';
 
     $runtime = 0;
     if ($type === 'tv' && !empty($data['episode_run_time'])) {
@@ -164,35 +166,62 @@ function ktn_process_and_save_data($post_id, $data, $imdb_id, $type)
 
     $post_type_slug = $type === 'tv' ? 'tv_show' : 'movie';
 
+    // Build Post Data
     $post_arr = array(
-        'ID' => $post_id,
-        'post_type' => $post_type_slug,
-        'post_title' => sanitize_text_field($title),
-        'post_content' => wp_kses_post($data['overview'] ?? ''),
+        'ID'           => $post_id,
+        'post_type'    => $post_type_slug,
+        'post_title'   => sanitize_text_field($title),
+        'post_content' => wp_kses_post($overview),
+        'post_status'  => get_post_status($post_id) ?: 'publish',
     );
 
-    if (!empty($data['tagline'])) {
-        $post_arr['post_excerpt'] = sanitize_text_field($data['tagline']);
+    if (!empty($tagline)) {
+        $post_arr['post_excerpt'] = sanitize_text_field($tagline);
     }
     else {
-        $post_arr['post_excerpt'] = wp_trim_words(wp_kses_post($data['overview'] ?? ''), 55);
+        $post_arr['post_excerpt'] = wp_trim_words(wp_kses_post($overview), 55);
     }
 
+    // Update Post
     wp_update_post($post_arr);
 
+    // Save Meta Data
     update_post_meta($post_id, '_movie_imdb_id', sanitize_text_field($imdb_id));
     update_post_meta($post_id, '_movie_tmdb_id', sanitize_text_field($data['id'] ?? ''));
     update_post_meta($post_id, '_movie_original_title', sanitize_text_field($original_title));
-    update_post_meta($post_id, '_movie_tagline', sanitize_text_field($data['tagline'] ?? ''));
-    update_post_meta($post_id, '_movie_overview', wp_kses_post($data['overview'] ?? ''));
+    update_post_meta($post_id, '_movie_tagline', sanitize_text_field($tagline));
+    update_post_meta($post_id, '_movie_overview', wp_kses_post($overview));
     update_post_meta($post_id, '_movie_release_date', sanitize_text_field($release_date));
     update_post_meta($post_id, '_movie_runtime', absint($runtime));
     update_post_meta($post_id, '_movie_status', sanitize_text_field($data['status'] ?? ''));
     update_post_meta($post_id, '_movie_original_language', sanitize_text_field($data['original_language'] ?? ''));
     update_post_meta($post_id, '_movie_vote_average', floatval($data['vote_average'] ?? 0));
     update_post_meta($post_id, '_movie_vote_count', absint($data['vote_count'] ?? 0));
+    update_post_meta($post_id, '_movie_popularity', floatval($data['popularity'] ?? 0));
     update_post_meta($post_id, '_movie_poster_path', sanitize_text_field($data['poster_path'] ?? ''));
     update_post_meta($post_id, '_movie_backdrop_path', sanitize_text_field($data['backdrop_path'] ?? ''));
+
+    // Production details
+    if (!empty($data['production_companies'])) {
+        $companies = wp_list_pluck($data['production_companies'], 'name');
+        update_post_meta($post_id, '_movie_production_companies', array_map('sanitize_text_field', $companies));
+    }
+    if (!empty($data['production_countries'])) {
+        $countries = wp_list_pluck($data['production_countries'], 'name');
+        update_post_meta($post_id, '_movie_production_countries', array_map('sanitize_text_field', $countries));
+    }
+    if (!empty($data['spoken_languages'])) {
+        $languages = wp_list_pluck($data['spoken_languages'], 'name');
+        update_post_meta($post_id, '_movie_spoken_languages', array_map('sanitize_text_field', $languages));
+    }
+    if (!empty($data['keywords']['keywords'])) {
+        $keywords = wp_list_pluck($data['keywords']['keywords'], 'name');
+        update_post_meta($post_id, '_movie_keywords', array_map('sanitize_text_field', $keywords));
+    }
+    elseif (!empty($data['keywords']['results'])) {
+        $keywords = wp_list_pluck($data['keywords']['results'], 'name');
+        update_post_meta($post_id, '_movie_keywords', array_map('sanitize_text_field', $keywords));
+    }
 
     $director = '';
     $writers = array();
@@ -229,6 +258,7 @@ function ktn_process_and_save_data($post_id, $data, $imdb_id, $type)
         foreach ($data['videos']['results'] as $vid) {
             if ($vid['type'] === 'Trailer' && $vid['site'] === 'YouTube') {
                 update_post_meta($post_id, '_movie_trailer_url', esc_url_raw('https://www.youtube.com/watch?v=' . $vid['key']));
+                update_post_meta($post_id, '_movie_trailer_youtube_key', sanitize_text_field($vid['key']));
                 break;
             }
         }

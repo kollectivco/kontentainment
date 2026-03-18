@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment
  * Plugin URI:  #
  * Description: A custom movie and TV show system that imports media data from TMDB using an IMDb ID.
- * Version:     1.2.1
+ * Version:     1.2.2
  * Author:      Antigravity
  * License:     GPL2
  * Text Domain: kontentainment
@@ -22,6 +22,7 @@ require_once KTN_PLUGIN_DIR . 'includes/post-type.php';
 require_once KTN_PLUGIN_DIR . 'includes/taxonomy.php';
 require_once KTN_PLUGIN_DIR . 'includes/settings.php';
 require_once KTN_PLUGIN_DIR . 'includes/metabox-import.php';
+require_once KTN_PLUGIN_DIR . 'includes/metabox-movie.php';
 require_once KTN_PLUGIN_DIR . 'includes/importer-tmdb.php';
 require_once KTN_PLUGIN_DIR . 'includes/save-meta.php';
 require_once KTN_PLUGIN_DIR . 'includes/admin-notices.php';

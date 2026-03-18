@@ -24,8 +24,6 @@ function ktn_save_meta_box_data($post_id)
         return;
     }
 
-    if (isset($_POST['ktn_imdb_id'])) {
-        $imdb_id = sanitize_text_field($_POST['ktn_imdb_id']);
-        update_post_meta($post_id, '_movie_imdb_id', $imdb_id);
-    }
+    // The movie and cinema metadata saving is now handled in their respective metabox files
+    // includes/metabox-movie.php and includes/metabox-cinema.php
 }

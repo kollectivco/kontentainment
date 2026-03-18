@@ -8,28 +8,35 @@ function ktn_register_post_types()
 {
     // Movie Post Type
     $movie_labels = array(
-        'name' => _x('Movies', 'post type general name', 'kontentainment'),
-        'singular_name' => _x('Movie', 'post type singular name', 'kontentainment'),
-        'menu_name' => _x('Kontentainment', 'admin menu', 'kontentainment'),
-        'name_admin_bar' => _x('Movie', 'add new on admin bar', 'kontentainment'),
-        'add_new' => _x('Add New Movie', 'movie', 'kontentainment'),
-        'all_items' => __('Movies', 'kontentainment'),
+        'name'               => _x('Movies', 'post type general name', 'kontentainment'),
+        'singular_name'      => _x('Movie', 'post type singular name', 'kontentainment'),
+        'menu_name'          => _x('Kontentainment', 'admin menu', 'kontentainment'),
+        'name_admin_bar'     => _x('Movie', 'add new on admin bar', 'kontentainment'),
+        'add_new'            => _x('Add New Movie', 'movie', 'kontentainment'),
+        'add_new_item'       => __('Add New Movie', 'kontentainment'),
+        'new_item'           => __('New Movie', 'kontentainment'),
+        'edit_item'          => __('Edit Movie Details', 'kontentainment'),
+        'view_item'          => __('View Movie', 'kontentainment'),
+        'all_items'          => __('Movies', 'kontentainment'),
+        'search_items'       => __('Search Movies', 'kontentainment'),
+        'not_found'          => __('No movies found.', 'kontentainment'),
+        'not_found_in_trash' => __('No movies found in Trash.', 'kontentainment')
     );
 
     $movie_args = array(
-        'labels' => $movie_labels,
-        'public' => true,
+        'labels'             => $movie_labels,
+        'public'             => true,
         'publicly_queryable' => true,
-        'show_ui' => true,
-        'show_in_menu' => true,
-        'query_var' => true,
-        'rewrite' => array('slug' => 'movie'),
-        'capability_type' => 'post',
-        'has_archive' => true,
-        'hierarchical' => false,
-        'menu_position' => 20,
-        'menu_icon' => 'dashicons-video-alt3',
-        'supports' => array('title', 'editor', 'excerpt', 'thumbnail')
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'query_var'          => true,
+        'rewrite'            => array('slug' => 'movie'),
+        'capability_type'    => 'post',
+        'has_archive'        => true,
+        'hierarchical'       => false,
+        'menu_position'      => 20,
+        'menu_icon'          => 'dashicons-video-alt3',
+        'supports'           => array('title', 'editor', 'excerpt', 'thumbnail')
     );
     register_post_type('movie', $movie_args);
 
