@@ -154,18 +154,21 @@ endif; ?>
 endif; ?>
     </section>
 
-    <?php
-// --- Cinema Showtimes Section ---
+        <?php
+// --- Redesigned Cinema Showtimes Section ---
 global $wpdb;
 $table_showtimes = $wpdb->prefix . 'ktn_showtimes';
-// Suppress errors initially in case table doesn't exist yet on frontend load before activation hook fixes it, though the plugin handles it.
+
 $suppress = $wpdb->suppress_errors(true);
-$showtimes = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_showtimes WHERE matched_movie_id = %d ORDER BY show_date ASC, cinema_name ASC, show_time ASC", $post_id));
+$showtimes = $wpdb->get_results($wpdb->prepare(
+    "SELECT * FROM $table_showtimes WHERE matched_movie_id = %d ORDER BY show_date ASC, cinema_name ASC, show_time ASC",
+    $post_id
+));
 $wpdb->suppress_errors($suppress);
 
 if (!empty($showtimes) && !is_wp_error($showtimes)):
-    wp_enqueue_style('ktn-showtimes-css', KTN_PLUGIN_URL . 'assets/css/kontentainment-showtimes.css', array(), '1.1.9');
-    wp_enqueue_script('ktn-showtimes-js', KTN_PLUGIN_URL . 'assets/js/kontentainment-showtimes.js', array('jquery'), '1.1.9', true);
+    wp_enqueue_style('ktn-showtimes-css', KTN_PLUGIN_URL . 'assets/css/kontentainment-showtimes.css', array(), '1.2.0');
+    wp_enqueue_script('ktn-showtimes-js', KTN_PLUGIN_URL . 'assets/js/kontentainment-showtimes.js', array('jquery'), '1.2.0', true);
 
     // Group by date and then cinema
     $grouped_by_date = array();
@@ -175,61 +178,86 @@ if (!empty($showtimes) && !is_wp_error($showtimes)):
 
     $unique_dates = array_keys($grouped_by_date);
 ?>
-    <section class="ktn-modern-showtimes" style="margin-top: 50px;">
-        <div class="ktn-st-header">
-            <h2 class="ktn-st-title">Playing Near You</h2>
-            <div class="ktn-st-dates">
-                <?php $is_first = true;
-    foreach ($unique_dates as $index => $date): ?>
-                <button class="ktn-st-date-btn <?php echo $is_first ? 'active' : ''; ?>"
-                    data-date-target="date-<?php echo esc_attr(md5($date)); ?>">
-                    <?php echo esc_html($date); ?>
-                </button>
-                <?php $is_first = false; ?>
-                <?php
-    endforeach; ?>
-            </div>
-        </div>
-
-        <div class="ktn-st-content">
-            <?php $is_first = true;
-    foreach ($grouped_by_date as $date_str => $cinemas): ?>
-            <div class="ktn-st-date-group <?php echo $is_first ? 'active' : ''; ?>"
-                id="date-<?php echo esc_attr(md5($date_str)); ?>">
-                <?php foreach ($cinemas as $cinema_name => $times): ?>
-                <div class="ktn-st-cinema-row">
-                    <div class="ktn-st-cinema-info">
-                        <h3>
-                            <?php echo esc_html($cinema_name); ?>
-                        </h3>
-                    </div>
-                    <div class="ktn-st-chips-wrapper">
-                        <?php foreach ($times as $t): ?>
-                        <div class="ktn-st-chip">
-                            <span class="ktn-st-time">
-                                <?php echo esc_html($t->show_time); ?>
-                            </span>
-                            <?php if ($t->experience || $t->price_text): ?>
-                            <span class="ktn-st-meta">
-                                <?php echo esc_html(trim($t->experience . ' ' . $t->price_text)); ?>
-                            </span>
-                            <?php
-                endif; ?>
-                        </div>
-                        <?php
-            endforeach; ?>
+    <section class="ktn-media-showtimes-section">
+        <div class="ktn-st-container">
+            <div class="ktn-st-header-flex">
+                <h2 class="ktn-st-section-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ticket-play"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="m9 9 5 3-5 3Z"/></svg>
+                    Theater Showtimes
+                </h2>
+                
+                <!-- Date Switcher -->
+                <div class="ktn-st-date-tabs">
+                    <div class="ktn-st-tabs-scroll">
+                        <?php $is_first = true;
+                        foreach ($unique_dates as $index => $date): 
+                            $timestamp = strtotime($date);
+                            $formatted_date = $timestamp ? date('D, M j', $timestamp) : $date;
+                        ?>
+                        <button class="ktn-st-date-btn <?php echo $is_first ? 'active' : ''; ?>"
+                            data-date-target="media-date-<?php echo esc_attr(md5($date)); ?>">
+                            <?php echo esc_html($formatted_date); ?>
+                        </button>
+                        <?php $is_first = false; endforeach; ?>
                     </div>
                 </div>
-                <?php
-        endforeach; ?>
             </div>
-            <?php $is_first = false; ?>
-            <?php
-    endforeach; ?>
+
+            <div class="ktn-st-main-content">
+                <?php $is_first = true;
+                foreach ($grouped_by_date as $date_str => $cinemas): ?>
+                <div class="ktn-st-date-group <?php echo $is_first ? 'active' : ''; ?>"
+                    id="media-date-<?php echo esc_attr(md5($date_str)); ?>">
+                    
+                    <div class="ktn-st-cinemas-list">
+                        <?php foreach ($cinemas as $cinema_name => $times): 
+                            $cinema_post_id = $times[0]->cinema_id;
+                            $cinema_link = get_permalink($cinema_post_id);
+                            $cinema_address = get_post_meta($cinema_post_id, '_ktn_cinema_address', true);
+                            $cinema_city = get_post_meta($cinema_post_id, '_ktn_cinema_city', true);
+                        ?>
+                        <div class="ktn-st-cinema-card">
+                            <div class="ktn-cinema-card-header">
+                                <div class="ktn-cinema-card-info">
+                                    <h3 class="ktn-cinema-card-name">
+                                        <?php if ($cinema_link): ?>
+                                            <a href="<?php echo esc_url($cinema_link); ?>"><?php echo esc_html($cinema_name); ?></a>
+                                        <?php else: ?>
+                                            <?php echo esc_html($cinema_name); ?>
+                                        <?php endif; ?>
+                                    </h3>
+                                    <?php if ($cinema_address || $cinema_city): ?>
+                                        <div class="ktn-cinema-card-meta">
+                                            <?php echo esc_html(implode(' • ', array_filter([$cinema_address, $cinema_city]))); ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                <?php if ($cinema_link): ?>
+                                    <a href="<?php echo esc_url($cinema_link); ?>" class="ktn-cinema-card-link">View Cinema &rarr;</a>
+                                <?php endif; ?>
+                            </div>
+                            
+                            <div class="ktn-cinema-card-times">
+                                <?php foreach ($times as $t): ?>
+                                <div class="ktn-premium-chip">
+                                    <span class="ktn-chip-time"><?php echo esc_html($t->show_time); ?></span>
+                                    <?php if ($t->experience || $t->price_text): ?>
+                                    <span class="ktn-chip-meta">
+                                        <?php echo esc_html(trim($t->experience . ' ' . $t->price_text)); ?>
+                                    </span>
+                                    <?php endif; ?>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php $is_first = false; endforeach; ?>
+            </div>
         </div>
     </section>
-    <?php
-endif; ?>
+<?php endif; ?>
 
 
     <?php if ($trailer_url): ?>

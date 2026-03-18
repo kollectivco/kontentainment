@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment
  * Plugin URI:  #
  * Description: A custom movie and TV show system that imports media data from TMDB using an IMDb ID.
- * Version:     1.1.9
+ * Version:     1.2.0
  * Author:      Antigravity
  * License:     GPL2
  * Text Domain: kontentainment

@@ -656,3 +656,192 @@
         justify-content: center;
     }
 }
+
+/* ==========================================================================
+   SINGLE MOVIE PAGE SHOWTIMES (Premium)
+   ========================================================================== */
+
+.ktn-media-showtimes-section {
+    max-width: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1a1a1a;
+    background-color: transparent;
+    padding: 0;
+    margin-top: 50px;
+}
+
+.ktn-st-container {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f3f4f6;
+}
+
+.ktn-st-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 30px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.ktn-st-section-title {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ktn-st-section-title svg {
+    color: #dc2626;
+}
+
+.ktn-st-date-tabs {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.ktn-st-tabs-scroll {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.ktn-st-tabs-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.ktn-st-date-btn {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 8px 18px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.ktn-st-date-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+
+.ktn-st-date-btn.active {
+    background: #111827;
+    color: #ffffff;
+    border-color: #111827;
+    box-shadow: 0 4px 12px rgba(17, 24, 39, 0.15);
+}
+
+.ktn-st-cinemas-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.ktn-st-cinema-card {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 14px;
+    padding: 24px;
+    transition: all 0.2s ease;
+}
+
+.ktn-st-cinema-card:hover {
+    border-color: #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+
+.ktn-cinema-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.ktn-cinema-card-info {
+    flex: 1;
+}
+
+.ktn-cinema-card-name {
+    margin: 0 0 6px 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.ktn-cinema-card-name a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.ktn-cinema-card-name a:hover {
+    color: #2563eb;
+}
+
+.ktn-cinema-card-meta {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.ktn-cinema-card-link {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    text-decoration: none;
+    border: 1px solid #e2e8f0;
+    padding: 6px 14px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.ktn-cinema-card-link:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+
+.ktn-cinema-card-times {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+@media (max-width: 640px) {
+    .ktn-st-container {
+        padding: 24px;
+    }
+    .ktn-st-header-flex {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    .ktn-st-date-tabs {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .ktn-cinema-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

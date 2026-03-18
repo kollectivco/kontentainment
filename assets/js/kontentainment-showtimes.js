@@ -1,17 +1,18 @@
 jQuery(document).ready(function ($) {
-    if ($('.ktn-st-dates, .ktn-date-tabs-scroll').length) {
-        $('.ktn-st-date-btn, .ktn-date-tab-btn').on('click', function (e) {
-            e.preventDefault();
+    // Universal Tab Switcher for Movie and Cinema pages
+    $('.ktn-st-date-btn, .ktn-date-tab-btn').on('click', function (e) {
+        e.preventDefault();
 
-            // Handle active state on tabs
-            var parent = $(this).closest('.ktn-modern-showtimes, .ktn-cinema-page, .ktn-cinema-page-wrapper');
-            parent.find('.ktn-st-date-btn, .ktn-date-tab-btn').removeClass('active');
-            $(this).addClass('active');
+        // Get target container (supports both single cinema and single movie structures)
+        var container = $(this).closest('.ktn-media-showtimes-section, .ktn-cinema-page-wrapper, .ktn-modern-showtimes');
+        
+        // Update active tab state
+        container.find('.ktn-st-date-btn, .ktn-date-tab-btn').removeClass('active');
+        $(this).addClass('active');
 
-            // Handle content display
-            var targetId = $(this).data('date-target');
-            parent.find('.ktn-st-date-group, .ktn-date-panel').removeClass('active');
-            parent.find('#' + targetId).addClass('active');
-        });
-    }
+        // Update active content panel
+        var targetId = $(this).data('date-target');
+        container.find('.ktn-st-date-group, .ktn-date-panel').removeClass('active');
+        $('#' + targetId).addClass('active');
+    });
 });

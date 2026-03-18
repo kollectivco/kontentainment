@@ -68,6 +68,7 @@ class Ktn_Cinema_Scraper
         $engDate = str_replace(array('يعرض حاليًا', 'يعرض حاليا'), '', $engDate);
         $engDate = trim($engDate);
 
+        // Remove Arabic numbers if they are sticking to names
         foreach (self::$DAY_MAP as $arDay => $enDay) {
             $engDate = str_replace($arDay, $enDay, $engDate);
         }
@@ -135,11 +136,11 @@ class Ktn_Cinema_Scraper
                 'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
                 'Accept-Language' => 'en-US,en;q=0.9,ar;q=0.8'
             ),
-            'timeout' => 20,
+            'timeout' => 25,
             'sslverify' => false
         );
-        $response = wp_remote_get($url, $args);
 
+        $response = wp_remote_get($url, $args);
         if (is_wp_error($response)) {
             update_post_meta($cinema_id, '_ktn_last_error', 'WP Error: ' . $response->get_error_message());
             return false;
@@ -147,13 +148,57 @@ class Ktn_Cinema_Scraper
 
         $html = wp_remote_retrieve_body($response);
         if (!$html) {
-            update_post_meta($cinema_id, '_ktn_last_error', 'Empty HTML body returned. Response code: ' . wp_remote_retrieve_response_code($response));
+            update_post_meta($cinema_id, '_ktn_last_error', 'Empty HTML body.');
             return false;
         }
 
         $results = array();
         $scraped_at = current_time('mysql');
 
+        // Parse initial page
+        $initial_results = self::extractShowtimesFromHtml($html, $cinema_id, $url, $scraped_at);
+        if (!empty($initial_results)) {
+            $results = array_merge($results, $initial_results);
+        }
+
+        // Find more dates - Look for date tabs or dropdowns
+        // Pattern: <a href="/theater/1000000/?date=2024-03-20">
+        $date_urls = array();
+        if (preg_match_all('/href="([^"]*[\?&]date=[0-9]{4}-[0-9]{2}-[0-9]{2})"/i', $html, $matches)) {
+            $base_url = 'https://elcinema.com';
+            foreach ($matches[1] as $relative_url) {
+                $full_url = (strpos($relative_url, 'http') === 0) ? $relative_url : $base_url . $relative_url;
+                if ($full_url !== $url) {
+                    $date_urls[] = $full_url;
+                }
+            }
+        }
+        $date_urls = array_unique($date_urls);
+
+        // Limit to next 7 days maximum to avoid massive overload
+        $date_urls = array_slice($date_urls, 0, 7);
+
+        foreach ($date_urls as $date_url) {
+            $date_response = wp_remote_get($date_url, $args);
+            if (!is_wp_error($date_response)) {
+                $date_html = wp_remote_retrieve_body($date_response);
+                if ($date_html) {
+                    $date_results = self::extractShowtimesFromHtml($date_html, $cinema_id, $date_url, $scraped_at);
+                    if (!empty($date_results)) {
+                        $results = array_merge($results, $date_results);
+                    }
+                }
+            }
+        }
+
+        update_post_meta($cinema_id, '_ktn_last_error', 'Successfully scraped all dates (' . count($date_urls) + 1 . ' total pages). Extracted ' . count($results) . ' showtimes.');
+        return $results;
+    }
+
+    private static function extractShowtimesFromHtml($html, $cinema_id, $url, $scraped_at)
+    {
+        $results = array();
+        
         // Find cinema name via Regex
         $cinema_name = '';
         if (preg_match('/<h[12][^>]*>(.*?)<\/h[12]>/is', $html, $m)) {
@@ -164,11 +209,15 @@ class Ktn_Cinema_Scraper
         }
 
         $current_date = '';
+        // Try to find the active date if it's not in the section title (sometimes it's marked as active in a list)
+        if (preg_match('/<li[^>]*class="active"[^>]*>.*?<a[^>]*>(.*?)<\/a>/is', $html, $activeDateMatch)) {
+             $current_date = self::translateDate(strip_tags($activeDateMatch[1]));
+        }
 
         // Split by row to mimic looping over .row independently of DOM nesting
         $blocks = explode('class="row"', $html);
         foreach ($blocks as $block) {
-            // Find Date
+            // Find Date in section title
             if (preg_match('/<h2[^>]*class="[^"]*section-title[^"]*"[^>]*>(.*?)<\/h2>/is', $block, $dateMatch)) {
                 $h2Title = trim(strip_tags($dateMatch[1]));
                 if ($h2Title) {
@@ -176,18 +225,15 @@ class Ktn_Cinema_Scraper
                 }
             }
 
-            // Find Movie Title (Only if the row contains an href to /work/)
+            // Find Movie Title
             if (preg_match('/(?:<h3|<h2).*?<a[^>]*href="[^"]*\/work\/[^"]*"[^>]*>(.*?)<\/a>.*?(?:<\/h3>|<\/h2>)/is', $block, $m)) {
                 $movieTitle = trim(strip_tags($m[1]));
 
-                // Find all UI blocks in this row
                 if (preg_match_all('/<ul[^>]*>(.*?)<\/ul>/is', $block, $ulMatches)) {
                     foreach ($ulMatches[1] as $ulContent) {
-                        // Ensure spacing between list elements
                         $listText = trim(strip_tags(str_replace('><', '> <', $ulContent)));
                         $normText = self::normalizeArabicDigits($listText);
 
-                        // Check if it's a showtime string
                         if ($listText && preg_match('/\d+:\d+/', $normText)) {
                             $showtimes = self::parseShowtimeBlock($listText);
                             foreach ($showtimes as $show) {
@@ -208,8 +254,6 @@ class Ktn_Cinema_Scraper
                 }
             }
         }
-
-        update_post_meta($cinema_id, '_ktn_last_error', 'HTML fetched successfully (Length: ' . strlen($html) . '). Total showtimes extracted: ' . count($results));
         return $results;
     }
 }
