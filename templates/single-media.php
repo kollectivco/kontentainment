@@ -160,44 +160,71 @@ global $wpdb;
 $table_showtimes = $wpdb->prefix . 'ktn_showtimes';
 // Suppress errors initially in case table doesn't exist yet on frontend load before activation hook fixes it, though the plugin handles it.
 $suppress = $wpdb->suppress_errors(true);
-$showtimes = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_showtimes WHERE matched_movie_id = %d ORDER BY cinema_name ASC, show_date ASC, show_time ASC", $post_id));
+$showtimes = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_showtimes WHERE matched_movie_id = %d ORDER BY show_date ASC, cinema_name ASC, show_time ASC", $post_id));
 $wpdb->suppress_errors($suppress);
 
 if (!empty($showtimes) && !is_wp_error($showtimes)):
-    // Group by cinema and date
-    $grouped_showtimes = array();
-    foreach ($showtimes as $st) {
-        $grouped_showtimes[$st->cinema_name][$st->show_date][] = $st;
-    }
-?>
-    <section class="ktn-media-showtimes" style="margin-top: 40px;">
-        <h2 style="margin-bottom: 20px; font-size: 2em; font-weight: bold;">Playing Near You</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
-            <?php foreach ($grouped_showtimes as $cinema => $dates): ?>
-            <div class="ktn-cinema-card"
-                style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee;">
-                <h3
-                    style="margin-top: 0; margin-bottom: 15px; font-size: 1.3em; color: #c4302b; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">
-                    <?php echo esc_html($cinema); ?>
-                </h3>
+    wp_enqueue_style('ktn-showtimes-css', KTN_PLUGIN_URL . 'assets/css/kontentainment-showtimes.css', array(), '1.1.9');
+    wp_enqueue_script('ktn-showtimes-js', KTN_PLUGIN_URL . 'assets/js/kontentainment-showtimes.js', array('jquery'), '1.1.9', true);
 
-                <?php foreach ($dates as $date => $times): ?>
-                <div class="ktn-show-date" style="margin-bottom: 15px;">
-                    <h4
-                        style="margin: 0 0 10px 0; font-size: 1em; color: #444; background: #f9f9f9; padding: 5px 10px; border-radius: 4px; border-left: 3px solid #ccc;">
-                        <?php echo esc_html($date); ?>
-                    </h4>
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+    // Group by date and then cinema
+    $grouped_by_date = array();
+    foreach ($showtimes as $st) {
+        $grouped_by_date[$st->show_date][$st->cinema_name][] = $st;
+    }
+
+    $unique_dates = array_keys($grouped_by_date);
+?>
+    <section class="ktn-modern-showtimes" style="margin-top: 50px;">
+        <div class="ktn-st-header">
+            <h2 class="ktn-st-title">Playing Near You</h2>
+            <div class="ktn-st-dates">
+                <?php $is_first = true;
+    foreach ($unique_dates as $index => $date): ?>
+                <button class="ktn-st-date-btn <?php echo $is_first ? 'active' : ''; ?>"
+                    data-date-target="date-<?php echo esc_attr(md5($date)); ?>">
+                    <?php echo esc_html($date); ?>
+                </button>
+                <?php $is_first = false; ?>
+                <?php
+    endforeach; ?>
+            </div>
+        </div>
+
+        <div class="ktn-st-content">
+            <?php $is_first = true;
+    foreach ($grouped_by_date as $date_str => $cinemas): ?>
+            <div class="ktn-st-date-group <?php echo $is_first ? 'active' : ''; ?>"
+                id="date-<?php echo esc_attr(md5($date_str)); ?>">
+                <?php foreach ($cinemas as $cinema_name => $times):
+            // Find cinema source URL optionally
+            $c_url = '';
+            if (!empty($times[0]->source_url))
+                $c_url = $times[0]->source_url;
+?>
+                <div class="ktn-st-cinema-row">
+                    <div class="ktn-st-cinema-info">
+                        <h3>
+                            <?php echo esc_html($cinema_name); ?>
+                        </h3>
+                        <?php if ($c_url): ?>
+                        <p><a href="<?php echo esc_url($c_url); ?>" target="_blank"
+                                style="color: #6b7280; text-decoration: none;">View original source</a></p>
+                        <?php
+            endif; ?>
+                    </div>
+                    <div class="ktn-st-chips-wrapper">
                         <?php foreach ($times as $t): ?>
-                        <div
-                            style="background: #fafafa; border: 1px solid #eaeaea; padding: 6px 12px; border-radius: 6px; text-align: center; flex: 1 1 auto; min-width: 80px;">
-                            <strong style="font-size: 1.05em; color: #111;">
+                        <div class="ktn-st-chip">
+                            <span class="ktn-st-time">
                                 <?php echo esc_html($t->show_time); ?>
-                            </strong>
-                            <span
-                                style="display:block; font-size: 0.75em; color: #888; margin-top:3px; text-transform: uppercase;">
-                                <?php echo esc_html($t->experience) . ($t->price_text ? ' &bull; ' . esc_html($t->price_text) : ''); ?>
                             </span>
+                            <?php if ($t->experience || $t->price_text): ?>
+                            <span class="ktn-st-meta">
+                                <?php echo esc_html(trim($t->experience . ' ' . $t->price_text)); ?>
+                            </span>
+                            <?php
+                endif; ?>
                         </div>
                         <?php
             endforeach; ?>
@@ -206,12 +233,14 @@ if (!empty($showtimes) && !is_wp_error($showtimes)):
                 <?php
         endforeach; ?>
             </div>
+            <?php $is_first = false; ?>
             <?php
     endforeach; ?>
         </div>
     </section>
     <?php
 endif; ?>
+
 
     <?php if ($trailer_url): ?>
     <section class="ktn-media-trailer" style="margin-top: 40px;">

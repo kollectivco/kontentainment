@@ -14,6 +14,14 @@ function ktn_load_single_template($template)
             return $custom_template;
         }
     }
+
+    if ($post->post_type === 'ktn_cinema') {
+        $custom_template = KTN_PLUGIN_DIR . 'templates/single-cinema.php';
+        if (file_exists($custom_template)) {
+            return $custom_template;
+        }
+    }
+
     return $template;
 }
 

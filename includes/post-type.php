@@ -69,10 +69,12 @@ function ktn_register_post_types()
 
     $cinema_args = array(
         'labels' => $cinema_labels,
-        'public' => false,
-        'publicly_queryable' => false,
+        'public' => true,
+        'publicly_queryable' => true,
         'show_ui' => true,
         'show_in_menu' => 'edit.php?post_type=movie',
+        'rewrite' => array('slug' => 'cinema'),
+        'has_archive' => true,
         'capability_type' => 'post',
         'hierarchical' => false,
         'supports' => array('title')
