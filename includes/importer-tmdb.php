@@ -124,10 +124,10 @@ function ktn_get_tmdb_media_details($tmdb_id, $type, $token, $language)
     }
 
     if ($type === 'tv') {
-        $url = "https://api.themoviedb.org/3/tv/{$tmdb_id}?language={$language}&append_to_response=credits,videos,images,external_ids,content_ratings,keywords,recommendations,watch/providers";
+        $url = "https://api.themoviedb.org/3/tv/{$tmdb_id}?language={$language}&append_to_response=credits,videos,images,external_ids,content_ratings,keywords,recommendations";
     }
     else {
-        $url = "https://api.themoviedb.org/3/movie/{$tmdb_id}?language={$language}&append_to_response=credits,videos,images,external_ids,release_dates,keywords,recommendations,watch/providers";
+        $url = "https://api.themoviedb.org/3/movie/{$tmdb_id}?language={$language}&append_to_response=credits,videos,images,external_ids,release_dates,keywords,recommendations";
     }
 
     $args = array(
@@ -313,11 +313,6 @@ function ktn_process_and_save_data($post_id, $data, $imdb_id, $type)
         if (!has_post_thumbnail($post_id) || !$set_thumbnail) {
             ktn_sideload_image($poster_url, $post_id, $set_thumbnail);
         }
-    }
-
-    // Save Watch Providers
-    if (function_exists('ktn_save_watch_providers')) {
-        ktn_save_watch_providers($post_id, $data);
     }
 
     update_post_meta($post_id, '_movie_last_imported_at', time());
