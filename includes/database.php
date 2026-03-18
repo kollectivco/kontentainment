@@ -22,8 +22,8 @@ function ktn_create_database_tables()
         experience varchar(100) DEFAULT 'Standard',
         price_text varchar(100) DEFAULT '',
         source_type varchar(100) DEFAULT 'elcinema_theater',
-        scraped_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-        updated_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+        scraped_at datetime NOT NULL,
+        updated_at datetime NOT NULL,
         PRIMARY KEY  (id),
         KEY cinema_id (cinema_id),
         KEY matched_movie_id (matched_movie_id)
