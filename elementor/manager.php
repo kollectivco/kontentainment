@@ -41,6 +41,7 @@ final class KTN_Elementor_Manager {
         require_once KTN_PLUGIN_DIR . 'elementor/widgets/areas-widget.php';
         require_once KTN_PLUGIN_DIR . 'elementor/widgets/movie-single-widget.php';
         require_once KTN_PLUGIN_DIR . 'elementor/widgets/cinema-single-widget.php';
+        require_once KTN_PLUGIN_DIR . 'elementor/widgets/watch-providers-widget.php';
 
         $widgets_manager->register(new \KTN_Movies_Widget());
         $widgets_manager->register(new \KTN_Cinemas_Widget());
@@ -48,6 +49,7 @@ final class KTN_Elementor_Manager {
         $widgets_manager->register(new \KTN_Areas_Widget());
         $widgets_manager->register(new \KTN_Movie_Single_Widget());
         $widgets_manager->register(new \KTN_Cinema_Single_Widget());
+        $widgets_manager->register(new \KTN_Watch_Providers_Widget());
     }
 }
 

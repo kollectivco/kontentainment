@@ -121,6 +121,8 @@ endif; ?>
         </div>
     </header>
 
+    <?php if (function_exists('ktn_render_watch_providers')) ktn_render_watch_providers($post_id); ?>
+
     <section class="ktn-media-credits" style="margin-top: 40px;">
         <h2 style="margin-bottom: 20px; font-size: 2em; font-weight: bold;">Cast</h2>
         <?php if ($cast_json):

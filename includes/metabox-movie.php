@@ -58,6 +58,16 @@ function ktn_add_movie_details_metaboxes()
         'normal',
         'low'
     );
+
+    // WATCH PROVIDERS
+    add_meta_box(
+        'ktn_movie_watch_providers',
+        __('Where to Watch (Watch Providers)', 'kontentainment'),
+        'ktn_movie_watch_providers_html',
+        array('movie', 'tv_show'),
+        'normal',
+        'default'
+    );
 }
 
 /**
@@ -291,6 +301,97 @@ function ktn_movie_extra_details_html($post)
         <label><strong><?php esc_html_e('Keywords:', 'kontentainment'); ?></strong></label>
         <input type="text" name="ktn_keywords" value="<?php echo esc_attr($keywords); ?>" class="widefat" />
     </div>
+    <?php
+}
+
+/**
+ * Display HTML for Watch Providers Metabox
+ */
+function ktn_movie_watch_providers_html($post) {
+    $providers = get_post_meta($post->ID, '_ktn_watch_providers', true);
+    $last_fetched = get_post_meta($post->ID, '_ktn_watch_providers_fetched', true);
+    
+    ?>
+    <div id="ktn-watch-providers-admin">
+        <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+            <div>
+                <strong><?php esc_html_e('Status:', 'kontentainment'); ?></strong>
+                <?php if (!empty($providers)): ?>
+                    <span style="color: green; font-weight: bold;">&#10004; <?php echo count($providers); ?> <?php esc_html_e('Regions Found', 'kontentainment'); ?></span>
+                <?php else: ?>
+                    <span style="color: #999;"><?php esc_html_e('Not fetched or no data.', 'kontentainment'); ?></span>
+                <?php endif; ?>
+                <br>
+                <small style="color: #777;">
+                    <?php esc_html_e('Last updated:', 'kontentainment'); ?> 
+                    <span id="ktn-wp-last-fetched"><?php echo $last_fetched ? date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $last_fetched) : __('Never', 'kontentainment'); ?></span>
+                </small>
+            </div>
+            <button type="button" id="ktn-refresh-wp-btn" class="button button-secondary" data-post-id="<?php echo $post->ID; ?>">
+                <?php esc_html_e('Refresh from TMDB', 'kontentainment'); ?>
+            </button>
+        </div>
+
+        <?php if (!empty($providers)): 
+            $default_region = get_option('ktn_default_region', 'EG');
+            ?>
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #eee; padding: 10px;">
+                <table class="widefat striped">
+                    <thead>
+                        <tr>
+                            <th><?php esc_html_e('Region', 'kontentainment'); ?></th>
+                            <th><?php esc_html_e('Groups', 'kontentainment'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($providers as $code => $data): ?>
+                            <tr>
+                                <td>
+                                    <strong><?php echo esc_html($code); ?></strong>
+                                    <?php if ($code === $default_region) echo ' <span class="description">(Default)</span>'; ?>
+                                </td>
+                                <td>
+                                    <?php
+                                    $available = [];
+                                    if (!empty($data['flatrate'])) $available[] = 'Stream';
+                                    if (!empty($data['rent'])) $available[] = 'Rent';
+                                    if (!empty($data['buy'])) $available[] = 'Buy';
+                                    if (!empty($data['ads'])) $available[] = 'Ads';
+                                    if (!empty($data['free'])) $available[] = 'Free';
+                                    echo esc_html(implode(', ', $available));
+                                    ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+    <script>
+    jQuery(document).ready(function($) {
+        $('#ktn-refresh-wp-btn').on('click', function() {
+            const btn = $(this);
+            const postId = btn.data('post-id');
+            
+            btn.prop('disabled', true).text('Updating...');
+            
+            $.post(ajaxurl, {
+                action: 'ktn_refresh_watch_providers',
+                post_id: postId,
+                nonce: '<?php echo wp_create_nonce("ktn_import_nonce"); ?>'
+            }, function(res) {
+                if (res.success) {
+                    alert(res.data.message);
+                    location.reload();
+                } else {
+                    alert(res.data.message);
+                    btn.prop('disabled', false).text('Refresh from TMDB');
+                }
+            });
+        });
+    });
+    </script>
     <?php
 }
 
