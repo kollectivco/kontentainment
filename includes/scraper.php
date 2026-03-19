@@ -171,13 +171,11 @@ class Ktn_Cinema_Scraper
         $date_urls = array();
         if (preg_match_all('/href="([^"]*[\?&]date=([0-9]{4}-[0-9]{1,2}-[0-9]{1,2}))"/i', $html, $matches)) {
             $base_url = 'https://elcinema.com';
-            // Support English URLs
             $is_en = (strpos($url, '/en/') !== false);
             
             foreach ($matches[1] as $relative_url) {
                 $full_url = (strpos($relative_url, 'http') === 0) ? $relative_url : (strpos($relative_url, '/') === 0 ? $base_url . $relative_url : $base_url . '/' . $relative_url);
                 
-                // If on EN page, sub-URLs should also be EN
                 if ($is_en && strpos($full_url, '/en/') === false) {
                     $full_url = str_replace('elcinema.com/', 'elcinema.com/en/', $full_url);
                 }
@@ -235,17 +233,25 @@ class Ktn_Cinema_Scraper
         $is_en = (strpos($url, '/en/') !== false);
         
         // Metadata extraction
+        $theater_id = '';
+        if (preg_match('/\/theater\/([0-9]+)/', $url, $idMatch)) {
+            $theater_id = $idMatch[1];
+        }
+
         $cinema_name = '';
         $arabic_name = '';
         $english_name = '';
         $logo_url = '';
+        $rating = '';
         $address = '';
+        $area = '';
         $phone = '';
         $city = '';
         $country = '';
         $notes = '';
 
-        if (preg_match('/<h[12][^>]*>(.*?)<\/h[12]>/is', $html, $m)) {
+        // Extract H1 name
+        if (preg_match('/<h1[^>]*>(.*?)<\/h1>/is', $html, $m)) {
             $scraped_name = trim(strip_tags($m[1]));
             if ($is_en) {
                 $english_name = $scraped_name;
@@ -256,18 +262,40 @@ class Ktn_Cinema_Scraper
             }
         }
 
-        // Try to find the other name (cross-link)
+        // Search for alternate language link to grab the other name
         if ($is_en) {
-             // Look for Arabic title in metadata or breadcrumbs if possible, but usually elCinema is consistent
+            if (preg_match('/<li><a[^>]*href="\/theater\/[0-9]+\/"[^>]*>(.*?)<\/a><\/li>/u', $html, $arLink)) {
+                // This is usually just "عربي", not the name. 
+            }
         }
 
+        // Try to get Arabic name from breadcrumbs or hidden meta if on EN page
+        if ($is_en && empty($arabic_name)) {
+             if (preg_match('/<meta property="og:title" content="(.*?) - Theater - Cinema"/i', $html, $ogMatch)) {
+                  // Sometimes og:title has info, but usually same as H1
+             }
+        }
+
+        // Logo / main image URL
         if (preg_match('/<img[^>]*class="[^"]*cinema-logo[^"]*"[^>]*src="([^"]*)"/i', $html, $m)) {
             $logo_url = $m[1];
         } elseif (preg_match('/<div[^>]*class="[^"]*cinema-image[^"]*"[^>]*>.*?<img[^>]*src="([^"]*)"/is', $html, $m)) {
             $logo_url = $m[1];
         }
+        
+        // og:image fallback
+        if (empty($logo_url) || strpos($logo_url, 'default') !== false) {
+            if (preg_match('/<meta property="og:image" content="([^"]*)"/i', $html, $ogImg)) {
+                $logo_url = $ogImg[1];
+            }
+        }
 
-        // Extract Details List
+        // Rating
+        if (preg_match('/<span[^>]*class="[^"]*rating[^"]*"[^>]*>(.*?)<\/span>/is', $html, $rMatch)) {
+            $rating = trim(strip_tags($rMatch[1]));
+        }
+
+        // Extract Details List (Address, Phone, Area, etc)
         if (preg_match('/<ul[^>]*class="[^"]*list-details[^"]*"[^>]*>(.*?)<\/ul>/is', $html, $m)) {
             $details_html = $m[1];
             
@@ -280,23 +308,28 @@ class Ktn_Cinema_Scraper
             if (preg_match('/(?:الهاتف|Phone):?<\/span>\s*(.*?)<\/li>/is', $details_html, $ph)) {
                 $phone = trim(strip_tags($ph[1]));
             }
-        }
 
-        // Info blocks
-        if (preg_match('/<div[^>]*class="[^"]*description[^"]*"[^>]*>(.*?)<\/div>/is', $html, $m)) {
-            $notes = trim(strip_tags($m[1]));
-            if (empty($address)) {
-                 $address = $notes; // Fallback
+            // More specific fields if they exist
+            if (preg_match('/(?:المنطقة|Area):?<\/span>\s*(.*?)<\/li>/is', $details_html, $ar)) {
+                $area = trim(strip_tags($ar[1]));
             }
         }
 
-        // Breadcrumbs for City/Country
+        // Notes / Descriptions (Policies)
+        if (preg_match('/<div[^>]*class="[^"]*description[^"]*"[^>]*>(.*?)<\/div>/is', $html, $m)) {
+            $notes = trim(strip_tags($m[1]));
+        }
+
+        // Breadcrumbs for Country, City, Area
         if (preg_match_all('/<li[^>]*><a[^>]*>(.*?)<\/a><\/li>/is', $html, $bc)) {
             $crumbs = array_map('strip_tags', $bc[1]);
-            // Usually: [Home, Theaters, Country, City, Theater Name]
+            // Format: [Home, Theaters, Country, City, Area (optional), Theater Name]
             if (count($crumbs) >= 4) {
                  $country = trim($crumbs[2]);
                  $city = trim($crumbs[3]);
+                 if (count($crumbs) >= 5 && trim($crumbs[4]) !== $cinema_name) {
+                     $area = trim($crumbs[4]);
+                 }
             }
         }
 
@@ -370,11 +403,14 @@ class Ktn_Cinema_Scraper
         
         return array(
             'metadata' => array(
+                'theater_id' => $theater_id,
                 'name' => $cinema_name,
                 'arabic_name' => $arabic_name,
                 'english_name' => $english_name,
                 'logo' => $logo_url,
+                'rating' => $rating,
                 'address' => $address,
+                'area' => $area,
                 'phone' => $phone,
                 'city' => $city,
                 'country' => $country,

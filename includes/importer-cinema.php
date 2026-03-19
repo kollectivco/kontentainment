@@ -109,40 +109,51 @@ class Ktn_Cinema_Importer
         $metadata = $sync_data['metadata'];
 
         // --- Auto-fill Cinema Fields ---
+        $display_title = !empty($metadata['english_name']) ? $metadata['english_name'] : $metadata['name'];
+        if (empty($display_title)) $display_title = $metadata['name'];
+
         $current_title = get_the_title($post_id);
-        // Only override title if it's empty or generically named (Auto Draft, etc)
         if (empty($current_title) || stripos($current_title, 'Auto Draft') !== false || is_numeric($current_title)) {
              wp_update_post(array(
                  'ID' => $post_id,
-                 'post_title' => sanitize_text_field($metadata['name'])
+                 'post_title' => sanitize_text_field($display_title)
              ));
         }
 
-        if (!empty($metadata['arabic_name']) && !get_post_meta($post_id, '_ktn_cinema_arabic_name', true)) {
+        // Mapping values to Cinema admin fields
+        if (!empty($metadata['theater_id'])) {
+            update_post_meta($post_id, '_ktn_cinema_theater_id', sanitize_text_field($metadata['theater_id']));
+        }
+        if (!empty($metadata['arabic_name'])) {
             update_post_meta($post_id, '_ktn_cinema_arabic_name', sanitize_text_field($metadata['arabic_name']));
         }
-        if (!empty($metadata['english_name']) && !get_post_meta($post_id, '_ktn_cinema_english_name', true)) {
+        if (!empty($metadata['english_name'])) {
             update_post_meta($post_id, '_ktn_cinema_english_name', sanitize_text_field($metadata['english_name']));
         }
-        if (!empty($metadata['logo']) && !get_post_meta($post_id, '_ktn_cinema_logo', true)) {
+        if (!empty($metadata['logo'])) {
             update_post_meta($post_id, '_ktn_cinema_logo', esc_url_raw($metadata['logo']));
         }
-        if (!empty($metadata['address']) && !get_post_meta($post_id, '_ktn_cinema_address', true)) {
+        if (!empty($metadata['rating'])) {
+            update_post_meta($post_id, '_ktn_cinema_rating', sanitize_text_field($metadata['rating']));
+        }
+        if (!empty($metadata['address'])) {
             update_post_meta($post_id, '_ktn_cinema_address', sanitize_text_field($metadata['address']));
         }
-        if (!empty($metadata['phone']) && !get_post_meta($post_id, '_ktn_cinema_phone', true)) {
+        if (!empty($metadata['area'])) {
+            update_post_meta($post_id, '_ktn_cinema_area', sanitize_text_field($metadata['area']));
+        }
+        if (!empty($metadata['phone'])) {
             update_post_meta($post_id, '_ktn_cinema_phone', sanitize_text_field($metadata['phone']));
         }
-        if (!empty($metadata['city']) && !get_post_meta($post_id, '_ktn_cinema_city', true)) {
+        if (!empty($metadata['city'])) {
             update_post_meta($post_id, '_ktn_cinema_city', sanitize_text_field($metadata['city']));
         }
-        if (!empty($metadata['country']) && !get_post_meta($post_id, '_ktn_cinema_country', true)) {
+        if (!empty($metadata['country'])) {
             update_post_meta($post_id, '_ktn_cinema_country', sanitize_text_field($metadata['country']));
         }
 
-        // Notes/Description
+        // Notes / Descriptions (Policies)
         if (!empty($metadata['notes'])) {
-             // We can save to post_content if we want it to be the official notes
              wp_update_post(array(
                  'ID' => $post_id,
                  'post_content' => wp_kses_post($metadata['notes'])
@@ -158,7 +169,7 @@ class Ktn_Cinema_Importer
                 $table_name,
                 array(
                 'cinema_id' => $row['cinema_id'],
-                'cinema_name' => $metadata['name'] ?: get_the_title($row['cinema_id']),
+                'cinema_name' => $display_title,
                 'source_url' => $row['source_url'],
                 'movie_title_scraped' => $row['movie_title_scraped'],
                 'matched_movie_id' => $matched_id ? $matched_id : null,

@@ -29,17 +29,21 @@ function ktn_cinema_basic_info_callback($post)
 
     $arabic_name = get_post_meta($post->ID, '_ktn_cinema_arabic_name', true);
     $english_name = get_post_meta($post->ID, '_ktn_cinema_english_name', true);
+    $rating = get_post_meta($post->ID, '_ktn_cinema_rating', true);
 
-    echo '<div class="ktn-admin-field-group">';
+    echo '<div class="ktn-admin-field-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">';
     echo '<p><label><strong>' . __('Arabic Name', 'kontentainment') . '</strong></label><br>';
     echo '<input type="text" name="ktn_cinema_arabic_name" value="' . esc_attr($arabic_name) . '" class="large-text"></p>';
     
     echo '<p><label><strong>' . __('English Name', 'kontentainment') . '</strong></label><br>';
     echo '<input type="text" name="ktn_cinema_english_name" value="' . esc_attr($english_name) . '" class="large-text"></p>';
+    
+    echo '<p><label><strong>' . __('Rating / Stars', 'kontentainment') . '</strong></label><br>';
+    echo '<input type="text" name="ktn_cinema_rating" value="' . esc_attr($rating) . '" class="regular-text"></p>';
     echo '</div>';
     
-    echo '<p><label><strong>' . __('Official Notes', 'kontentainment') . '</strong></label><br>';
-    wp_editor($post->post_content, 'content', array('textarea_name' => 'content', 'media_buttons' => false, 'textarea_rows' => 5));
+    echo '<p><label><strong>' . __('Notes / Policies / Description', 'kontentainment') . '</strong></label><br>';
+    wp_editor($post->post_content, 'content', array('textarea_name' => 'content', 'media_buttons' => true, 'textarea_rows' => 5));
     echo '</p>';
 }
 
@@ -49,6 +53,7 @@ function ktn_cinema_basic_info_callback($post)
 function ktn_cinema_location_callback($post)
 {
     $address = get_post_meta($post->ID, '_ktn_cinema_address', true);
+    $area = get_post_meta($post->ID, '_ktn_cinema_area', true);
     $city = get_post_meta($post->ID, '_ktn_cinema_city', true);
     $country = get_post_meta($post->ID, '_ktn_cinema_country', true);
     $phone = get_post_meta($post->ID, '_ktn_cinema_phone', true);
@@ -60,6 +65,9 @@ function ktn_cinema_location_callback($post)
     
     echo '<p style="grid-column: span 2;"><label><strong>' . __('Full Address', 'kontentainment') . '</strong></label><br>';
     echo '<input type="text" name="ktn_cinema_address" value="' . esc_attr($address) . '" class="large-text"></p>';
+
+    echo '<p><label><strong>' . __('Area', 'kontentainment') . '</strong></label><br>';
+    echo '<input type="text" name="ktn_cinema_area" value="' . esc_attr($area) . '" class="regular-text"></p>';
 
     echo '<p><label><strong>' . __('City', 'kontentainment') . '</strong></label><br>';
     echo '<input type="text" name="ktn_cinema_city" value="' . esc_attr($city) . '" class="regular-text"></p>';
@@ -92,7 +100,7 @@ function ktn_cinema_branding_callback($post)
 
     echo '<div class="ktn-admin-side-fields">';
     
-    echo '<p><label><strong>' . __('Cinema Logo URL', 'kontentainment') . '</strong></label><br>';
+    echo '<p><label><strong>' . __('Cinema Logo / Main URL', 'kontentainment') . '</strong></label><br>';
     echo '<input type="text" name="ktn_cinema_logo" value="' . esc_attr($logo) . '" class="large-text">';
     if ($logo) echo '<img src="'.esc_url($logo).'" style="max-width:100%; height:auto; display:block; margin-top:10px; border:1px solid #ddd;">';
     echo '</p>';
@@ -111,6 +119,7 @@ function ktn_cinema_branding_callback($post)
 function ktn_cinema_source_callback($post)
 {
     $url = get_post_meta($post->ID, '_ktn_cinema_url', true);
+    $theater_id = get_post_meta($post->ID, '_ktn_cinema_theater_id', true);
     $type = get_post_meta($post->ID, '_ktn_cinema_type', true) ?: 'elcinema_theater';
     $status = get_post_meta($post->ID, '_ktn_cinema_status', true) ?: 'active';
     $last_sync = get_post_meta($post->ID, '_ktn_cinema_last_sync', true);
@@ -120,6 +129,9 @@ function ktn_cinema_source_callback($post)
     
     echo '<p><label><strong>' . __('Source URL', 'kontentainment') . '</strong></label><br>';
     echo '<input type="url" name="ktn_cinema_url" value="' . esc_attr($url) . '" class="large-text" required></p>';
+
+    echo '<p><label><strong>' . __('elCinema Theater ID', 'kontentainment') . '</strong></label><br>';
+    echo '<input type="text" name="ktn_cinema_theater_id" value="' . esc_attr($theater_id) . '" class="large-text" readonly></p>';
 
     echo '<p><label><strong>' . __('Source Type', 'kontentainment') . '</strong></label><br>';
     echo '<select name="ktn_cinema_type" class="postbox">';
@@ -265,13 +277,16 @@ function ktn_cinema_save_all_meta_data($post_id)
 
     $fields = [
         'ktn_cinema_url' => '_ktn_cinema_url',
+        'ktn_cinema_theater_id' => '_ktn_cinema_theater_id',
         'ktn_cinema_type' => '_ktn_cinema_type',
         'ktn_cinema_status' => '_ktn_cinema_status',
         'ktn_cinema_arabic_name' => '_ktn_cinema_arabic_name',
         'ktn_cinema_english_name' => '_ktn_cinema_english_name',
+        'ktn_cinema_rating' => '_ktn_cinema_rating',
         'ktn_cinema_logo' => '_ktn_cinema_logo',
         'ktn_cinema_cover_image' => '_ktn_cinema_cover_image',
         'ktn_cinema_address' => '_ktn_cinema_address',
+        'ktn_cinema_area' => '_ktn_cinema_area',
         'ktn_cinema_phone' => '_ktn_cinema_phone',
         'ktn_cinema_city' => '_ktn_cinema_city',
         'ktn_cinema_country' => '_ktn_cinema_country',
