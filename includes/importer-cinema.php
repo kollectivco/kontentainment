@@ -50,6 +50,9 @@ class Ktn_Cinema_Importer
         return null;
     }
 
+    /**
+     * @return int|WP_Error Number of showtimes synced, or WP_Error on failure.
+     */
     public static function syncCinema($post_id)
     {
         global $wpdb;
@@ -82,22 +85,30 @@ class Ktn_Cinema_Importer
         $source_type = get_post_meta($post_id, '_ktn_cinema_type', true);
         $status = get_post_meta($post_id, '_ktn_cinema_status', true);
 
-        if (!$source_url || $status === 'inactive')
-            return false;
+        if (!$source_url) {
+            return new WP_Error('missing_url', __('Missing Source URL.', 'kontentainment'));
+        }
+        if ($status === 'inactive') {
+            return new WP_Error('inactive_cinema', __('Cinema is set to inactive.', 'kontentainment'));
+        }
 
         $sync_data = array();
         if ($source_type === 'elcinema_theater' || empty($source_type)) {
             $sync_data = Ktn_Cinema_Scraper::fetch_from_elcinema($post_id, $source_url);
         }
 
-        if ($sync_data === false || empty($sync_data['showtimes'])) {
-            return false;
+        if (is_wp_error($sync_data)) {
+            return $sync_data; // Let the error bubble up
+        }
+
+        if (empty($sync_data['showtimes'])) {
+            return new WP_Error('no_results', __('Scraper returned successfully but no showtimes were found.', 'kontentainment'));
         }
 
         $results = $sync_data['showtimes'];
         $metadata = $sync_data['metadata'];
 
-        // Auto-populate cinema metadata if available and not already set manually
+        // Auto-populate cinema metadata
         if (!empty($metadata['arabic_name'])) {
              if (!get_post_meta($post_id, '_ktn_cinema_arabic_name', true)) {
                  update_post_meta($post_id, '_ktn_cinema_arabic_name', sanitize_text_field($metadata['arabic_name']));
@@ -114,56 +125,35 @@ class Ktn_Cinema_Importer
              }
         }
 
+        // Use transaction or direct delete/insert
         $wpdb->query($wpdb->prepare("DELETE FROM $table_name WHERE cinema_id = %d", $post_id));
 
         $added = 0;
         foreach ($results as $row) {
             $matched_id = self::matchMovieTitle($row['movie_title_scraped']);
 
-            $exists = $wpdb->get_var($wpdb->prepare(
-                "SELECT id FROM $table_name WHERE cinema_id = %d AND movie_title_scraped = %s AND show_date = %s AND show_time = %s",
-                $row['cinema_id'],
-                $row['movie_title_scraped'],
-                $row['show_date'],
-                $row['show_time']
-            ));
-
-            if ($exists) {
-                $wpdb->update(
-                    $table_name,
-                    array(
-                    'matched_movie_id' => $matched_id ? $matched_id : null,
-                    'experience' => $row['experience'],
-                    'price_text' => $row['price_text'],
-                    'updated_at' => current_time('mysql')
-                ),
-                    array('id' => $exists)
-                );
-            }
-            else {
-                $wpdb->insert(
-                    $table_name,
-                    array(
-                    'cinema_id' => $row['cinema_id'],
-                    'cinema_name' => get_the_title($row['cinema_id']) ?: $row['cinema_name'],
-                    'source_url' => $row['source_url'],
-                    'movie_title_scraped' => $row['movie_title_scraped'],
-                    'matched_movie_id' => $matched_id ? $matched_id : null,
-                    'show_date' => $row['show_date'],
-                    'show_time' => $row['show_time'],
-                    'experience' => $row['experience'],
-                    'price_text' => $row['price_text'],
-                    'source_type' => $source_type,
-                    'scraped_at' => current_time('mysql'),
-                    'updated_at' => current_time('mysql')
-                )
-                );
-                $added++;
-            }
+            $wpdb->insert(
+                $table_name,
+                array(
+                'cinema_id' => $row['cinema_id'],
+                'cinema_name' => get_the_title($row['cinema_id']) ?: $row['cinema_name'],
+                'source_url' => $row['source_url'],
+                'movie_title_scraped' => $row['movie_title_scraped'],
+                'matched_movie_id' => $matched_id ? $matched_id : null,
+                'show_date' => $row['show_date'],
+                'show_time' => $row['show_time'],
+                'experience' => $row['experience'],
+                'price_text' => $row['price_text'],
+                'source_type' => $source_type,
+                'scraped_at' => current_time('mysql'),
+                'updated_at' => current_time('mysql')
+            )
+            );
+            $added++;
         }
 
         update_post_meta($post_id, '_ktn_cinema_last_sync', current_time('mysql'));
-        return count($results);
+        return $added;
     }
 
     public static function syncAllCinemas()
@@ -177,7 +167,7 @@ class Ktn_Cinema_Importer
         $total = 0;
         foreach ($cinemas as $cinema) {
             $count = self::syncCinema($cinema->ID);
-            if ($count !== false) {
+            if (!is_wp_error($count)) {
                 $total += $count;
             }
         }

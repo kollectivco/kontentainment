@@ -106,6 +106,7 @@ function ktn_cinema_source_callback($post)
     $type = get_post_meta($post->ID, '_ktn_cinema_type', true) ?: 'elcinema_theater';
     $status = get_post_meta($post->ID, '_ktn_cinema_status', true) ?: 'active';
     $last_sync = get_post_meta($post->ID, '_ktn_cinema_last_sync', true);
+    $last_err = get_post_meta($post->ID, '_ktn_last_error', true);
 
     echo '<div class="ktn-admin-side-fields">';
     
@@ -125,10 +126,17 @@ function ktn_cinema_source_callback($post)
 
     echo '<hr>';
     echo '<p><strong>' . __('Last Synced At:', 'kontentainment') . '</strong><br>';
-    echo ($last_sync ? '<code>' . esc_html($last_sync) . '</code>' : '<span style="color:red;">' . __('Never compiled', 'kontentainment') . '</span>') . '</p>';
+    echo ($last_sync ? '<code>' . esc_html($last_sync) . '</code>' : '<span style="color:red;">' . __('Never', 'kontentainment') . '</span>') . '</p>';
+
+    if ($last_err && strpos($last_err, 'Success') === false) {
+        echo '<div style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; padding:10px; border-radius:4px; font-size:12px; margin-bottom:15px;">';
+        echo '<strong>' . __('Error during last attempt:', 'kontentainment') . '</strong><br>';
+        echo esc_html($last_err);
+        echo '</div>';
+    }
 
     echo '<p><a href="' . wp_nonce_url(admin_url('post.php?post=' . $post->ID . '&action=edit&ktn_action=sync_cinema'), 'ktn_sync_cinema_' . $post->ID) . '" class="button button-primary button-large" style="width:100%; text-align:center;">' . __('Sync Now', 'kontentainment') . '</a></p>';
-    echo '<p class="description">' . __('Note: Update post before syncing.', 'kontentainment') . '</p>';
+    echo '<p class="description">' . __('Note: Save changes before syncing.', 'kontentainment') . '</p>';
 
     echo '</div>';
 }
@@ -166,7 +174,7 @@ function ktn_cinema_showtimes_callback($post)
     ));
 
     if (empty($showtimes)) {
-        echo '<p>' . __('No showtimes found for this cinema. Try syncing first.', 'kontentainment') . '</p>';
+        echo '<p style="padding:20px; text-align:center; background:#f9f9f9; border:1px dashed #ccc;">' . __('No showtimes found for this cinema. Enter the Source URL and click "Sync Now".', 'kontentainment') . '</p>';
         return;
     }
 
@@ -206,7 +214,6 @@ function ktn_cinema_showtimes_callback($post)
             }
             echo '</div>';
 
-            // Status Badge
             $badge_bg = $matched_id ? '#dcfce7' : '#fee2e2';
             $badge_color = $matched_id ? '#166534' : '#991b1b';
             echo '<span style="background:'.$badge_bg.'; color:'.$badge_color.'; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:700; text-transform:uppercase;">';
@@ -214,7 +221,6 @@ function ktn_cinema_showtimes_callback($post)
             echo '</span>';
             echo '</div>';
 
-            // Times grid
             echo '<div class="ktn-times-grid" style="display:flex; flex-wrap:wrap; gap:10px;">';
             foreach ($times as $t) {
                 echo '<div style="background:#f0f0f1; padding:5px 10px; border-radius:4px; font-size:12px; border:1px solid #dcdcde;">';
@@ -229,13 +235,13 @@ function ktn_cinema_showtimes_callback($post)
             }
             echo '</div>'; 
 
-            echo '</div>'; // ktn-movie-row
+            echo '</div>';
         }
 
-        echo '</div>'; // ktn-date-group
+        echo '</div>';
     }
 
-    echo '</div>'; // ktn-admin-showtimes-list
+    echo '</div>';
 }
 
 /**
@@ -274,7 +280,7 @@ function ktn_cinema_save_all_meta_data($post_id)
 }
 
 /**
- * Handle Sync Action (existing logic preserved)
+ * Handle Sync Action
  */
 add_action('admin_init', 'ktn_handle_cinema_sync_action');
 function ktn_handle_cinema_sync_action()
@@ -283,10 +289,10 @@ function ktn_handle_cinema_sync_action()
         $post_id = intval($_GET['post']);
         if (check_admin_referer('ktn_sync_cinema_' . $post_id)) {
             $result = Ktn_Cinema_Importer::syncCinema($post_id);
-            if ($result !== false) {
+            if (!is_wp_error($result)) {
                 add_settings_error('ktn_cinema', 'sync_success', sprintf(__('Successfully synced %d showtimes.', 'kontentainment'), $result), 'success');
             } else {
-                add_settings_error('ktn_cinema', 'sync_fail', __('Failed to sync showtimes.', 'kontentainment'), 'error');
+                add_settings_error('ktn_cinema', 'sync_fail', $result->get_error_message(), 'error');
             }
         }
     }
@@ -306,7 +312,7 @@ function ktn_cinema_admin_notices()
 }
 
 /**
- * Columns Logic (existing logic preserved)
+ * Columns Logic
  */
 add_filter('manage_ktn_cinema_posts_columns', 'ktn_cinema_columns');
 function ktn_cinema_columns($columns)
