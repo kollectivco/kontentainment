@@ -5,16 +5,29 @@ jQuery(document).ready(function ($) {
         var btn = $(this);
         var action = btn.data('action'); // 'import' or 'refresh'
         var postId = btn.data('post-id');
-        var imdbId = $('#ktn_imdb_id').val();
+        var imdbId = $('#ktn_imdb_id').val().trim();
+        var tmdbId = $('#ktn_tmdb_id').val().trim();
         var statusDiv = $('#ktn_import_status');
 
-        if (!imdbId) {
-            statusDiv.html('<span style="color:red;">Please enter an IMDb ID first.</span>');
+        if (!imdbId && !tmdbId) {
+            statusDiv.html('<span style="color:red;">Please enter either an IMDb ID or a TMDB ID.</span>');
+            return;
+        }
+
+        // Basic validation for IMDb if present
+        if (imdbId && !/^tt\d{7,}$/.test(imdbId)) {
+            statusDiv.html('<span style="color:red;">Invalid IMDb ID format. Must start with "tt".</span>');
+            return;
+        }
+
+        // Basic validation for TMDB if present
+        if (tmdbId && isNaN(tmdbId)) {
+            statusDiv.html('<span style="color:red;">TMDB ID must be a numeric value.</span>');
             return;
         }
 
         btn.prop('disabled', true);
-        statusDiv.html('<span style="color:blue;">Importing/refreshing from TMDB... Please wait.</span>');
+        statusDiv.html('<span style="color:blue; display: block; margin-top: 5px;">Importing from TMDB... Please wait.</span>');
 
         $.ajax({
             url: ktnAdminObj.ajax_url,
@@ -23,7 +36,8 @@ jQuery(document).ready(function ($) {
                 action: 'ktn_import_movie',
                 nonce: ktnAdminObj.nonce,
                 post_id: postId,
-                imdb_id: imdbId
+                imdb_id: imdbId,
+                tmdb_id: tmdbId
             },
             success: function (response) {
                 btn.prop('disabled', false);
@@ -33,25 +47,22 @@ jQuery(document).ready(function ($) {
                     // Update DOM fields directly for immediate feedback
                     if (response.data.title && $('#title').length) {
                         $('#title').val(response.data.title);
-                        // Trigger input event for any listeners (like title-to-permalink)
                         $('#title').trigger('input');
                     }
                     
-                    // WP Classic Editor content
                     if (response.data.content && typeof tinyMCE !== 'undefined' && tinyMCE.get('content')) {
                         tinyMCE.get('content').setContent(response.data.content);
                     } else if (response.data.content && $('#content').length) {
                         $('#content').val(response.data.content);
                     }
 
-                    // Excerpt
                     if (response.data.excerpt && $('#excerpt').length) {
                         $('#excerpt').val(response.data.excerpt);
                     }
 
                     setTimeout(function () {
                         window.location.href = response.data.redirect;
-                    }, 2000);
+                    }, 1500);
                 } else {
                     statusDiv.html('<span style="color:red;">Error: ' + response.data.message + '</span>');
                 }

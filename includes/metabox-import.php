@@ -24,32 +24,37 @@ function ktn_import_meta_box_html( $post ) {
 	?>
 	<div class="ktn-metabox-wrapper">
 		<p>
-			<label for="ktn_imdb_id"><?php esc_html_e( 'IMDb ID:', 'kontentainment' ); ?></label><br/>
+			<label for="ktn_imdb_id"><strong><?php esc_html_e( 'IMDb ID:', 'kontentainment' ); ?></strong></label><br/>
 			<input type="text" id="ktn_imdb_id" name="ktn_imdb_id" value="<?php echo esc_attr( $imdb_id ); ?>" class="widefat" placeholder="e.g. tt0111161" />
+            <small class="description"><?php esc_html_e( 'Starts with "tt"', 'kontentainment' ); ?></small>
 		</p>
-		<?php if ( $tmdb_id ) : ?>
-		<p>
-			<label><?php esc_html_e( 'TMDB ID:', 'kontentainment' ); ?></label><br/>
-			<input type="text" readonly value="<?php echo esc_attr( $tmdb_id ); ?>" class="widefat" />
-		</p>
-		<?php endif; ?>
-		
-		<div id="ktn_import_status" style="margin-bottom: 10px; font-weight: bold;"></div>
+
+        <p style="text-align: center; margin: 10px 0; color: #777; font-weight: bold; border-top: 1px solid #ddd; padding-top: 10px;">
+            <?php esc_html_e( '— OR —', 'kontentainment' ); ?>
+        </p>
 
 		<p>
-			<button type="button" class="button button-primary ktn-import-btn" data-post-id="<?php echo esc_attr( $post->ID ); ?>" data-action="import">
+			<label for="ktn_tmdb_id"><strong><?php esc_html_e( 'TMDB ID:', 'kontentainment' ); ?></strong></label><br/>
+			<input type="text" id="ktn_tmdb_id" name="ktn_tmdb_id" value="<?php echo esc_attr( $tmdb_id ); ?>" class="widefat" placeholder="e.g. 550" />
+            <small class="description"><?php esc_html_e( 'Numeric ID from TMDB', 'kontentainment' ); ?></small>
+		</p>
+		
+		<div id="ktn_import_status" style="margin: 15px 0; font-weight: bold; line-height: 1.4;"></div>
+
+		<p>
+			<button type="button" class="button button-primary ktn-import-btn" data-post-id="<?php echo esc_attr( $post->ID ); ?>" data-action="import" style="width: 100%; margin-bottom: 5px; height: 32px;">
 				<?php esc_html_e( 'Import Media', 'kontentainment' ); ?>
 			</button>
 			<?php if ( $imported_at ) : ?>
-			<button type="button" class="button ktn-import-btn" data-post-id="<?php echo esc_attr( $post->ID ); ?>" data-action="refresh">
+			<button type="button" class="button ktn-import-btn" data-post-id="<?php echo esc_attr( $post->ID ); ?>" data-action="refresh" style="width: 100%; height: 32px;">
 				<?php esc_html_e( 'Refresh from TMDB', 'kontentainment' ); ?>
 			</button>
 			<?php endif; ?>
 		</p>
 		
 		<?php if ( $imported_at ) : ?>
-		<p class="description">
-			<?php printf( esc_html__( 'Last imported at: %s', 'kontentainment' ), wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $imported_at ) ); ?>
+		<p class="description" style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+			<?php printf( esc_html__( 'Last imported: %s', 'kontentainment' ), '<strong>' . wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $imported_at ) . '</strong>' ); ?>
 		</p>
 		<?php endif; ?>
 	</div>
@@ -59,10 +64,10 @@ function ktn_import_meta_box_html( $post ) {
 add_action( 'admin_enqueue_scripts', 'ktn_admin_enqueue_scripts' );
 function ktn_admin_enqueue_scripts( $hook ) {
 	global $post;
-	if ( $hook == 'post-new.php' || $hook == 'post.php' ) {
+	if ( ( $hook == 'post-new.php' || $hook == 'post.php' ) && isset( $post->post_type ) ) {
 		if ( in_array( $post->post_type, array('movie', 'tv_show') ) ) {
-			wp_enqueue_style( 'ktn-admin-css', KTN_PLUGIN_URL . 'assets/admin.css', array(), KTN_PLUGIN_VERSION );
-			wp_enqueue_script( 'ktn-admin-js', KTN_PLUGIN_URL . 'assets/admin.js', array( 'jquery' ), KTN_PLUGIN_VERSION, true );
+			wp_enqueue_style( 'ktn-admin-css', KTN_PLUGIN_URL . 'assets/css/admin.css', array(), KTN_PLUGIN_VERSION );
+			wp_enqueue_script( 'ktn-admin-js', KTN_PLUGIN_URL . 'assets/js/admin.js', array( 'jquery' ), KTN_PLUGIN_VERSION, true );
 			
 			wp_localize_script( 'ktn-admin-js', 'ktnAdminObj', array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),

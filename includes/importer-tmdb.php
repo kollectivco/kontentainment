@@ -10,13 +10,24 @@ function ktn_ajax_import_media()
 
     $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
     $imdb_id = isset($_POST['imdb_id']) ? sanitize_text_field($_POST['imdb_id']) : '';
+    $tmdb_id = isset($_POST['tmdb_id']) ? sanitize_text_field($_POST['tmdb_id']) : '';
 
     if (!current_user_can('edit_post', $post_id)) {
         wp_send_json_error(array('message' => __('Permission denied.', 'kontentainment')));
     }
 
-    if (!preg_match('/^tt\d{7,}$/', $imdb_id)) {
+    if (empty($imdb_id) && empty($tmdb_id)) {
+        wp_send_json_error(array('message' => __('Please enter either an IMDb ID or a TMDB ID.', 'kontentainment')));
+    }
+
+    // Validation for IMDb if provided
+    if ($imdb_id && !preg_match('/^tt\d{7,}$/', $imdb_id)) {
         wp_send_json_error(array('message' => __('Invalid IMDb ID format. Must match tt1234567.', 'kontentainment')));
+    }
+
+    // Validation for TMDB if provided
+    if ($tmdb_id && !is_numeric($tmdb_id)) {
+        wp_send_json_error(array('message' => __('Invalid TMDB ID. Must be numeric.', 'kontentainment')));
     }
 
     $token = get_option('ktn_tmdb_bearer_token');
@@ -24,39 +35,70 @@ function ktn_ajax_import_media()
         wp_send_json_error(array('message' => __('TMDB Bearer Token missing in settings.', 'kontentainment')));
     }
 
+    $default_language = get_option('ktn_default_language', 'en-US');
+    $post_type = get_post_type($post_id);
+    $type = ($post_type === 'tv_show') ? 'tv' : 'movie';
+
+    $final_tmdb_id = $tmdb_id;
+    $final_imdb_id = $imdb_id;
+
+    // If only IMDb ID is provided, find TMDB ID
+    if (empty($final_tmdb_id) && !empty($final_imdb_id)) {
+        $tmdb_res = ktn_get_tmdb_id_by_imdb($final_imdb_id, $token, $default_language);
+        if (is_wp_error($tmdb_res)) {
+            wp_send_json_error(array('message' => $tmdb_res->get_error_message()));
+        }
+        $final_tmdb_id = $tmdb_res['id'];
+        $type = $tmdb_res['type'];
+    }
+
+    // If only TMDB ID is provided, we use it directly and the current post type
+    if (empty($final_tmdb_id)) {
+        wp_send_json_error(array('message' => __('Could not determine TMDB ID.', 'kontentainment')));
+    }
+
+    // Proceed with fetching full details using TMDB ID
+    $media_data = ktn_get_tmdb_media_details($final_tmdb_id, $type, $token, $default_language);
+    if (is_wp_error($media_data)) {
+        wp_send_json_error(array('message' => $media_data->get_error_message()));
+    }
+
+    // If we have an IMDb ID in the media data but didn't have it before, update final_imdb_id
+    if (empty($final_imdb_id) && !empty($media_data['external_ids']['imdb_id'])) {
+        $final_imdb_id = $media_data['external_ids']['imdb_id'];
+    }
+
+    // Duplication check (Improved for TMDB ID)
     $prevent_duplicates = get_option('ktn_prevent_duplicates', 1);
     $target_post_id = $post_id;
 
     if ($prevent_duplicates) {
+        $meta_query = array('relation' => 'OR');
+        if (!empty($final_imdb_id)) {
+            $meta_query[] = array(
+                'key' => '_movie_imdb_id',
+                'value' => $final_imdb_id,
+            );
+        }
+        $meta_query[] = array(
+            'key' => '_movie_tmdb_id',
+            'value' => $final_tmdb_id,
+        );
+
         $existing_query = new WP_Query(array(
             'post_type' => array('movie', 'tv_show'),
-            'meta_key' => '_movie_imdb_id',
-            'meta_value' => $imdb_id,
+            'meta_query' => $meta_query,
             'post_status' => 'any',
             'posts_per_page' => 1,
             'post__not_in' => array($post_id),
         ));
+        
         if ($existing_query->have_posts()) {
             $target_post_id = $existing_query->posts[0]->ID;
         }
     }
 
-    $default_language = get_option('ktn_default_language', 'en-US');
-
-    $tmdb_res = ktn_get_tmdb_id_by_imdb($imdb_id, $token, $default_language);
-    if (is_wp_error($tmdb_res)) {
-        wp_send_json_error(array('message' => $tmdb_res->get_error_message()));
-    }
-
-    $tmdb_id = $tmdb_res['id'];
-    $type = $tmdb_res['type'];
-
-    $media_data = ktn_get_tmdb_media_details($tmdb_id, $type, $token, $default_language);
-    if (is_wp_error($media_data)) {
-        wp_send_json_error(array('message' => $media_data->get_error_message()));
-    }
-
-    $result = ktn_process_and_save_data($target_post_id, $media_data, $imdb_id, $type);
+    $result = ktn_process_and_save_data($target_post_id, $media_data, $final_imdb_id, $type);
     if (is_wp_error($result)) {
         wp_send_json_error(array('message' => $result->get_error_message()));
     }
@@ -108,7 +150,7 @@ function ktn_get_tmdb_id_by_imdb($imdb_id, $token, $language)
         $res = array('id' => $data['tv_results'][0]['id'], 'type' => 'tv');
     }
     else {
-        return new WP_Error('tmdb_not_found', __('Media not found on TMDB.', 'kontentainment'));
+        return new WP_Error('tmdb_not_found', __('Media not found on TMDB using this IMDb ID.', 'kontentainment'));
     }
 
     set_transient($cache_key, $res, 6 * HOUR_IN_SECONDS);
@@ -146,6 +188,10 @@ function ktn_get_tmdb_media_details($tmdb_id, $type, $token, $language)
     $body = wp_remote_retrieve_body($response);
     $data = JSON_decode($body, true);
 
+    if (isset($data['success']) && $data['success'] === false) {
+        return new WP_Error('tmdb_error', $data['status_message'] ?? __('TMDB returned an error.', 'kontentainment'));
+    }
+
     set_transient($cache_key, $data, 6 * HOUR_IN_SECONDS);
 
     return $data;
@@ -174,17 +220,15 @@ function ktn_process_and_save_data($post_id, $data, $imdb_id, $type)
     $post_type_slug = $type === 'tv' ? 'tv_show' : 'movie';
 
     $current_status = get_post_status($post_id);
-    // If it's a new post (auto-draft), set it to publish so the title is visible
     $new_status = ($current_status === 'auto-draft' || !$current_status) ? 'publish' : $current_status;
 
-    // Build Post Data
     $post_arr = array(
         'ID'           => $post_id,
         'post_type'    => $post_type_slug,
         'post_title'   => sanitize_text_field($title),
         'post_content' => wp_kses_post($overview),
         'post_status'  => $new_status,
-        'post_name'    => sanitize_title($title), // Ensure permalink matches the title
+        'post_name'    => sanitize_title($title),
     );
 
     if (!empty($tagline)) {
@@ -194,10 +238,8 @@ function ktn_process_and_save_data($post_id, $data, $imdb_id, $type)
         $post_arr['post_excerpt'] = wp_trim_words(wp_kses_post($overview), 35);
     }
 
-    // Force title update even if we are in a hook
     wp_update_post($post_arr);
 
-    // Save Meta Data
     update_post_meta($post_id, '_movie_imdb_id', sanitize_text_field($imdb_id));
     update_post_meta($post_id, '_movie_tmdb_id', sanitize_text_field($data['id'] ?? ''));
     update_post_meta($post_id, '_movie_original_title', sanitize_text_field($original_title));
@@ -213,7 +255,6 @@ function ktn_process_and_save_data($post_id, $data, $imdb_id, $type)
     update_post_meta($post_id, '_movie_poster_path', sanitize_text_field($data['poster_path'] ?? ''));
     update_post_meta($post_id, '_movie_backdrop_path', sanitize_text_field($data['backdrop_path'] ?? ''));
 
-    // Production details
     if (!empty($data['production_companies'])) {
         $companies = wp_list_pluck($data['production_companies'], 'name');
         update_post_meta($post_id, '_movie_production_companies', array_map('sanitize_text_field', $companies));
