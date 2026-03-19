@@ -93,8 +93,8 @@ class Ktn_Cinema_Scraper
     public static function parseShowtimeBlock($blockText)
     {
         $norm = self::normalizeArabicDigits($blockText);
-        // Improved regex to catch times with Arabic PM/AM and optional price/experience
-        $timeExpRegex = '/(?:(Standard|VIP|3D|IMAX|4DX|Premium)[^\d]{0,20})?(?:.*?)([0-9]{1,2}:[0-9]{2})\s*([صمظ][^\s\d]{0,8})\s*(?:.*?([0-9]+\s*(?:ج\.م|EGP)))?/u';
+        // [FIX] Restricted PM/AM capture to avoid catching HTML tags like </str
+        $timeExpRegex = '/(?:(Standard|VIP|3D|IMAX|4DX|Premium)[^\d]{0,20})?(?:.*?)([0-9]{1,2}:[0-9]{2})\s*([صمظ][^\s\d<]{0,8})\s*(?:.*?([0-9]+\s*(?:ج\.م|EGP)))?/u';
 
         $showtimes = array();
 
@@ -114,15 +114,11 @@ class Ktn_Cinema_Scraper
 
                 $showtime = trim("$time $ampm");
                 if (!empty($showtime)) {
-                    $keys = array_column($showtimes, 'show_time');
-                    // Avoid exact duplicates in the same block if experience is same
-                    if (!in_array($showtime, $keys) || $experience !== 'Standard') {
-                        $showtimes[] = array(
-                            'experience' => $experience,
-                            'show_time' => $showtime,
-                            'price_text' => $priceText
-                        );
-                    }
+                    $showtimes[] = array(
+                        'experience' => $experience,
+                        'show_time' => $showtime,
+                        'price_text' => $priceText
+                    );
                 }
             }
         }
@@ -138,7 +134,7 @@ class Ktn_Cinema_Scraper
                 'Accept-Language' => 'en-US,en;q=0.9,ar;q=0.8',
                 'Referer' => 'https://elcinema.com/'
             ),
-            'timeout' => 30,
+            'timeout' => 45,
             'sslverify' => false
         );
 
@@ -166,18 +162,20 @@ class Ktn_Cinema_Scraper
         $results = array();
         $scraped_at = current_time('mysql');
 
+        // Parse initial page
         $initial_data = self::extractShowtimesFromHtml($html, $cinema_id, $url, $scraped_at);
         $cinema_metadata = $initial_data['metadata'];
         if (!empty($initial_data['showtimes'])) {
             $results = array_merge($results, $initial_data['showtimes']);
         }
 
-        // Find more dates
+        // Find more dates - improved flexible regex
         $date_urls = array();
-        if (preg_match_all('/href="([^"]*[\?&]date=([0-9]{4}-[0-9]{2}-[0-9]{2}))"/i', $html, $matches)) {
+        if (preg_match_all('/href="([^"]*[\?&]date=([0-9]{4}-[0-9]{1,2}-[0-9]{1,2}))"/i', $html, $matches)) {
             $base_url = 'https://elcinema.com';
             foreach ($matches[1] as $relative_url) {
-                $full_url = (strpos($relative_url, 'http') === 0) ? $relative_url : $base_url . $relative_url;
+                // Ensure URLs start with protocol
+                $full_url = (strpos($relative_url, 'http') === 0) ? $relative_url : (strpos($relative_url, '/') === 0 ? $base_url . $relative_url : $base_url . '/' . $relative_url);
                 if ($full_url !== $url && !in_array($full_url, $date_urls)) {
                     $date_urls[] = $full_url;
                 }
@@ -185,10 +183,10 @@ class Ktn_Cinema_Scraper
         }
         
         $date_urls = array_unique($date_urls);
-        $date_urls = array_slice($date_urls, 0, 7); 
+        $date_urls = array_slice($date_urls, 0, 10); // Capture up to 10 days if available
 
         foreach ($date_urls as $date_url) {
-            usleep(300000); 
+            usleep(500000); // 500ms delay to be safe
             $date_response = wp_remote_get($date_url, $args);
             if (!is_wp_error($date_response)) {
                 $date_html = wp_remote_retrieve_body($date_response);
@@ -212,12 +210,12 @@ class Ktn_Cinema_Scraper
         }
 
         if (empty($final_results)) {
-            $msg = 'Parsing Error: No showtimes detected. The site layout might have updated.';
+            $msg = 'Parsing Error: No showtimes detected. Layout might have changed.';
             update_post_meta($cinema_id, '_ktn_last_error', $msg);
             return new WP_Error('scraper_no_results', $msg);
         }
 
-        update_post_meta($cinema_id, '_ktn_last_error', 'Success: Extracted ' . count($final_results) . ' showtimes.');
+        update_post_meta($cinema_id, '_ktn_last_error', 'Success: Extracted ' . count($final_results) . ' showtimes over multiple dates.');
         
         return array(
             'metadata' => $cinema_metadata,
@@ -246,15 +244,17 @@ class Ktn_Cinema_Scraper
         }
 
         $current_date = '';
-        if (preg_match('/[\?&]date=([0-9]{4}-[0-9]{2}-[0-9]{2})/', $url, $urlDateMatch)) {
-            $current_date = $urlDateMatch[1];
+        if (preg_match('/[\?&]date=([0-9]{4}-[0-9]{1,2}-[0-9]{1,2})/', $url, $urlDateMatch)) {
+            $current_date = date('Y-m-d', strtotime($urlDateMatch[1]));
         }
 
+        // Fallback: search for active tab text which often has the date
         if (!$current_date) {
             if (preg_match('/<li[^>]*class="active"[^>]*>.*?<a[^>]*>(.*?)<\/a>/is', $html, $activeDateMatch)) {
-                $found_date = self::translateDate(strip_tags($activeDateMatch[1]));
-                if ($found_date) {
-                    $ts = strtotime($found_date);
+                $found_date_text = trim(strip_tags($activeDateMatch[1]));
+                $translated = self::translateDate($found_date_text);
+                if ($translated) {
+                    $ts = strtotime($translated);
                     if ($ts) $current_date = date('Y-m-d', $ts);
                 }
             }
@@ -264,15 +264,8 @@ class Ktn_Cinema_Scraper
             $current_date = date('Y-m-d');
         }
 
-        // New extraction strategy: Look for works (movies/plays)
-        // elCinema usually wraps movies in blocks with specific IDs or classes
-        // Let's split by the 'work' link or common containers
-        $blocks = preg_split('/(<div[^>]*class="[^"]*(?:row|movie-container|theater-work|work-block)[^"]*")|(\/work\/[0-9]+)/i', $html, -1, PREG_SPLIT_DELIM_CAPTURE);
-        
-        // Sometimes the split is too aggressive, let's try a different approach if no results
-        // Use regex to locate each movie title link and its surrounding content
+        // Primary strategy: look for movie blocks
         $movie_pattern = '/<(?:h2|h3)[^>]*>.*?<a[^>]*href="[^"]*(?:\/work\/|wk)([0-9]+)[^"]*"[^>]*>(.*?)<\/a>.*?<ul[^>]*>(.*?)<\/ul>/is';
-        
         if (preg_match_all($movie_pattern, $html, $movieMatches, PREG_SET_ORDER)) {
             foreach ($movieMatches as $mMatch) {
                 $movieTitle = trim(strip_tags($mMatch[2]));
@@ -295,7 +288,7 @@ class Ktn_Cinema_Scraper
             }
         }
 
-        // Alternative pattern if the above fails (e.g. showtimes not in <ul>)
+        // Alternative strategy: catch anything with a work link and following times
         if (empty($showtimes)) {
              $alt_pattern = '/<(?:h2|h3)[^>]*>.*?<a[^>]*href="[^"]*(?:\/work\/|wk)([0-9]+)[^"]*"[^>]*>(.*?)<\/a>(.*?)((?=<h2|<h3|<\/body))/is';
              if (preg_match_all($alt_pattern, $html, $altMatches, PREG_SET_ORDER)) {
@@ -303,7 +296,6 @@ class Ktn_Cinema_Scraper
                      $movieTitle = trim(strip_tags($aMatch[2]));
                      $contentSuffix = $aMatch[3];
                      
-                     // Look for time patterns in the suffix
                      $parsed_times = self::parseShowtimeBlock($contentSuffix);
                      foreach ($parsed_times as $show) {
                          $showtimes[] = array(

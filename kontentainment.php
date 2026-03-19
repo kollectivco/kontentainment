@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment
  * Plugin URI:  #
  * Description: A custom movie and TV show system that imports media data from TMDB using an IMDb ID.
- * Version:     1.4.3
+ * Version:     1.4.4
  * Author:      Antigravity
  * License:     GPL2
  * Text Domain: kontentainment
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KTN_PLUGIN_VERSION', '1.4.3');
+define('KTN_PLUGIN_VERSION', '1.4.4');
 define('KTN_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('KTN_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('KTN_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -43,7 +43,6 @@ use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 add_action('plugins_loaded', 'ktn_init_github_updater');
 function ktn_init_github_updater()
 {
-    // Hardcoded repo URL to ensure updates always work
     $github_repo = 'https://github.com/kollectivco/kontentainment';
     
     $ktnUpdateChecker = PucFactory::buildUpdateChecker(
@@ -60,16 +59,42 @@ function ktn_init_github_updater()
     $ktnUpdateChecker->setBranch('main');
 }
 
+// Custom Cron Schedule
+add_filter('cron_schedules', 'ktn_add_cron_twelve_hours');
+function ktn_add_cron_twelve_hours($schedules) {
+    if (!isset($schedules['twelve_hours'])) {
+        $schedules['twelve_hours'] = array(
+            'interval' => 12 * HOUR_IN_SECONDS,
+            'display'  => __('Every 12 Hours', 'kontentainment'),
+        );
+    }
+    return $schedules;
+}
+
+// Cron Hook
+add_action('ktn_sync_all_cinemas_cron', 'ktn_execute_auto_sync');
+function ktn_execute_auto_sync() {
+    if (class_exists('Ktn_Cinema_Importer')) {
+        Ktn_Cinema_Importer::syncAllCinemas();
+    }
+}
+
 register_activation_hook(__FILE__, 'ktn_activate_plugin');
 function ktn_activate_plugin()
 {
     ktn_register_post_types();
     ktn_register_taxonomies();
+    
+    if (!wp_next_scheduled('ktn_sync_all_cinemas_cron')) {
+        wp_schedule_event(time(), 'twelve_hours', 'ktn_sync_all_cinemas_cron');
+    }
+    
     flush_rewrite_rules();
 }
 
 register_deactivation_hook(__FILE__, 'ktn_deactivate_plugin');
 function ktn_deactivate_plugin()
 {
+    wp_clear_scheduled_hook('ktn_sync_all_cinemas_cron');
     flush_rewrite_rules();
 }
