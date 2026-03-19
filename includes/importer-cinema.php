@@ -113,7 +113,8 @@ class Ktn_Cinema_Importer
         if (empty($display_title)) $display_title = $metadata['name'];
 
         $current_title = get_the_title($post_id);
-        if (empty($current_title) || stripos($current_title, 'Auto Draft') !== false || is_numeric($current_title)) {
+        // [FIX] More robust title autofill condition
+        if (empty($current_title) || stripos($current_title, 'Auto Draft') !== false || is_numeric($current_title) || $current_title === '(no title)') {
              wp_update_post(array(
                  'ID' => $post_id,
                  'post_title' => sanitize_text_field($display_title)
@@ -152,7 +153,7 @@ class Ktn_Cinema_Importer
             update_post_meta($post_id, '_ktn_cinema_country', sanitize_text_field($metadata['country']));
         }
 
-        // Notes / Descriptions (Policies)
+        // [FIX] Map Notes into post_content
         if (!empty($metadata['notes'])) {
              wp_update_post(array(
                  'ID' => $post_id,

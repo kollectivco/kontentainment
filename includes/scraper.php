@@ -93,7 +93,8 @@ class Ktn_Cinema_Scraper
     public static function parseShowtimeBlock($blockText)
     {
         $norm = self::normalizeArabicDigits($blockText);
-        $timeExpRegex = '/(?:(Standard|VIP|3D|IMAX|4DX|Premium)[^\d]{0,20})?(?:.*?)([0-9]{1,2}:[0-9]{2})\s*([صمظ][^\s\d<]{0,8})\s*(?:.*?([0-9]+\s*(?:ج\.م|EGP)))?/u';
+        // [FIX] Improved regex to support both Arabic (ص/م/ظ) and Latin (AM/PM) indicators
+        $timeExpRegex = '/(?:(Standard|VIP|3D|IMAX|4DX|Premium)[^\d<]{0,25})?(?:.*?)([0-9]{1,2}:[0-9]{2})\s*([صمظ]|[AP]M)\s*(?:.*?([0-9]+\s*(?:ج\.م|EGP|LE)))?/u';
 
         $showtimes = array();
 
@@ -105,11 +106,11 @@ class Ktn_Cinema_Scraper
                 }
 
                 $time = $match[2];
-                $ampmAr = $match[3];
-                $priceAr = isset($match[4]) ? $match[4] : '';
+                $ampmArEn = $match[3];
+                $priceArEn = isset($match[4]) ? $match[4] : '';
 
-                $ampm = self::translateAmPm($ampmAr);
-                $priceText = $priceAr ? trim(str_replace(array('ج.م', 'ج.PM'), 'EGP', self::translateAmPm($priceAr))) : '';
+                $ampm = self::translateAmPm($ampmArEn);
+                $priceText = $priceArEn ? trim(str_replace(array('ج.م', 'ج.PM', 'LE'), 'EGP', self::translateAmPm($priceArEn))) : '';
 
                 $showtime = trim("$time $ampm");
                 if (!empty($showtime)) {
@@ -250,8 +251,8 @@ class Ktn_Cinema_Scraper
         $country = '';
         $notes = '';
 
-        // Extract H1 name
-        if (preg_match('/<h1[^>]*>(.*?)<\/h1>/is', $html, $m)) {
+        // [FIX] Improved H1 extraction to handle both languages and strip extra whitespace
+        if (preg_match('/<h[12][^>]*>(.*?)<\/h[12]>/is', $html, $m)) {
             $scraped_name = trim(strip_tags($m[1]));
             if ($is_en) {
                 $english_name = $scraped_name;
@@ -262,28 +263,13 @@ class Ktn_Cinema_Scraper
             }
         }
 
-        // Search for alternate language link to grab the other name
-        if ($is_en) {
-            if (preg_match('/<li><a[^>]*href="\/theater\/[0-9]+\/"[^>]*>(.*?)<\/a><\/li>/u', $html, $arLink)) {
-                // This is usually just "عربي", not the name. 
-            }
-        }
-
-        // Try to get Arabic name from breadcrumbs or hidden meta if on EN page
-        if ($is_en && empty($arabic_name)) {
-             if (preg_match('/<meta property="og:title" content="(.*?) - Theater - Cinema"/i', $html, $ogMatch)) {
-                  // Sometimes og:title has info, but usually same as H1
-             }
-        }
-
-        // Logo / main image URL
+        // [FIX] Extract logo with og:image fallback
         if (preg_match('/<img[^>]*class="[^"]*cinema-logo[^"]*"[^>]*src="([^"]*)"/i', $html, $m)) {
             $logo_url = $m[1];
         } elseif (preg_match('/<div[^>]*class="[^"]*cinema-image[^"]*"[^>]*>.*?<img[^>]*src="([^"]*)"/is', $html, $m)) {
             $logo_url = $m[1];
         }
         
-        // og:image fallback
         if (empty($logo_url) || strpos($logo_url, 'default') !== false) {
             if (preg_match('/<meta property="og:image" content="([^"]*)"/i', $html, $ogImg)) {
                 $logo_url = $ogImg[1];
@@ -295,27 +281,21 @@ class Ktn_Cinema_Scraper
             $rating = trim(strip_tags($rMatch[1]));
         }
 
-        // Extract Details List (Address, Phone, Area, etc)
+        // [FIX] Details extraction for Address, Phone, Area
         if (preg_match('/<ul[^>]*class="[^"]*list-details[^"]*"[^>]*>(.*?)<\/ul>/is', $html, $m)) {
             $details_html = $m[1];
             
-            // Address
             if (preg_match('/(?:العنوان|Address):?<\/span>\s*(.*?)<\/li>/is', $details_html, $ad)) {
                 $address = trim(strip_tags($ad[1]));
             }
-            
-            // Phone
             if (preg_match('/(?:الهاتف|Phone):?<\/span>\s*(.*?)<\/li>/is', $details_html, $ph)) {
                 $phone = trim(strip_tags($ph[1]));
             }
-
-            // More specific fields if they exist
             if (preg_match('/(?:المنطقة|Area):?<\/span>\s*(.*?)<\/li>/is', $details_html, $ar)) {
                 $area = trim(strip_tags($ar[1]));
             }
         }
 
-        // Notes / Descriptions (Policies)
         if (preg_match('/<div[^>]*class="[^"]*description[^"]*"[^>]*>(.*?)<\/div>/is', $html, $m)) {
             $notes = trim(strip_tags($m[1]));
         }
@@ -323,7 +303,6 @@ class Ktn_Cinema_Scraper
         // Breadcrumbs for Country, City, Area
         if (preg_match_all('/<li[^>]*><a[^>]*>(.*?)<\/a><\/li>/is', $html, $bc)) {
             $crumbs = array_map('strip_tags', $bc[1]);
-            // Format: [Home, Theaters, Country, City, Area (optional), Theater Name]
             if (count($crumbs) >= 4) {
                  $country = trim($crumbs[2]);
                  $city = trim($crumbs[3]);
@@ -353,7 +332,8 @@ class Ktn_Cinema_Scraper
             $current_date = date('Y-m-d');
         }
 
-        $movie_pattern = '/<(?:h2|h3)[^>]*>.*?<a[^>]*href="[^"]*(?:\/work\/|wk)([0-9]+)[^"]*"[^>]*>(.*?)<\/a>.*?<ul[^>]*>(.*?)<\/ul>/is';
+        // [FIX] Improved movie pattern to catch blocks in both languages
+        $movie_pattern = '/<(?:h[23])[^>]*>.*?<a[^>]*href="[^"]*(?:\/work\/|wk)([0-9]+)[^"]*"[^>]*>(.*?)<\/a>.*?<ul[^>]*>(.*?)<\/ul>/is';
         if (preg_match_all($movie_pattern, $html, $movieMatches, PREG_SET_ORDER)) {
             foreach ($movieMatches as $mMatch) {
                 $movieTitle = trim(strip_tags($mMatch[2]));
@@ -377,7 +357,7 @@ class Ktn_Cinema_Scraper
         }
 
         if (empty($showtimes)) {
-             $alt_pattern = '/<(?:h2|h3)[^>]*>.*?<a[^>]*href="[^"]*(?:\/work\/|wk)([0-9]+)[^"]*"[^>]*>(.*?)<\/a>(.*?)((?=<h2|<h3|<\/body))/is';
+             $alt_pattern = '/<(?:h[23])[^>]*>.*?<a[^>]*href="[^"]*(?:\/work\/|wk)([0-9]+)[^"]*"[^>]*>(.*?)<\/a>(.*?)((?=<h[23]|<\/body))/is';
              if (preg_match_all($alt_pattern, $html, $altMatches, PREG_SET_ORDER)) {
                  foreach ($altMatches as $aMatch) {
                      $movieTitle = trim(strip_tags($aMatch[2]));
