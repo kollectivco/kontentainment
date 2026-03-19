@@ -98,45 +98,67 @@ class Ktn_Cinema_Importer
         }
 
         if (is_wp_error($sync_data)) {
-            return $sync_data; // Let the error bubble up
+            return $sync_data;
         }
 
         if (empty($sync_data['showtimes'])) {
-            return new WP_Error('no_results', __('Scraper returned successfully but no showtimes were found.', 'kontentainment'));
+            return new WP_Error('no_results', __('Scraper successfully but no showtimes found.', 'kontentainment'));
         }
 
         $results = $sync_data['showtimes'];
         $metadata = $sync_data['metadata'];
 
-        // Auto-populate cinema metadata
-        if (!empty($metadata['arabic_name'])) {
-             if (!get_post_meta($post_id, '_ktn_cinema_arabic_name', true)) {
-                 update_post_meta($post_id, '_ktn_cinema_arabic_name', sanitize_text_field($metadata['arabic_name']));
-             }
-        }
-        if (!empty($metadata['logo'])) {
-             if (!get_post_meta($post_id, '_ktn_cinema_logo', true)) {
-                 update_post_meta($post_id, '_ktn_cinema_logo', esc_url_raw($metadata['logo']));
-             }
-        }
-        if (!empty($metadata['address'])) {
-             if (!get_post_meta($post_id, '_ktn_cinema_address', true)) {
-                 update_post_meta($post_id, '_ktn_cinema_address', sanitize_text_field($metadata['address']));
-             }
+        // --- Auto-fill Cinema Fields ---
+        $current_title = get_the_title($post_id);
+        // Only override title if it's empty or generically named (Auto Draft, etc)
+        if (empty($current_title) || stripos($current_title, 'Auto Draft') !== false || is_numeric($current_title)) {
+             wp_update_post(array(
+                 'ID' => $post_id,
+                 'post_title' => sanitize_text_field($metadata['name'])
+             ));
         }
 
-        // Use transaction or direct delete/insert
+        if (!empty($metadata['arabic_name']) && !get_post_meta($post_id, '_ktn_cinema_arabic_name', true)) {
+            update_post_meta($post_id, '_ktn_cinema_arabic_name', sanitize_text_field($metadata['arabic_name']));
+        }
+        if (!empty($metadata['english_name']) && !get_post_meta($post_id, '_ktn_cinema_english_name', true)) {
+            update_post_meta($post_id, '_ktn_cinema_english_name', sanitize_text_field($metadata['english_name']));
+        }
+        if (!empty($metadata['logo']) && !get_post_meta($post_id, '_ktn_cinema_logo', true)) {
+            update_post_meta($post_id, '_ktn_cinema_logo', esc_url_raw($metadata['logo']));
+        }
+        if (!empty($metadata['address']) && !get_post_meta($post_id, '_ktn_cinema_address', true)) {
+            update_post_meta($post_id, '_ktn_cinema_address', sanitize_text_field($metadata['address']));
+        }
+        if (!empty($metadata['phone']) && !get_post_meta($post_id, '_ktn_cinema_phone', true)) {
+            update_post_meta($post_id, '_ktn_cinema_phone', sanitize_text_field($metadata['phone']));
+        }
+        if (!empty($metadata['city']) && !get_post_meta($post_id, '_ktn_cinema_city', true)) {
+            update_post_meta($post_id, '_ktn_cinema_city', sanitize_text_field($metadata['city']));
+        }
+        if (!empty($metadata['country']) && !get_post_meta($post_id, '_ktn_cinema_country', true)) {
+            update_post_meta($post_id, '_ktn_cinema_country', sanitize_text_field($metadata['country']));
+        }
+
+        // Notes/Description
+        if (!empty($metadata['notes'])) {
+             // We can save to post_content if we want it to be the official notes
+             wp_update_post(array(
+                 'ID' => $post_id,
+                 'post_content' => wp_kses_post($metadata['notes'])
+             ));
+        }
+
         $wpdb->query($wpdb->prepare("DELETE FROM $table_name WHERE cinema_id = %d", $post_id));
 
         $added = 0;
         foreach ($results as $row) {
             $matched_id = self::matchMovieTitle($row['movie_title_scraped']);
-
             $wpdb->insert(
                 $table_name,
                 array(
                 'cinema_id' => $row['cinema_id'],
-                'cinema_name' => get_the_title($row['cinema_id']) ?: $row['cinema_name'],
+                'cinema_name' => $metadata['name'] ?: get_the_title($row['cinema_id']),
                 'source_url' => $row['source_url'],
                 'movie_title_scraped' => $row['movie_title_scraped'],
                 'matched_movie_id' => $matched_id ? $matched_id : null,
@@ -147,7 +169,7 @@ class Ktn_Cinema_Importer
                 'source_type' => $source_type,
                 'scraped_at' => current_time('mysql'),
                 'updated_at' => current_time('mysql')
-            )
+                )
             );
             $added++;
         }

@@ -11,7 +11,7 @@ function ktn_cinema_register_all_meta_boxes()
 {
     // Main Area
     add_meta_box('ktn_cinema_basic_info', __('Basic Information', 'kontentainment'), 'ktn_cinema_basic_info_callback', 'ktn_cinema', 'normal', 'high');
-    add_meta_box('ktn_cinema_location', __('Location Information', 'kontentainment'), 'ktn_cinema_location_callback', 'ktn_cinema', 'normal', 'high');
+    add_meta_box('ktn_cinema_location', __('Location & Contact', 'kontentainment'), 'ktn_cinema_location_callback', 'ktn_cinema', 'normal', 'high');
     add_meta_box('ktn_cinema_showtimes', __('Current Showtimes', 'kontentainment'), 'ktn_cinema_showtimes_callback', 'ktn_cinema', 'normal', 'default');
 
     // Side Area
@@ -37,6 +37,10 @@ function ktn_cinema_basic_info_callback($post)
     echo '<p><label><strong>' . __('English Name', 'kontentainment') . '</strong></label><br>';
     echo '<input type="text" name="ktn_cinema_english_name" value="' . esc_attr($english_name) . '" class="large-text"></p>';
     echo '</div>';
+    
+    echo '<p><label><strong>' . __('Official Notes', 'kontentainment') . '</strong></label><br>';
+    wp_editor($post->post_content, 'content', array('textarea_name' => 'content', 'media_buttons' => false, 'textarea_rows' => 5));
+    echo '</p>';
 }
 
 /**
@@ -47,6 +51,7 @@ function ktn_cinema_location_callback($post)
     $address = get_post_meta($post->ID, '_ktn_cinema_address', true);
     $city = get_post_meta($post->ID, '_ktn_cinema_city', true);
     $country = get_post_meta($post->ID, '_ktn_cinema_country', true);
+    $phone = get_post_meta($post->ID, '_ktn_cinema_phone', true);
     $maps_url = get_post_meta($post->ID, '_ktn_cinema_maps_url', true);
     $lat = get_post_meta($post->ID, '_ktn_cinema_latitude', true);
     $lng = get_post_meta($post->ID, '_ktn_cinema_longitude', true);
@@ -61,6 +66,9 @@ function ktn_cinema_location_callback($post)
 
     echo '<p><label><strong>' . __('Country', 'kontentainment') . '</strong></label><br>';
     echo '<input type="text" name="ktn_cinema_country" value="' . esc_attr($country) . '" class="regular-text"></p>';
+
+    echo '<p><label><strong>' . __('Phone / Contact', 'kontentainment') . '</strong></label><br>';
+    echo '<input type="text" name="ktn_cinema_phone" value="' . esc_attr($phone) . '" class="regular-text"></p>';
 
     echo '<p style="grid-column: span 2;"><label><strong>' . __('Google Maps / Directions URL', 'kontentainment') . '</strong></label><br>';
     echo '<input type="url" name="ktn_cinema_maps_url" value="' . esc_attr($maps_url) . '" class="large-text"></p>';
@@ -264,6 +272,7 @@ function ktn_cinema_save_all_meta_data($post_id)
         'ktn_cinema_logo' => '_ktn_cinema_logo',
         'ktn_cinema_cover_image' => '_ktn_cinema_cover_image',
         'ktn_cinema_address' => '_ktn_cinema_address',
+        'ktn_cinema_phone' => '_ktn_cinema_phone',
         'ktn_cinema_city' => '_ktn_cinema_city',
         'ktn_cinema_country' => '_ktn_cinema_country',
         'ktn_cinema_maps_url' => '_ktn_cinema_maps_url',
