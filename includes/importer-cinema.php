@@ -91,10 +91,19 @@ class Ktn_Cinema_Importer
         // --- Autofill Cinema Meta ---
         $best_name = !empty($metadata['english_name']) ? $metadata['english_name'] : (!empty($metadata['name']) ? $metadata['name'] : '');
         
-        // Update title if needed
+        // Update title and slug if needed
         $current_post = get_post($post_id);
-        if ($best_name && ($current_post->post_title === 'Auto Draft' || $current_post->post_title === 'Processing...' || empty($current_post->post_title) || $current_post->post_title === 'Untitled')) {
-             wp_update_post(array('ID' => $post_id, 'post_title' => sanitize_text_field($best_name)));
+        $needs_title_update = ($best_name && ($current_post->post_title === 'Auto Draft' || $current_post->post_title === 'Processing...' || empty($current_post->post_title) || $current_post->post_title === 'Untitled'));
+        $needs_slug_update = ($current_post->post_name === 'processing' || $current_post->post_name === 'auto-draft');
+
+        if ($needs_title_update || $needs_slug_update) {
+             $update_args = array('ID' => $post_id);
+             if ($best_name) {
+                 $update_args['post_title'] = sanitize_text_field($best_name);
+                 // Setting post_name to empty string tells WP to regenerate it from the title
+                 $update_args['post_name'] = ''; 
+             }
+             wp_update_post($update_args);
         }
 
         $useful_meta_count = 0;
