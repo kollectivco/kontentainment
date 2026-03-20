@@ -5,12 +5,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 add_action( 'admin_menu', 'ktn_add_settings_page' );
 function ktn_add_settings_page() {
+	// Main settings page
 	add_submenu_page(
 		'edit.php?post_type=movie',
 		__( 'Kontentainment Settings', 'kontentainment' ),
 		__( 'Settings', 'kontentainment' ),
 		'manage_options',
 		'kontentainment-settings',
+		'ktn_settings_page_html'
+	);
+
+	// Alias for legacy/ghost TMDB redirect
+	add_submenu_page(
+		null, // Hidden from menu
+		__( 'TMDB Settings', 'kontentainment' ),
+		'TMDB',
+		'manage_options',
+		'TMDB',
 		'ktn_settings_page_html'
 	);
 }
