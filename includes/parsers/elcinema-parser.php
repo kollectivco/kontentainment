@@ -93,9 +93,13 @@ class Ktn_Elcinema_Parser
         if (preg_match('/[\?&]date=([0-9]{4}-[0-9]{1,2}-[0-9]{1,2})/', $url, $dm)) {
             $doc_date = $dm[1];
         } else {
-            // Look for active date in the bar
+            // Look for active date in the bar or h4.section-title
             if (preg_match('/<li[^>]*class="active"[^>]*>.*?<a[^>]*>(.*?)<\/a>/is', $html, $activeMatch)) {
                 $translated = Ktn_Cinema_Scraper::translateDate($activeMatch[1]);
+                $ts = strtotime($translated);
+                if ($ts) $doc_date = date('Y-m-d', $ts);
+            } elseif (preg_match('/<h4[^>]*class="section-title"[^>]*>(.*?)<\/h4>/is', $html, $h4Match)) {
+                $translated = Ktn_Cinema_Scraper::translateDate($h4Match[1]);
                 $ts = strtotime($translated);
                 if ($ts) $doc_date = date('Y-m-d', $ts);
             }
@@ -105,21 +109,56 @@ class Ktn_Elcinema_Parser
         // Showtimes Parsing
         $showtimes = array();
         
-        // Split by work-title (this identifies each movie)
-        $movie_blocks = preg_split('/<div[^>]*class="[^"]*work-title[^"]*"[^>]*>/is', $html);
-        if (count($movie_blocks) > 1) {
-            array_shift($movie_blocks); // discard first part
-            foreach ($movie_blocks as $block) {
-                if (preg_match('/<a[^>]*>(.*?)<\/a>/is', $block, $tMatch)) {
+        // Split by row (generic container for movie entries)
+        $rows = preg_split('/<div[^>]*class="[^"]*row[^"]*"[^>]*>/is', $html);
+        array_shift($rows); // discard first part
+
+        foreach ($rows as $row) {
+            // Check if this row contains a showtimes table
+            if (strpos($row, 'table') !== false && (strpos($row, 'class="showtimes"') !== false || strpos($row, 'strong') !== false)) {
+                
+                // Extract Movie Title
+                $movie_title = '';
+                if (preg_match('/<h3[^>]*>.*?<a[^>]*>(.*?)<\/a>.*?<\/h3>/is', $row, $tMatch)) {
                     $movie_title = trim(strip_tags($tMatch[1]));
-                    // Extract the text after the link until the next movie or end
-                    $parsed_times = Ktn_Cinema_Scraper::parseShowtimeBlock($block);
+                } elseif (preg_match('/<a[^>]*href="[^"]*\/work\/[^"]*"[^>]*>(.*?)<\/a>/is', $row, $tMatch)) {
+                    $movie_title = trim(strip_tags($tMatch[1]));
+                }
+
+                if (empty($movie_title)) continue;
+
+                // Detect Experience & Times
+                // Each row might have multiple swiper-slides or blocks for IMAX, Standard, etc.
+                // Experience titles are usually in h6 or span
+                // Standard structure: <h6>Standard</h6> <table class="showtimes">...</table>
+                $blocks = preg_split('/<h6[^>]*>(.*?)<\/h6>/is', $row, -1, PREG_SPLIT_DELIM_CAPTURE);
+                
+                if (count($blocks) > 1) {
+                    for ($i = 1; $i < count($blocks); $i += 2) {
+                        $exp = trim(strip_tags($blocks[$i]));
+                        $block_content = $blocks[$i+1];
+                        $parsed_times = Ktn_Cinema_Scraper::parseShowtimeBlock($block_content);
+                        foreach($parsed_times as $st) {
+                            $showtimes[] = array(
+                                'movie_title' => $movie_title,
+                                'show_date' => $doc_date,
+                                'show_time' => $st['show_time'],
+                                'experience' => $exp ?: 'Standard',
+                                'price_text' => $st['price_text'],
+                                'source_url' => $url,
+                                'scraped_at' => $scraped_at
+                            );
+                        }
+                    }
+                } else {
+                    // Fallback: No H6 headers, just parse the whole row for times
+                    $parsed_times = Ktn_Cinema_Scraper::parseShowtimeBlock($row);
                     foreach($parsed_times as $st) {
                         $showtimes[] = array(
                             'movie_title' => $movie_title,
                             'show_date' => $doc_date,
                             'show_time' => $st['show_time'],
-                            'experience' => $st['experience'],
+                            'experience' => (strpos($row, 'IMAX') !== false) ? 'IMAX' : 'Standard',
                             'price_text' => $st['price_text'],
                             'source_url' => $url,
                             'scraped_at' => $scraped_at
@@ -129,7 +168,7 @@ class Ktn_Elcinema_Parser
             }
         }
 
-        // Fallback for different page structure (Modern mobile layout or specific themes)
+        // Final Fallback for older/mobile structures
         if (empty($showtimes)) {
             $movie_table_pattern = '/<(?:h[23]).*?wk([0-9]+).*?>(.*?)<\/a>.*?<ul[^>]*>(.*?)<\/ul>/is';
             if (preg_match_all($movie_table_pattern, $html, $mMatches, PREG_SET_ORDER)) {
