@@ -1,0 +1,314 @@
+/**
+ * Cinema Guides Frontend Styles
+ */
+
+.ktn-guides-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #333;
+    padding: 0 20px;
+}
+
+.ktn-guides-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.ktn-guides-header h1 {
+    font-size: 36px;
+    font-weight: 800;
+    margin: 0 0 10px 0;
+    color: #111;
+}
+
+.ktn-guides-header .ktn-subtitle {
+    font-size: 16px;
+    color: #666;
+}
+
+/* Tabs */
+.ktn-guides-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    background: #f4f4f5;
+    padding: 6px;
+    border-radius: 12px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.ktn-tab-btn {
+    border: none;
+    background: transparent;
+    padding: 10px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #666;
+}
+
+.ktn-tab-btn.active {
+    background: #fff;
+    color: #111;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Filter Row */
+.ktn-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 40px;
+    background: #fff;
+    padding: 25px;
+    border: 1px solid #f0f0f1;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+}
+
+.ktn-sub-tabs {
+    display: flex;
+    gap: 15px;
+}
+
+.ktn-sub-tab {
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    font-weight: 600;
+    color: #888;
+    padding: 8px 15px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ktn-sub-tab.active {
+    background: #111;
+    color: #fff;
+}
+
+.ktn-search-box {
+    position: relative;
+    flex: 1;
+    min-width: 250px;
+}
+
+.ktn-search-box input {
+    width: 100%;
+    padding: 12px 15px 12px 40px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    outline: none !important;
+    transition: border-color 0.2s !important;
+}
+
+.ktn-search-box input:focus {
+    border-color: #111 !important;
+}
+
+.ktn-search-box .dashicons {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+}
+
+.ktn-select {
+    padding: 12px 35px 12px 15px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    background-color: #fff !important;
+    cursor: pointer !important;
+    appearance: none !important;
+    min-width: 180px !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 16px !important;
+}
+
+/* Results Grid */
+.ktn-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 30px;
+}
+
+.ktn-tab-panel {
+    display: none;
+}
+
+.ktn-tab-panel.active {
+    display: block;
+}
+
+/* Media Card */
+.ktn-media-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ktn-media-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.ktn-card-poster {
+    aspect-ratio: 2/3;
+    position: relative;
+    background: #eee;
+}
+
+.ktn-card-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ktn-card-rating {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    backdrop-filter: blur(4px);
+}
+
+.ktn-card-info {
+    padding: 15px 5px;
+}
+
+.ktn-card-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ktn-card-meta {
+    margin: 0;
+    font-size: 13px;
+    color: #777;
+}
+
+/* Cinema Card */
+.ktn-cinema-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #f0f0f1;
+}
+
+.ktn-cinema-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.ktn-cinema-logo-box {
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f9fafb;
+    padding: 20px;
+}
+
+.ktn-cinema-logo-box img {
+    max-width: 120px;
+    max-height: 80px;
+    object-fit: contain;
+}
+
+.ktn-cinema-loc {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.ktn-cinema-rating {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #eab308;
+    font-weight: 700;
+}
+
+/* Loader */
+.ktn-guides-loader {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255,255,255,0.7);
+    z-index: 100;
+    display: flex;
+    align-items: center; justify-content: center;
+}
+
+.ktn-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #111;
+    border-radius: 50%;
+    animation: ktn-spin 1s linear infinite;
+}
+
+@keyframes ktn-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.ktn-no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px;
+    color: #999;
+    font-size: 18px;
+}
+
+.ktn-card-link {
+    text-decoration: none !important;
+    color: inherit !important;
+}
+
+@media (max-width: 768px) {
+    .ktn-filter-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .ktn-sub-tabs {
+        justify-content: space-between;
+    }
+    .ktn-sub-tab {
+        flex: 1;
+        text-align: center;
+    }
+    .ktn-search-box {
+        order: -1;
+    }
+}

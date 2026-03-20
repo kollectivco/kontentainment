@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment
  * Plugin URI:  #
  * Description: A custom movie and TV show system that imports media data from TMDB using an IMDb ID.
- * Version:     1.4.9
+ * Version:     1.5.0
  * Author:      Kollectiv
  * Author URI:  https://kollectiv.net
  * License:     GPL2
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KTN_PLUGIN_VERSION', '1.4.9');
+define('KTN_PLUGIN_VERSION', '1.5.0');
 define('KTN_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('KTN_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('KTN_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -33,6 +33,7 @@ require_once KTN_PLUGIN_DIR . 'includes/scraper.php';
 require_once KTN_PLUGIN_DIR . 'includes/importer-cinema.php';
 require_once KTN_PLUGIN_DIR . 'includes/metabox-cinema.php';
 require_once KTN_PLUGIN_DIR . 'includes/admin-showtimes.php';
+require_once KTN_PLUGIN_DIR . 'includes/cinema-guides.php';
 
 // Elementor Integration
 require_once KTN_PLUGIN_DIR . 'elementor/manager.php';
