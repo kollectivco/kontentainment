@@ -89,11 +89,11 @@ class Ktn_Cinema_Importer
         $showtimes = $sync_data['showtimes'] ?? array();
 
         // --- Autofill Cinema Meta ---
-        $current_post = get_post($post_id);
         $best_name = !empty($metadata['english_name']) ? $metadata['english_name'] : (!empty($metadata['name']) ? $metadata['name'] : '');
         
-        // Auto-update title if it's draft or empty
-        if ((empty($current_post->post_title) || stripos($current_post->post_title, 'Auto Draft') !== false) && $best_name) {
+        // Always update title if we found a better name and current title is weak or empty
+        $current_post = get_post($post_id);
+        if ($best_name && ($current_post->post_title === 'Auto Draft' || empty($current_post->post_title) || $current_post->post_title === 'Untitled')) {
              wp_update_post(array('ID' => $post_id, 'post_title' => sanitize_text_field($best_name)));
         }
 
@@ -102,6 +102,7 @@ class Ktn_Cinema_Importer
             'arabic_name' => '_ktn_cinema_arabic_name',
             'english_name' => '_ktn_cinema_english_name',
             'logo' => '_ktn_cinema_logo',
+            'cover_image' => '_ktn_cinema_cover_image',
             'rating' => '_ktn_cinema_rating',
             'address' => '_ktn_cinema_address',
             'area' => '_ktn_cinema_area',
@@ -112,11 +113,18 @@ class Ktn_Cinema_Importer
             'maps_url' => '_ktn_cinema_maps_url'
         ];
 
+        $useful_meta_count = 0;
         foreach ($meta_fields as $key => $meta_key) {
              if (!empty($metadata[$key])) {
-                  $val = ($key === 'logo' || $key === 'maps_url') ? esc_url_raw($metadata[$key]) : sanitize_text_field($metadata[$key]);
+                  $val = ($key === 'logo' || $key === 'maps_url' || $key === 'cover_image') ? esc_url_raw($metadata[$key]) : sanitize_text_field($metadata[$key]);
                   update_post_meta($post_id, $meta_key, $val);
+                  $useful_meta_count++;
              }
+        }
+
+        // Handle Notes (post_content)
+        if (!empty($metadata['notes'])) {
+             wp_update_post(array('ID' => $post_id, 'post_content' => wp_kses_post($metadata['notes'])));
         }
 
         // --- Hierarchy Taxonomy Mapping (City/Area) ---
@@ -159,8 +167,21 @@ class Ktn_Cinema_Importer
         }
 
         update_post_meta($post_id, '_ktn_cinema_last_sync', current_time('mysql'));
-        update_post_meta($post_id, '_ktn_last_error', sprintf(__('Success: Synced %d showtimes.', 'kontentainment'), $added));
-        return $added;
+        
+        // Success Logic
+        if ($added > 0) {
+            $msg = sprintf(__('Success: Synced %d showtimes.', 'kontentainment'), $added);
+            update_post_meta($post_id, '_ktn_last_error', $msg);
+            return $added;
+        } elseif ($useful_meta_count > 0) {
+            $msg = __('Partial Success: Cinema details updated, but no showtimes found.', 'kontentainment');
+            update_post_meta($post_id, '_ktn_last_error', $msg);
+            return 0;
+        } else {
+            $msg = __('Failed: No useful data extracted from source.', 'kontentainment');
+            update_post_meta($post_id, '_ktn_last_error', $msg);
+            return new WP_Error('sync_failed', $msg);
+        }
     }
 
     public static function syncAllCinemas($auto_sync_only = false) {

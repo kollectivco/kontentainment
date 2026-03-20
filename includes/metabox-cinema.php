@@ -195,8 +195,6 @@ function ktn_cinema_source_callback($post)
     echo '<p><label><strong>' . __('Source Type', 'kontentainment') . '</strong></label><br>';
     echo '<select name="ktn_cinema_type" class="widefat">';
     echo '<option value="elcinema_theater" ' . selected($source_type, 'elcinema_theater', false) . '>elCinema Theater</option>';
-    echo '<option value="scenenow_cinema" ' . selected($source_type, 'scenenow_cinema', false) . '>SceneNow Cinema</option>';
-    echo '<option value="cairo360_cinema" ' . selected($source_type, 'cairo360_cinema', false) . '>Cairo360 Venue</option>';
     echo '</select></p>';
 
     echo '<p><label><strong>' . __('Status', 'kontentainment') . '</strong></label><br>';
