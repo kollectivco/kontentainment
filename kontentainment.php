@@ -56,10 +56,10 @@ use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 add_action('plugins_loaded', 'ktn_init_github_updater');
 function ktn_init_github_updater()
 {
-    $github_repo = 'https://github.com/kollectivco/kontentainment';
+    $github_repo_url = 'https://github.com/kollectivco/kontentainment';
     
     $ktnUpdateChecker = PucFactory::buildUpdateChecker(
-        $github_repo,
+        $github_repo_url,
         __FILE__,
         'kontentainment'
     );
@@ -70,6 +70,19 @@ function ktn_init_github_updater()
     }
 
     $ktnUpdateChecker->setBranch('main');
+}
+
+/**
+ * Set a custom User-Agent for GitHub API requests to avoid 403 Forbidden errors.
+ * GitHub often rejects the default WordPress User-Agent on some servers.
+ */
+add_filter('puc_request_info_options-kontentainment', 'ktn_puc_custom_user_agent');
+function ktn_puc_custom_user_agent($options) {
+    if (!isset($options['headers'])) {
+        $options['headers'] = array();
+    }
+    $options['headers']['User-Agent'] = 'KontentainmentUpdater/1.6.13; ' . get_bloginfo('url');
+    return $options;
 }
 
 // Custom Cron Schedule
