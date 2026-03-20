@@ -16,23 +16,6 @@ jQuery(document).ready(function ($) {
         $('#' + targetId).addClass('active');
     });
 
-    // Show More Times Toggle (Within Cinema)
-    $(document).on('click', '.ktn-show-more-times', function (e) {
-        e.preventDefault();
-        var $btn = $(this);
-        var $container = $btn.closest('.ktn-cinema-card-times');
-        var $hiddenChips = $container.find('.ktn-time-chip-hidden');
-        var count = $btn.data('hidden-count');
-
-        if ($btn.hasClass('active')) {
-            $hiddenChips.hide();
-            $btn.removeClass('active').text('+' + count + ' More Times');
-        } else {
-            $hiddenChips.css('display', 'inline-flex');
-            $btn.addClass('active').text('Show Less');
-        }
-    });
-
     // Load More Cinemas Toggle (Per Date Group)
     $(document).on('click', '.ktn-st-load-more-btn', function (e) {
         e.preventDefault();

@@ -1,0 +1,277 @@
+/**
+ * Single Movie Page Enhancements
+ */
+
+/* Container & Global */
+.ktn-media-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Backdrop */
+.ktn-media-backdrop {
+    height: 480px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 20px;
+    margin-bottom: -180px;
+    z-index: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.ktn-media-backdrop-fade {
+    background: linear-gradient(to top, #ffffff 5%, rgba(255, 255, 255, 0) 100%);
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    bottom: 0;
+}
+
+/* Header & Hero */
+.ktn-media-header {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    padding: 0 40px;
+}
+
+.ktn-media-poster {
+    width: 250px;
+    height: 375px;
+    border-radius: 16px;
+    object-fit: cover;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    background: #eee;
+}
+
+.ktn-media-info {
+    flex: 1 1 400px;
+    padding-top: 120px;
+}
+
+.ktn-media-title {
+    margin: 0 0 10px 0;
+    font-size: 3rem;
+    font-weight: 900;
+    line-height: 1.1;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+.ktn-media-year {
+    color: #94a3b8;
+    font-size: 0.75em;
+    font-weight: 500;
+}
+
+.ktn-media-tagline {
+    font-size: 1.25rem;
+    font-style: italic;
+    color: #475569;
+    margin: 5px 0 25px 0;
+    font-weight: 500;
+}
+
+/* Meta & Genres */
+.ktn-media-meta {
+    margin: 25px 0;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.ktn-meta-badge {
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ktn-meta-badge.type { background: #f1f5f9; color: #475569; }
+.ktn-meta-badge.rating { background: #fefce8; color: #854d0e; border: 1px solid #fef08a; }
+.ktn-meta-badge.runtime { background: #f1f5f9; color: #475569; }
+.ktn-meta-badge.cert { border: 1.5px solid #e2e8f0; color: #64748b; }
+
+.ktn-media-genres {
+    margin: 20px 0;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ktn-genre-pill {
+    display: inline-block;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    transition: all 0.2s;
+}
+
+/* Overview & Credits */
+.ktn-media-overview {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: #334155;
+    margin-top: 30px;
+}
+
+.ktn-media-overview p strong {
+    color: #0f172a;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.ktn-media-credits {
+    margin-top: 35px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 25px;
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 1px solid #f1f5f9;
+}
+
+.ktn-credit-item strong {
+    display: block;
+    font-size: 0.85rem;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.ktn-credit-item span {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* Related Media Carousel (Mobile Friendly) */
+.ktn-related-media {
+    margin-top: 60px;
+    padding: 0 20px;
+}
+
+.ktn-related-title {
+    margin-bottom: 25px;
+    font-size: 2.25rem;
+    font-weight: 900;
+    color: #0f172a;
+}
+
+.ktn-related-grid-wrapper {
+    margin: 0 -20px;
+    padding: 0 20px 20px 20px;
+}
+
+.ktn-related-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+}
+
+.ktn-related-card {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    background: #000;
+}
+
+.ktn-related-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+.ktn-related-poster {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.ktn-related-card:hover .ktn-related-poster {
+    transform: scale(1.05);
+    opacity: 0.8;
+}
+
+.ktn-related-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 50px 15px 15px;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.ktn-related-name {
+    color: #fff;
+    font-size: 1.1rem;
+    text-align: center;
+    line-height: 1.3;
+    font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 900px) {
+    .ktn-media-backdrop { height: 350px; margin-bottom: -100px; }
+    .ktn-media-header { padding: 0 20px; gap: 20px; }
+    .ktn-media-poster { width: 180px; height: 270px; }
+    .ktn-media-info { padding-top: 60px; }
+    .ktn-media-title { font-size: 2.2rem; }
+    .ktn-related-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 600px) {
+    .ktn-media-container { padding: 10px; }
+    .ktn-media-backdrop { height: 300px; margin-bottom: -180px; border-radius: 0; margin-left: -10px; margin-right: -10px; width: calc(100% + 20px); }
+    .ktn-media-header { flex-direction: column; align-items: center; text-align: center; }
+    .ktn-media-poster { margin-top: 40px; }
+    .ktn-media-info { padding-top: 20px; width: 100%; }
+    .ktn-media-title { font-size: 2rem; }
+    .ktn-media-meta { justify-content: center; }
+    .ktn-media-genres { justify-content: center; }
+    .ktn-media-overview { font-size: 1rem; text-align: left; }
+    .ktn-media-credits { grid-template-columns: 1fr 1fr; text-align: left; }
+
+    /* Carousel behavior for Related Movies on Mobile */
+    .ktn-related-grid-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 30px;
+    }
+    
+    .ktn-related-grid {
+        display: flex;
+        gap: 15px;
+        grid-template-columns: none;
+    }
+
+    .ktn-related-card {
+        flex: 0 0 calc(50% - 7.5px);
+        scroll-snap-align: start;
+        box-shadow: none;
+        border: 1px solid #f1f5f9;
+    }
+}
