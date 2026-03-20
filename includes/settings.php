@@ -14,16 +14,6 @@ function ktn_add_settings_page() {
 		'kontentainment-settings',
 		'ktn_settings_page_html'
 	);
-
-	// Alias for legacy/ghost TMDB redirect
-	add_submenu_page(
-		null, // Hidden from menu
-		__( 'TMDB Settings', 'kontentainment' ),
-		'TMDB',
-		'manage_options',
-		'TMDB',
-		'ktn_settings_page_html'
-	);
 }
 
 add_action( 'admin_init', 'ktn_register_settings' );
