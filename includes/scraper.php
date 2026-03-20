@@ -65,7 +65,7 @@ class Ktn_Cinema_Scraper
         if (!$dateStr)
             return '';
         $engDate = self::normalizeWhitespace($dateStr);
-        $engDate = str_replace(array('يعرض حاليًا', 'يعرض حاليا'), '', $engDate);
+        $engDate = str_ireplace(array('يعرض حاليًا', 'يعرض حاليا', 'Now Playing'), '', $engDate);
         $engDate = trim($engDate);
 
         foreach (self::$DAY_MAP as $arDay => $enDay) {
@@ -93,7 +93,6 @@ class Ktn_Cinema_Scraper
     public static function parseShowtimeBlock($blockText)
     {
         $norm = self::normalizeArabicDigits($blockText);
-        // Improved regex to support both Arabic (ص/م/ظ) and Latin (AM/PM) indicators, and wider prefix matching
         $timeExpRegex = '/(?:([A-Z0-9]+)[^\d<]{0,35})?(?:.*?)([0-9]{1,2}:[0-9]{2})\s*([صمظ]|[AP]M| صباحًا| مساءً)\s*(?:.*?([0-9]+\s*(?:ج\.م|EGP|LE|L\.E)))?/u';
 
         $showtimes = array();
@@ -123,9 +122,7 @@ class Ktn_Cinema_Scraper
             }
         }
         
-        // Fallback for list based times if regex fails
         if (empty($showtimes) && strpos($norm, ':') !== false) {
-             // simplified extraction for cases where UL/LI tags might break the regex
              if (preg_match_all('/([0-9]{1,2}:[0-9]{2})\s*([صمظ]|[AP]M)/u', $norm, $simpleMatches, PREG_SET_ORDER)) {
                   foreach ($simpleMatches as $sm) {
                        $showtimes[] = array(
@@ -155,45 +152,36 @@ class Ktn_Cinema_Scraper
 
         $response = wp_remote_get($url, $args);
         if (is_wp_error($response)) {
-            $msg = 'Network Error: ' . $response->get_error_message();
-            update_post_meta($cinema_id, '_ktn_last_error', $msg);
-            return new WP_Error('scraper_network_error', $msg);
+            return $response;
         }
 
         $code = wp_remote_retrieve_response_code($response);
         if ($code !== 200) {
-            $msg = 'HTTP Error: ' . $code;
-            update_post_meta($cinema_id, '_ktn_last_error', $msg);
-            return new WP_Error('scraper_http_error', $msg);
+            return new WP_Error('http_error', 'HTTP ' . $code);
         }
 
         $html = wp_remote_retrieve_body($response);
-        if (!$html || strpos($html, 'Access Denied') !== false) {
-            $msg = 'Access Blocked by elCinema or empty body.';
-            update_post_meta($cinema_id, '_ktn_last_error', $msg);
-            return new WP_Error('scraper_access_error', $msg);
+        if (!$html) {
+            return new WP_Error('empty_body', 'Empty body from elCinema');
         }
 
-        $results = array();
         $scraped_at = current_time('mysql');
-
         $initial_data = self::extractShowtimesFromHtml($html, $cinema_id, $url, $scraped_at);
+        $results = $initial_data['showtimes'];
         $cinema_metadata = $initial_data['metadata'];
-        if (!empty($initial_data['showtimes'])) {
-            $results = array_merge($results, $initial_data['showtimes']);
-        }
 
-        // Find more dates
+        // --- Multi-Date Extraction Logic ---
         $date_urls = array();
+        
+        // Find all links to dates (tabs)
+        // Usually <ul class="tabs"> or similar
         if (preg_match_all('/href="([^"]*[\?&]date=([0-9]{4}-[0-9]{1,2}-[0-9]{1,2}))"/i', $html, $matches)) {
             $base_url = 'https://elcinema.com';
             $is_en = (strpos($url, '/en/') !== false);
             
             foreach ($matches[1] as $relative_url) {
-                // Ensure absolute URL
                 $full_url = (strpos($relative_url, 'http') === 0) ? $relative_url : (strpos($relative_url, '/') === 0 ? $base_url . $relative_url : $base_url . '/' . $relative_url);
                 
-                // If on EN page, sub-URLs should also be EN
                 if ($is_en && strpos($full_url, '/en/') === false) {
                     $full_url = str_replace('elcinema.com/', 'elcinema.com/en/', $full_url);
                 }
@@ -205,10 +193,10 @@ class Ktn_Cinema_Scraper
         }
         
         $date_urls = array_unique($date_urls);
-        $date_urls = array_slice($date_urls, 0, 10);
+        $date_urls = array_slice($date_urls, 0, 7); // Max 7 days
 
         foreach ($date_urls as $date_url) {
-            usleep(500000); // 0.5s delay to be polite
+            usleep(200000); 
             $date_response = wp_remote_get($date_url, $args);
             if (!is_wp_error($date_response)) {
                 $date_html = wp_remote_retrieve_body($date_response);
@@ -221,24 +209,17 @@ class Ktn_Cinema_Scraper
             }
         }
 
+        // De-duplicate results
         $final_results = array();
-        $seen_keys = array();
+        $seen = array();
         foreach($results as $res) {
-            $key = md5($res['cinema_id'] . $res['movie_title_scraped'] . $res['show_date'] . $res['show_time'] . $res['experience']);
-            if (!isset($seen_keys[$key])) {
+            $key = md5($res['movie_title_scraped'] . $res['show_date'] . $res['show_time'] . $res['experience']);
+            if (!isset($seen[$key])) {
                 $final_results[] = $res;
-                $seen_keys[$key] = true;
+                $seen[$key] = true;
             }
         }
 
-        if (empty($final_results) && empty($cinema_metadata['name'])) {
-            $msg = 'Parsing Error: No showtimes or metadata detected.';
-            update_post_meta($cinema_id, '_ktn_last_error', $msg);
-            return new WP_Error('scraper_no_results', $msg);
-        }
-
-        update_post_meta($cinema_id, '_ktn_last_error', 'Success: Extracted ' . count($final_results) . ' showtimes.');
-        
         return array(
             'metadata' => $cinema_metadata,
             'showtimes' => $final_results
@@ -250,198 +231,137 @@ class Ktn_Cinema_Scraper
         $showtimes = array();
         $is_en = (strpos($url, '/en/') !== false);
         
-        // Metadata extraction
+        // Metadata ID
         $theater_id = '';
         if (preg_match('/\/theater\/([0-9]+)/', $url, $idMatch)) {
             $theater_id = $idMatch[1];
         }
 
-        $cinema_name = '';
-        $arabic_name = '';
-        $english_name = '';
-        $logo_url = '';
-        $rating = '';
-        $address = '';
-        $area = '';
-        $phone = '';
-        $city = '';
-        $country = '';
-        $notes = '';
-        $maps_url = '';
+        $name = ''; $arabic_name = ''; $english_name = ''; $logo = ''; $rating = ''; 
+        $address = ''; $area = ''; $city = ''; $country = ''; $phone = ''; $notes = ''; $maps = '';
 
-        // Extract H1 name as priority display name
+        // Name
         if (preg_match('/<h1[^>]*>(.*?)<\/h1>/is', $html, $m)) {
-            $cinema_name = trim(strip_tags($m[1]));
-            if ($is_en) {
-                $english_name = $cinema_name;
-            } else {
-                $arabic_name = $cinema_name;
-            }
+            $name = trim(strip_tags($m[1]));
+            if ($is_en) $english_name = $name; else $arabic_name = $name;
         }
 
-        // Try to find both names in the list-details block
-        if (preg_match('/<ul[^>]*class="[^"]*list-details[^"]*"[^>]*>(.*?)<\/ul>/is', $html, $ulMatch)) {
-             $ul_html = $ulMatch[1];
-             $li_items = preg_split('/<\/li>/i', $ul_html);
-             
-             // First item usually contains the alternate name or main name
-             // For English, it usually lists: 1. Arabic Name 2. English Name
-             foreach ($li_items as $li) {
-                 $li_clean = trim(strip_tags($li));
-                 if (empty($li_clean)) continue;
-                 
-                 // Experience logic check
-                 if ($is_en && empty($arabic_name) && preg_match('/[\x{0600}-\x{06FF}]/u', $li_clean)) {
-                      $arabic_name = $li_clean;
-                 }
-                 if (!$is_en && empty($english_name) && preg_match('/[a-z]{3,}/i', $li_clean)) {
-                      $english_name = $li_clean;
-                 }
-                 
-                 // Rating extraction from li if it has rating tag
-                 if (strpos($li, 'rating') !== false && preg_match('/([0-9.]+)/', $li_clean, $rVal)) {
-                      $rating = $rVal[1];
-                 }
-                 
-                 // Address extraction
-                 if (strpos($li, 'fa-map-marker') !== false || strpos($li, 'Address') !== false || strpos($li, 'العنوان') !== false) {
-                      $address = trim(str_replace(array('Address:', 'العنوان:'), '', $li_clean));
-                 }
-                 
-                 // Phone extraction
-                 if (strpos($li, 'fa-phone') !== false || strpos($li, 'Phone') !== false || strpos($li, 'الهاتف') !== false) {
-                      $phone = trim(str_replace(array('Phone:', 'الهاتف:'), '', $li_clean));
-                 }
-             }
+        // Details Block (Logo, Rating, Addr, Phone)
+        if (preg_match('/<div[^>]*class="[^"]*list-details[^"]*"[^>]*>(.*?)<\/div>/is', $html, $m) || preg_match('/<ul[^>]*class="[^"]*list-details[^"]*"[^>]*>(.*?)<\/ul>/is', $html, $m)) {
+            $details = $m[1];
+            // Logo
+            if (preg_match('/src="([^"]*)"/i', $details, $logoMatch)) $logo = $logoMatch[1];
+            // Rating
+            if (preg_match('/([0-9.]+) من 10/', $details, $rAr)) $rating = $rAr[1];
+            if (preg_match('/([0-9.]+) of 10/', $details, $rEn)) $rating = $rEn[1];
+            // Phone
+            if (preg_match('/fa-phone.*?<\/i>(.*?)</is', $details, $pMatch)) $phone = trim(strip_tags($pMatch[1]));
+            // Address
+            if (preg_match('/fa-map-marker.*?<\/i>(.*?)</is', $details, $aMatch)) $address = trim(strip_tags($aMatch[1]));
         }
 
-        // Fallback for names if list-details didn't give them
-        if (empty($english_name) && $is_en) $english_name = $cinema_name;
-        if (empty($arabic_name) && !$is_en) $arabic_name = $cinema_name;
-
-        // Extract logo with og:image fallback
-        if (preg_match('/<img[^>]*class="[^"]*cinema-logo[^"]*"[^>]*src="([^"]*)"/i', $html, $m)) {
-            $logo_url = $m[1];
-        } elseif (preg_match('/<div[^>]*class="[^"]*cinema-image[^"]*"[^>]*>.*?<img[^>]*src="([^"]*)"/is', $html, $m)) {
-            $logo_url = $m[1];
-        } elseif (preg_match('/<meta property="og:image" content="([^"]*)"/i', $html, $m)) {
-            $logo_url = $m[1];
-        }
-        
-        // Rating fallback
-        if (empty($rating) && preg_match('/<span[^>]*class="[^"]*rating[^"]*"[^>]*>(.*?)<\/span>/is', $html, $rMatch)) {
-            $rating = trim(strip_tags($rMatch[1]));
-        }
-
-        // Maps URL
-        if (preg_match('/href="([^"]*google-map-theater[^"]*)"/i', $html, $m)) {
-            $maps_url = $m[1];
-        }
-
-        // Notes / Descriptions (Policies)
-        if (preg_match('/<div[^>]*class="[^"]*description[^"]*"[^>]*>(.*?)<\/div>/is', $html, $m)) {
-            $notes = trim(strip_tags($m[1]));
-        }
-
-        // Breadcrumbs for Country, City, Area (very reliable on elCinema)
+        // Breadcrumbs for Reliable Location (City & Area)
         if (preg_match_all('/<li[^>]*><a[^>]*>(.*?)<\/a><\/li>/is', $html, $bc)) {
-            $crumbs = array_map('strip_tags', $bc[1]);
-            // Usually: [Home, Theaters, Country, City, Area (optional), Theater Name]
+            $crumbs = array_map('trim', array_map('strip_tags', $bc[1]));
+            // elCinema pattern: Home > Theaters > Country > City > Area > Name
+            // Or Home > Theaters > Country > City > Name
             if (count($crumbs) >= 4) {
-                 $country = trim($crumbs[2]);
-                 $city = trim($crumbs[3]);
-                 if (count($crumbs) >= 5 && trim($crumbs[4]) !== $cinema_name) {
-                     $area = trim($crumbs[4]);
-                 }
-            }
-        }
-
-        // Showtime Date
-        $current_date = '';
-        if (preg_match('/[\?&]date=([0-9]{4}-[0-9]{1,2}-[0-9]{1,2})/', $url, $urlDateMatch)) {
-            $current_date = date('Y-m-d', strtotime($urlDateMatch[1]));
-        }
-
-        if (!$current_date) {
-            if (preg_match('/<li[^>]*class="active"[^>]*>.*?<a[^>]*>(.*?)<\/a>/is', $html, $activeDateMatch)) {
-                $found_date_text = trim(strip_tags($activeDateMatch[1]));
-                $translated = self::translateDate($found_date_text);
-                if ($translated) {
-                    $ts = strtotime($translated);
-                    if ($ts) $current_date = date('Y-m-d', $ts);
+                if (empty($country)) $country = $crumbs[2];
+                if (empty($city)) $city = $crumbs[3];
+                
+                // If there's an index 4 and it's not the theater name, it's the area
+                if (isset($crumbs[4]) && $crumbs[4] !== $name && strpos($crumbs[4], 'Theater') === false && strpos($crumbs[4], 'سينما') === false) {
+                    $area = $crumbs[4];
                 }
             }
         }
 
-        if (!$current_date) {
-            $current_date = date('Y-m-d');
-        }
+        // Notes (Policies)
+        if (preg_match('/<div[^>]*class="[^"]*description[^"]*"[^>]*>(.*?)<\/div>/is', $html, $m)) $notes = trim(strip_tags($m[1]));
+        
+        // Maps
+        if (preg_match('/href="([^"]*google-map-theater[^"]*)"/i', $html, $m)) $maps = $m[1];
 
-        // Showtime parsing
-        $movie_pattern = '/<(?:h[123])[^>]*>.*?<a[^>]*href="[^"]*(?:\/work\/|wk)([0-9]+)[^"]*"[^>]*>(.*?)<\/a>.*?<ul[^>]*>(.*?)<\/ul>/is';
-        if (preg_match_all($movie_pattern, $html, $movieMatches, PREG_SET_ORDER)) {
-            foreach ($movieMatches as $mMatch) {
-                $movieTitle = trim(strip_tags($mMatch[2]));
-                $ulContent = $mMatch[3];
+        // --- Date Selection ---
+        $doc_date = '';
+        if (preg_match('/[\?&]date=([0-9]{4}-[0-9]{1,2}-[0-9]{1,2})/', $url, $dm)) {
+            $doc_date = $dm[1];
+        } else {
+            // Find active tab date
+            if (preg_match('/<li[^>]*class="active"[^>]*>.*?<a[^>]*>(.*?)<\/a>/is', $html, $activeMatch)) {
+                $translated = self::translateDate($activeMatch[1]);
+                $ts = strtotime($translated);
+                if ($ts) $doc_date = date('Y-m-d', $ts);
+            }
+        }
+        if (!$doc_date) $doc_date = date('Y-m-d');
+
+        // --- Showtime Matrix Extraction ---
+        // Look for movie containers. elCinema usually has a div with work-title mapping
+        $movie_blocks = preg_split('/<div[^>]*class="[^"]*work-title[^"]*"[^>]*>/is', $html);
+        array_shift($movie_blocks);
+
+        foreach ($movie_blocks as $block) {
+            // Extract Title
+            if (preg_match('/<a[^>]*>(.*?)<\/a>/is', $block, $tMatch)) {
+                $movie_title = trim(strip_tags($tMatch[1]));
                 
-                $parsed_times = self::parseShowtimeBlock($ulContent);
-                foreach ($parsed_times as $show) {
+                // Extract times
+                $parsed_times = self::parseShowtimeBlock($block);
+                foreach($parsed_times as $st) {
                     $showtimes[] = array(
                         'cinema_id' => $cinema_id,
-                        'cinema_name' => $cinema_name,
+                        'movie_title_scraped' => $movie_title,
+                        'show_date' => $doc_date,
+                        'show_time' => $st['show_time'],
+                        'experience' => $st['experience'],
+                        'price_text' => $st['price_text'],
                         'source_url' => $url,
-                        'movie_title_scraped' => $movieTitle,
-                        'show_date' => $current_date,
-                        'experience' => $show['experience'],
-                        'show_time' => $show['show_time'],
-                        'price_text' => $show['price_text'],
                         'scraped_at' => $scraped_at
                     );
                 }
             }
         }
 
-        // Alt pattern for simpler blocks
+        // Fallback for older elCinema list layouts
         if (empty($showtimes)) {
-             $alt_pattern = '/<(?:h[23])[^>]*>.*?<a[^>]*href="[^"]*(?:\/work\/|wk)([0-9]+)[^"]*"[^>]*>(.*?)<\/a>(.*?)((?=<h[23]|<\/body))/is';
-             if (preg_match_all($alt_pattern, $html, $altMatches, PREG_SET_ORDER)) {
-                 foreach ($altMatches as $aMatch) {
-                     $movieTitle = trim(strip_tags($aMatch[2]));
-                     $contentSuffix = $aMatch[3];
-                     
-                     $parsed_times = self::parseShowtimeBlock($contentSuffix);
-                     foreach ($parsed_times as $show) {
-                         $showtimes[] = array(
-                             'cinema_id' => $cinema_id,
-                             'cinema_name' => $cinema_name,
-                             'source_url' => $url,
-                             'movie_title_scraped' => $movieTitle,
-                             'show_date' => $current_date,
-                             'experience' => $show['experience'],
-                             'show_time' => $show['show_time'],
-                             'price_text' => $show['price_text'],
-                             'scraped_at' => $scraped_at
-                         );
-                     }
-                 }
-             }
+            $movie_table_pattern = '/<(?:h[23]).*?wk([0-9]+).*?>(.*?)<\/a>.*?<ul[^>]*>(.*?)<\/ul>/is';
+            if (preg_match_all($movie_table_pattern, $html, $mMatches, PREG_SET_ORDER)) {
+                foreach ($mMatches as $mm) {
+                    $movie_title = trim(strip_tags($mm[2]));
+                    $ul = $mm[3];
+                    $parsed_times = self::parseShowtimeBlock($ul);
+                    foreach($parsed_times as $st) {
+                        $showtimes[] = array(
+                            'cinema_id' => $cinema_id,
+                            'movie_title_scraped' => $movie_title,
+                            'show_date' => $doc_date,
+                            'show_time' => $st['show_time'],
+                            'experience' => $st['experience'],
+                            'price_text' => $st['price_text'],
+                            'source_url' => $url,
+                            'scraped_at' => $scraped_at
+                        );
+                    }
+                }
+            }
         }
-        
+
         return array(
             'metadata' => array(
                 'theater_id' => $theater_id,
-                'name' => $cinema_name,
+                'name' => $name,
                 'arabic_name' => $arabic_name,
                 'english_name' => $english_name,
-                'logo' => $logo_url,
+                'logo' => $logo,
                 'rating' => $rating,
                 'address' => $address,
                 'area' => $area,
-                'phone' => $phone,
                 'city' => $city,
                 'country' => $country,
+                'phone' => $phone,
                 'notes' => $notes,
-                'maps_url' => $maps_url
+                'maps_url' => $maps
             ),
             'showtimes' => $showtimes
         );
