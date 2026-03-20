@@ -539,9 +539,9 @@
     justify-content: center;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 10px 16px;
-    min-width: 85px;
+    border-radius: 8px;
+    padding: 6px 12px;
+    min-width: 70px;
     transition: all 0.2s ease;
     cursor: default;
 }
@@ -553,17 +553,17 @@
 }
 
 .ktn-chip-time {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: #0f172a;
+    color: #111827;
     line-height: 1;
 }
 
 .ktn-chip-meta {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-weight: 600;
     color: #64748b;
-    margin-top: 6px;
+    margin-top: 2px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
@@ -759,7 +759,7 @@
     background: #ffffff;
     border: 1px solid #f1f5f9;
     border-radius: 14px;
-    padding: 24px;
+    padding: 18px;
     transition: all 0.2s ease;
 }
 
@@ -772,7 +772,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     flex-wrap: wrap;
     gap: 15px;
 }
@@ -824,7 +824,7 @@
 .ktn-cinema-card-times {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 8px;
 }
 
 @media (max-width: 640px) {
