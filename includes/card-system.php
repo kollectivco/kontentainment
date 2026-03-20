@@ -123,8 +123,14 @@ class Ktn_Card_System
         $title = get_the_title($post_id);
         $permalink = get_permalink($post_id);
 
-        $logo = get_post_meta($post_id, '_ktn_cinema_logo', true);
-        $logo_url = $logo ? $logo : KTN_PLUGIN_URL . 'assets/img/no-logo.png';
+        $cover_url = get_post_meta($post_id, '_ktn_cinema_cover_image', true);
+        if (!$cover_url) {
+            $cover_url = has_post_thumbnail($post_id) ? get_the_post_thumbnail_url($post_id, 'large') : '';
+        }
+        if (!$cover_url) {
+            $cover_url = get_post_meta($post_id, '_ktn_cinema_logo', true);
+        }
+        $media_url = $cover_url ? $cover_url : KTN_PLUGIN_URL . 'assets/img/no-logo.png';
         
         $city = get_post_meta($post_id, '_ktn_cinema_city', true);
         $area = get_post_meta($post_id, '_ktn_cinema_area', true);
@@ -148,7 +154,7 @@ class Ktn_Card_System
             <div class="ktn-card-inner">
                 <div class="ktn-card-media-box">
                     <a href="<?php echo esc_url($permalink); ?>">
-                        <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($title); ?>" class="ktn-cinema-logo" loading="lazy">
+                        <img src="<?php echo esc_url($media_url); ?>" alt="<?php echo esc_attr($title); ?>" class="ktn-cinema-logo" loading="lazy">
                     </a>
                 </div>
                 
