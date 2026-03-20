@@ -880,8 +880,9 @@
 }
 
 /* Expansion Logic */
-.ktn-chip-hidden {
-    display: none !important;
+.ktn-time-chip-hidden,
+.ktn-cinema-card-hidden {
+    display: none;
 }
 
 .ktn-show-more-times {
@@ -897,6 +898,7 @@
     cursor: pointer !important;
     transition: all 0.2s ease !important;
     margin-left: 4px !important;
+    margin-bottom: 4px !important;
 }
 
 .ktn-show-more-times:hover {
@@ -912,4 +914,51 @@
     border-style: solid !important;
     border-color: #111827 !important;
 }
+
+/* Load More Cinemas Button */
+.ktn-st-load-more-cinemas-wrapper {
+    margin-top: 30px !important;
+    text-align: center !important;
+    padding: 20px 0 !important;
+    border-top: 1px dashed #e2e8f0 !important;
+}
+
+.ktn-st-load-more-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: #ffffff !important;
+    border: 1.5px solid #0f172a !important;
+    color: #0f172a !important;
+    padding: 10px 24px !important;
+    border-radius: 30px !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    box-shadow: 0 4px 0 #0f172a !important;
+}
+
+.ktn-st-load-more-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 0 #0f172a !important;
+    background: #f8fafc !important;
+}
+
+.ktn-st-load-more-btn:active {
+    transform: translateY(2px) !important;
+    box-shadow: 0 2px 0 #0f172a !important;
+}
+
+.ktn-st-load-more-btn .dashicons {
+    font-size: 20px !important;
+    width: 20px !important;
+    height: 20px !important;
+    transition: transform 0.3s ease !important;
+}
+
+.ktn-st-load-more-btn.active .dashicons {
+    transform: rotate(180deg) !important;
+}
+
 

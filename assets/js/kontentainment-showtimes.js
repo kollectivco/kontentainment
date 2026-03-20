@@ -16,11 +16,12 @@ jQuery(document).ready(function ($) {
         $('#' + targetId).addClass('active');
     });
 
-    // Show More Times Toggle
-    $('.ktn-show-more-times').on('click', function (e) {
+    // Show More Times Toggle (Within Cinema)
+    $(document).on('click', '.ktn-show-more-times', function (e) {
+        e.preventDefault();
         var $btn = $(this);
         var $container = $btn.closest('.ktn-cinema-card-times');
-        var $hiddenChips = $container.find('.ktn-chip-hidden');
+        var $hiddenChips = $container.find('.ktn-time-chip-hidden');
         var count = $btn.data('hidden-count');
 
         if ($btn.hasClass('active')) {
@@ -29,6 +30,23 @@ jQuery(document).ready(function ($) {
         } else {
             $hiddenChips.css('display', 'inline-flex');
             $btn.addClass('active').text('Show Less');
+        }
+    });
+
+    // Load More Cinemas Toggle (Per Date Group)
+    $(document).on('click', '.ktn-st-load-more-btn', function (e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var $container = $btn.closest('.ktn-st-cinemas-list');
+        var $hiddenCinemas = $container.find('.ktn-cinema-card-hidden');
+        var count = $btn.data('hidden-count');
+
+        if ($btn.hasClass('active')) {
+            $hiddenCinemas.hide();
+            $btn.removeClass('active').find('.ktn-btn-text').text('+' + count + ' More Cinemas');
+        } else {
+            $hiddenCinemas.show();
+            $btn.addClass('active').find('.ktn-btn-text').text('Show Less Cinemas');
         }
     });
 });

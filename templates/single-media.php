@@ -220,13 +220,19 @@ if (!empty($showtimes) && !is_wp_error($showtimes)):
                     id="media-date-<?php echo esc_attr(md5($date_str)); ?>">
                     
                     <div class="ktn-st-cinemas-list">
-                        <?php foreach ($cinemas as $cinema_name => $times): 
+                        <?php 
+                        $cinema_count = 0;
+                        $cinema_limit = 3;
+                        $total_cinemas = count($cinemas);
+                        foreach ($cinemas as $cinema_name => $times): 
+                            $cinema_count++;
                             $cinema_post_id = $times[0]->cinema_id;
                             $cinema_link = get_permalink($cinema_post_id);
                             $cinema_address = get_post_meta($cinema_post_id, '_ktn_cinema_address', true);
                             $cinema_city = get_post_meta($cinema_post_id, '_ktn_cinema_city', true);
+                            $is_cinema_hidden = ($cinema_count > $cinema_limit);
                         ?>
-                        <div class="ktn-st-cinema-card">
+                        <div class="ktn-st-cinema-card <?php echo $is_cinema_hidden ? 'ktn-cinema-card-hidden' : ''; ?>" <?php echo $is_cinema_hidden ? 'style="display:none;"' : ''; ?>>
                             <div class="ktn-cinema-card-header">
                                 <div class="ktn-cinema-card-info">
                                     <h3 class="ktn-cinema-card-name">
@@ -249,14 +255,14 @@ if (!empty($showtimes) && !is_wp_error($showtimes)):
                             
                             <div class="ktn-cinema-card-times">
                                 <?php 
-                                $count = 0;
-                                $limit = 3;
-                                $total = count($times);
+                                $time_count = 0;
+                                $time_limit = 3;
+                                $total_times = count($times);
                                 foreach ($times as $t): 
-                                    $count++;
-                                    $is_hidden = ($count > $limit);
+                                    $time_count++;
+                                    $is_time_hidden = ($time_count > $time_limit);
                                 ?>
-                                <div class="ktn-premium-chip <?php echo $is_hidden ? 'ktn-chip-hidden' : ''; ?>">
+                                <div class="ktn-premium-chip <?php echo $is_time_hidden ? 'ktn-time-chip-hidden' : ''; ?>" <?php echo $is_time_hidden ? 'style="display:none;"' : ''; ?>>
                                     <span class="ktn-chip-time"><?php echo esc_html($t->show_time); ?></span>
                                     <?php if ($t->experience || $t->price_text): ?>
                                     <span class="ktn-chip-meta">
@@ -266,15 +272,23 @@ if (!empty($showtimes) && !is_wp_error($showtimes)):
                                 </div>
                                 <?php endforeach; ?>
                                 
-                                <?php if ($total > $limit): ?>
-                                <button class="ktn-show-more-times" data-hidden-count="<?php echo ($total - $limit); ?>">
-                                    +<?php echo ($total - $limit); ?> <?php _e('More Times', 'kontentainment'); ?>
+                                <?php if ($total_times > $time_limit): ?>
+                                <button class="ktn-show-more-times" data-hidden-count="<?php echo ($total_times - $time_limit); ?>">
+                                    +<?php echo ($total_times - $time_limit); ?> <?php _e('More Times', 'kontentainment'); ?>
                                 </button>
                                 <?php endif; ?>
                             </div>
                         </div>
-
                         <?php endforeach; ?>
+
+                        <?php if ($total_cinemas > $cinema_limit): ?>
+                        <div class="ktn-st-load-more-cinemas-wrapper">
+                            <button class="ktn-st-load-more-btn" data-hidden-count="<?php echo ($total_cinemas - $cinema_limit); ?>">
+                                <span class="ktn-btn-text">+<?php echo ($total_cinemas - $cinema_limit); ?> <?php _e('More Cinemas', 'kontentainment'); ?></span>
+                                <span class="dashicons dashicons-arrow-down-alt2"></span>
+                            </button>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <?php $is_first = false; endforeach; ?>
