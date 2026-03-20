@@ -16,7 +16,7 @@ class Ktn_Bulk_Cinema_Importer {
 
     public function add_menu_item() {
         add_submenu_page(
-            'edit.php?post_type=ktn_cinema',
+            'edit.php?post_type=movie',
             __('Import Multiple Cinemas', 'kontentainment'),
             __('Bulk Import', 'kontentainment'),
             'manage_options',
