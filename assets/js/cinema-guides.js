@@ -3,8 +3,8 @@
 
     $(function() {
         const root = $('#ktn-guides-root');
-        const loader = root.find('.ktn-guides-loader');
         let currentTab = 'movies';
+        let xhr;
 
         // Tab Switching
         $('.ktn-tab-btn').on('click', function() {
@@ -18,6 +18,7 @@
             $('#tab-' + tab).addClass('active');
 
             currentTab = tab;
+            applyFilters();
         });
 
         // Filter Handlers
@@ -38,7 +39,7 @@
         let searchTimer;
         $('#movie-search, #cinema-search').on('input', function() {
             clearTimeout(searchTimer);
-            searchTimer = setTimeout(applyFilters, 500);
+            searchTimer = setTimeout(applyFilters, 300);
         });
 
         function updateAreas(citySlug) {
@@ -71,7 +72,19 @@
         }
 
         function applyFilters() {
-            loader.fadeIn(100);
+            const currentPanel = $('#tab-' + currentTab);
+            let loader = currentPanel.find('.ktn-guides-loader');
+            
+            if (loader.length === 0) {
+                loader = $('<div class="ktn-guides-loader"><div class="ktn-spinner"></div></div>');
+                currentPanel.append(loader);
+            }
+            
+            loader.fadeIn(150);
+
+            if (xhr && xhr.readyState !== 4) {
+                xhr.abort();
+            }
 
             const data = {
                 action: 'ktn_filter_guides',
@@ -89,15 +102,20 @@
                 data.area = $('#cinema-area').val();
             }
 
-            $.ajax({
+            xhr = $.ajax({
                 url: ktn_guides.ajax_url,
                 type: 'POST',
                 data: data,
                 success: function(response) {
-                    loader.fadeOut(100);
+                    loader.fadeOut(150);
                     if (response.success) {
                         const target = currentTab === 'movies' ? '#movie-results' : '#cinema-results';
                         $(target).html(response.data.html);
+                    }
+                },
+                error: function(x, t, m) {
+                    if (t !== 'abort') {
+                        loader.fadeOut(150);
                     }
                 }
             });

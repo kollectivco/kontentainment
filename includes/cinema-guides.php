@@ -139,10 +139,6 @@ class Ktn_Cinema_Guides
                     </div>
                 </div>
             </div>
-
-            <div class="ktn-guides-loader" style="display:none;">
-                <div class="ktn-spinner"></div>
-            </div>
         </div>
         <?php
         return ob_get_clean();
