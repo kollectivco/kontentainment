@@ -181,7 +181,7 @@ function ktn_cinema_branding_callback($post)
 function ktn_cinema_source_callback($post)
 {
     $url = get_post_meta($post->ID, '_ktn_cinema_url', true);
-    $theater_id = get_post_meta($post->ID, '_ktn_cinema_theater_id', true);
+    $source_type = get_post_meta($post->ID, '_ktn_cinema_type', true) ?: 'elcinema_theater';
     $status = get_post_meta($post->ID, '_ktn_cinema_status', true) ?: 'active';
     $auto_sync = get_post_meta($post->ID, '_ktn_cinema_auto_sync', true);
     $last_sync = get_post_meta($post->ID, '_ktn_cinema_last_sync', true);
@@ -192,8 +192,12 @@ function ktn_cinema_source_callback($post)
     echo '<p><label><strong>' . __('Source URL', 'kontentainment') . '</strong></label><br>';
     echo '<input type="url" name="ktn_cinema_url" value="' . esc_attr($url) . '" class="widefat" required placeholder="https://elcinema.com/..."></p>';
 
-    echo '<p><label><strong>' . __('elCinema ID', 'kontentainment') . '</strong></label><br>';
-    echo '<input type="text" name="ktn_cinema_theater_id" value="' . esc_attr($theater_id) . '" class="widefat" readonly></p>';
+    echo '<p><label><strong>' . __('Source Type', 'kontentainment') . '</strong></label><br>';
+    echo '<select name="ktn_cinema_type" class="widefat">';
+    echo '<option value="elcinema_theater" ' . selected($source_type, 'elcinema_theater', false) . '>elCinema Theater</option>';
+    echo '<option value="scenenow_cinema" ' . selected($source_type, 'scenenow_cinema', false) . '>SceneNow Cinema</option>';
+    echo '<option value="cairo360_cinema" ' . selected($source_type, 'cairo360_cinema', false) . '>Cairo360 Venue</option>';
+    echo '</select></p>';
 
     echo '<p><label><strong>' . __('Status', 'kontentainment') . '</strong></label><br>';
     echo '<select name="ktn_cinema_status" class="widefat">';
@@ -381,6 +385,7 @@ function ktn_cinema_save_all_meta_data($post_id)
 
     $fields = [
         'ktn_cinema_url' => '_ktn_cinema_url',
+        'ktn_cinema_type' => '_ktn_cinema_type',
         'ktn_cinema_status' => '_ktn_cinema_status',
         'ktn_cinema_auto_sync' => '_ktn_cinema_auto_sync',
         'ktn_cinema_arabic_name' => '_ktn_cinema_arabic_name',
