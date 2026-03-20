@@ -173,8 +173,6 @@ class Ktn_Cinema_Scraper
         // --- Multi-Date Extraction Logic ---
         $date_urls = array();
         
-        // Find all links to dates (tabs)
-        // Usually <ul class="tabs"> or similar
         if (preg_match_all('/href="([^"]*[\?&]date=([0-9]{4}-[0-9]{1,2}-[0-9]{1,2}))"/i', $html, $matches)) {
             $base_url = 'https://elcinema.com';
             $is_en = (strpos($url, '/en/') !== false);
@@ -193,7 +191,7 @@ class Ktn_Cinema_Scraper
         }
         
         $date_urls = array_unique($date_urls);
-        $date_urls = array_slice($date_urls, 0, 7); // Max 7 days
+        $date_urls = array_slice($date_urls, 0, 7); 
 
         foreach ($date_urls as $date_url) {
             usleep(200000); 
@@ -209,7 +207,6 @@ class Ktn_Cinema_Scraper
             }
         }
 
-        // De-duplicate results
         $final_results = array();
         $seen = array();
         foreach($results as $res) {
@@ -240,44 +237,78 @@ class Ktn_Cinema_Scraper
         $name = ''; $arabic_name = ''; $english_name = ''; $logo = ''; $rating = ''; 
         $address = ''; $area = ''; $city = ''; $country = ''; $phone = ''; $notes = ''; $maps = '';
 
-        // Name
+        // Name / Title
         if (preg_match('/<h1[^>]*>(.*?)<\/h1>/is', $html, $m)) {
             $name = trim(strip_tags($m[1]));
             if ($is_en) $english_name = $name; else $arabic_name = $name;
         }
 
-        // Details Block (Logo, Rating, Addr, Phone)
-        if (preg_match('/<div[^>]*class="[^"]*list-details[^"]*"[^>]*>(.*?)<\/div>/is', $html, $m) || preg_match('/<ul[^>]*class="[^"]*list-details[^"]*"[^>]*>(.*?)<\/ul>/is', $html, $m)) {
-            $details = $m[1];
-            // Logo
-            if (preg_match('/src="([^"]*)"/i', $details, $logoMatch)) $logo = $logoMatch[1];
-            // Rating
-            if (preg_match('/([0-9.]+) من 10/', $details, $rAr)) $rating = $rAr[1];
-            if (preg_match('/([0-9.]+) of 10/', $details, $rEn)) $rating = $rEn[1];
-            // Phone
-            if (preg_match('/fa-phone.*?<\/i>(.*?)</is', $details, $pMatch)) $phone = trim(strip_tags($pMatch[1]));
-            // Address
-            if (preg_match('/fa-map-marker.*?<\/i>(.*?)</is', $details, $aMatch)) $address = trim(strip_tags($aMatch[1]));
+        // Secondary Names (h3 tags in theater block)
+        if (preg_match_all('/<h3[^>]*>(.*?)<\/h3>/is', $html, $h3Matches)) {
+            foreach ($h3Matches[1] as $idx => $h3Text) {
+                $h3_clean = trim(strip_tags($h3Text));
+                if (empty($h3_clean)) continue;
+                
+                // Usually first h3 is Arabic name, second is English name if on EN page
+                if (preg_match('/[\x{0600}-\x{06FF}]/u', $h3_clean)) {
+                    $arabic_name = $h3_clean;
+                } else {
+                    $english_name = $h3_clean;
+                }
+            }
         }
 
-        // Breadcrumbs for Reliable Location (City & Area)
+        // Details Block (Logo, Rating, Addr, Phone)
+        if (preg_match('/<div[^>]*class="[^"]*columns[^"]*large-3[^"]*"[^>]*>.*?<img[^>]*src="([^"]*)"/is', $html, $logoMatch)) {
+            $logo = $logoMatch[1];
+        }
+
+        // Rating
+        if (preg_match('/<div[^>]*class="stars-orange"[^>]*>.*?<div>\s*([0-9.]+)\s*/is', $html, $rMatch)) {
+            $rating = $rMatch[1];
+        }
+
+        // Info Block Parsing (ul.no-bullet)
+        if (preg_match('/<ul[^>]*class="no-bullet"[^>]*>(.*?)<\/ul>/is', $html, $ulMatch)) {
+            $ul_content = $ulMatch[1];
+            $li_blocks = preg_split('/<\/li>/i', $ul_content);
+            foreach ($li_blocks as $li) {
+                $li_clean = trim(strip_tags($li));
+                if (empty($li_clean)) continue;
+
+                // Map Marker -> Address
+                if (strpos($li, 'fa-map-marker') !== false) {
+                    $address = $li_clean;
+                }
+                // Phone
+                if (strpos($li, 'fa-phone') !== false) {
+                    $phone = $li_clean;
+                }
+            }
+        }
+
+        // Breadcrumbs for Reliable Location (Country > City > Area)
         if (preg_match_all('/<li[^>]*><a[^>]*>(.*?)<\/a><\/li>/is', $html, $bc)) {
             $crumbs = array_map('trim', array_map('strip_tags', $bc[1]));
-            // elCinema pattern: Home > Theaters > Country > City > Area > Name
-            // Or Home > Theaters > Country > City > Name
             if (count($crumbs) >= 4) {
-                if (empty($country)) $country = $crumbs[2];
-                if (empty($city)) $city = $crumbs[3];
-                
-                // If there's an index 4 and it's not the theater name, it's the area
+                $country = $crumbs[2];
+                $city = $crumbs[3];
                 if (isset($crumbs[4]) && $crumbs[4] !== $name && strpos($crumbs[4], 'Theater') === false && strpos($crumbs[4], 'سينما') === false) {
                     $area = $crumbs[4];
                 }
             }
         }
 
-        // Notes (Policies)
-        if (preg_match('/<div[^>]*class="[^"]*description[^"]*"[^>]*>(.*?)<\/div>/is', $html, $m)) $notes = trim(strip_tags($m[1]));
+        // Notes (Policies) - usually the last ul.no-bullet or description div
+        if (preg_match_all('/<ul[^>]*class="no-bullet"[^>]*>(.*?)<\/ul>/is', $html, $allUls)) {
+            $last_ul = end($allUls[1]);
+            if (strpos($last_ul, 'Policy') !== false || strpos($last_ul, 'سياسة') !== false) {
+               $notes = trim(strip_tags($last_ul));
+            }
+        }
+        if (empty($notes) && preg_match('/<div[^>]*class="[^"]*description[^"]*"[^>]*>(.*?)<\/div>/is', $html, $m)) {
+            $notes = trim(strip_tags($m[1]));
+        }
         
         // Maps
         if (preg_match('/href="([^"]*google-map-theater[^"]*)"/i', $html, $m)) $maps = $m[1];
@@ -287,7 +318,6 @@ class Ktn_Cinema_Scraper
         if (preg_match('/[\?&]date=([0-9]{4}-[0-9]{1,2}-[0-9]{1,2})/', $url, $dm)) {
             $doc_date = $dm[1];
         } else {
-            // Find active tab date
             if (preg_match('/<li[^>]*class="active"[^>]*>.*?<a[^>]*>(.*?)<\/a>/is', $html, $activeMatch)) {
                 $translated = self::translateDate($activeMatch[1]);
                 $ts = strtotime($translated);
@@ -297,16 +327,12 @@ class Ktn_Cinema_Scraper
         if (!$doc_date) $doc_date = date('Y-m-d');
 
         // --- Showtime Matrix Extraction ---
-        // Look for movie containers. elCinema usually has a div with work-title mapping
         $movie_blocks = preg_split('/<div[^>]*class="[^"]*work-title[^"]*"[^>]*>/is', $html);
         array_shift($movie_blocks);
 
         foreach ($movie_blocks as $block) {
-            // Extract Title
             if (preg_match('/<a[^>]*>(.*?)<\/a>/is', $block, $tMatch)) {
                 $movie_title = trim(strip_tags($tMatch[1]));
-                
-                // Extract times
                 $parsed_times = self::parseShowtimeBlock($block);
                 foreach($parsed_times as $st) {
                     $showtimes[] = array(
@@ -319,30 +345,6 @@ class Ktn_Cinema_Scraper
                         'source_url' => $url,
                         'scraped_at' => $scraped_at
                     );
-                }
-            }
-        }
-
-        // Fallback for older elCinema list layouts
-        if (empty($showtimes)) {
-            $movie_table_pattern = '/<(?:h[23]).*?wk([0-9]+).*?>(.*?)<\/a>.*?<ul[^>]*>(.*?)<\/ul>/is';
-            if (preg_match_all($movie_table_pattern, $html, $mMatches, PREG_SET_ORDER)) {
-                foreach ($mMatches as $mm) {
-                    $movie_title = trim(strip_tags($mm[2]));
-                    $ul = $mm[3];
-                    $parsed_times = self::parseShowtimeBlock($ul);
-                    foreach($parsed_times as $st) {
-                        $showtimes[] = array(
-                            'cinema_id' => $cinema_id,
-                            'movie_title_scraped' => $movie_title,
-                            'show_date' => $doc_date,
-                            'show_time' => $st['show_time'],
-                            'experience' => $st['experience'],
-                            'price_text' => $st['price_text'],
-                            'source_url' => $url,
-                            'scraped_at' => $scraped_at
-                        );
-                    }
                 }
             }
         }
