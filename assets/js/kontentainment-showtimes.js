@@ -15,4 +15,20 @@ jQuery(document).ready(function ($) {
         container.find('.ktn-st-date-group, .ktn-date-panel').removeClass('active');
         $('#' + targetId).addClass('active');
     });
+
+    // Show More Times Toggle
+    $('.ktn-show-more-times').on('click', function (e) {
+        var $btn = $(this);
+        var $container = $btn.closest('.ktn-cinema-card-times');
+        var $hiddenChips = $container.find('.ktn-chip-hidden');
+        var count = $btn.data('hidden-count');
+
+        if ($btn.hasClass('active')) {
+            $hiddenChips.hide();
+            $btn.removeClass('active').text('+' + count + ' More Times');
+        } else {
+            $hiddenChips.css('display', 'inline-flex');
+            $btn.addClass('active').text('Show Less');
+        }
+    });
 });

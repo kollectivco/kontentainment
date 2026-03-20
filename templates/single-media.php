@@ -248,8 +248,15 @@ if (!empty($showtimes) && !is_wp_error($showtimes)):
                             </div>
                             
                             <div class="ktn-cinema-card-times">
-                                <?php foreach ($times as $t): ?>
-                                <div class="ktn-premium-chip">
+                                <?php 
+                                $count = 0;
+                                $limit = 3;
+                                $total = count($times);
+                                foreach ($times as $t): 
+                                    $count++;
+                                    $is_hidden = ($count > $limit);
+                                ?>
+                                <div class="ktn-premium-chip <?php echo $is_hidden ? 'ktn-chip-hidden' : ''; ?>">
                                     <span class="ktn-chip-time"><?php echo esc_html($t->show_time); ?></span>
                                     <?php if ($t->experience || $t->price_text): ?>
                                     <span class="ktn-chip-meta">
@@ -258,8 +265,15 @@ if (!empty($showtimes) && !is_wp_error($showtimes)):
                                     <?php endif; ?>
                                 </div>
                                 <?php endforeach; ?>
+                                
+                                <?php if ($total > $limit): ?>
+                                <button class="ktn-show-more-times" data-hidden-count="<?php echo ($total - $limit); ?>">
+                                    +<?php echo ($total - $limit); ?> <?php _e('More Times', 'kontentainment'); ?>
+                                </button>
+                                <?php endif; ?>
                             </div>
                         </div>
+
                         <?php endforeach; ?>
                     </div>
                 </div>
