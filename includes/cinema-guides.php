@@ -18,6 +18,10 @@ class Ktn_Cinema_Guides
         add_action('wp_ajax_ktn_filter_guides', array($this, 'ajax_filter_handler'));
         add_action('wp_ajax_nopriv_ktn_filter_guides', array($this, 'ajax_filter_handler'));
 
+        // Dependent filter handler
+        add_action('wp_ajax_ktn_get_child_locations', array($this, 'ajax_get_child_locations'));
+        add_action('wp_ajax_nopriv_ktn_get_child_locations', array($this, 'ajax_get_child_locations'));
+
         // Auto-create page
         add_action('init', array($this, 'maybe_create_page'));
     }
@@ -115,30 +119,22 @@ class Ktn_Cinema_Guides
                             <select id="cinema-city" class="ktn-select">
                                 <option value=""><?php _e('All Governorates', 'kontentainment'); ?></option>
                                 <?php
-                                global $wpdb;
-                                $cities = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = '_ktn_cinema_city' AND meta_value != '' ORDER BY meta_value ASC");
+                                $cities = get_terms(array('taxonomy' => 'cinema_location', 'parent' => 0, 'hide_empty' => true));
                                 foreach ($cities as $city) {
-                                    echo '<option value="' . esc_attr($city) . '">' . esc_html($city) . '</option>';
+                                    echo '<option value="' . esc_attr($city->slug) . '">' . esc_html($city->name) . '</option>';
                                 }
                                 ?>
                             </select>
                         </div>
 
                         <div class="ktn-dropdown-wrapper">
-                            <select id="cinema-area" class="ktn-select">
-                                <option value=""><?php _e('All Areas', 'kontentainment'); ?></option>
-                                <?php
-                                $areas = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = '_ktn_cinema_area' AND meta_value != '' ORDER BY meta_value ASC");
-                                foreach ($areas as $area) {
-                                    echo '<option value="' . esc_attr($area) . '">' . esc_html($area) . '</option>';
-                                }
-                                ?>
+                            <select id="cinema-area" class="ktn-select" disabled>
+                                <option value=""><?php _e('Select Area', 'kontentainment'); ?></option>
                             </select>
                         </div>
                     </div>
 
                     <div id="cinema-results" class="ktn-results-grid">
-                        <!-- Loaded via AJAX or initial call -->
                         <?php echo $this->get_cinemas_html(); ?>
                     </div>
                 </div>
@@ -189,7 +185,6 @@ class Ktn_Cinema_Guides
             while ($query->have_posts()) {
                 $query->the_post();
                 $id = get_the_ID();
-                
                 $html .= Ktn_Card_System::render_movie_card($id, array(
                     'show_rating' => true,
                     'show_year'   => true,
@@ -210,26 +205,24 @@ class Ktn_Cinema_Guides
             'post_type' => 'ktn_cinema',
             'post_status' => 'publish',
             'posts_per_page' => 12,
-            'meta_query' => array('relation' => 'AND')
+            'tax_query' => array('relation' => 'AND')
         );
 
         if (!empty($filters['search'])) {
             $args['s'] = $filters['search'];
         }
 
-        if (!empty($filters['city'])) {
-            $args['meta_query'][] = array(
-                'key' => '_ktn_cinema_city',
-                'value' => $filters['city'],
-                'compare' => '='
-            );
-        }
-
         if (!empty($filters['area'])) {
-            $args['meta_query'][] = array(
-                'key' => '_ktn_cinema_area',
-                'value' => $filters['area'],
-                'compare' => '='
+            $args['tax_query'][] = array(
+                'taxonomy' => 'cinema_location',
+                'field'    => 'slug',
+                'terms'    => $filters['area']
+            );
+        } elseif (!empty($filters['city'])) {
+            $args['tax_query'][] = array(
+                'taxonomy' => 'cinema_location',
+                'field'    => 'slug',
+                'terms'    => $filters['city']
             );
         }
 
@@ -254,11 +247,32 @@ class Ktn_Cinema_Guides
         return $html;
     }
 
-    private function get_genres_csv($post_id)
+    public function ajax_get_child_locations()
     {
-        $terms = get_the_terms($post_id, 'ktn_genre');
-        if (is_wp_error($terms) || empty($terms)) return '';
-        return implode(', ', wp_list_pluck($terms, 'name'));
+        check_ajax_referer('ktn_guides_nonce', 'nonce');
+        $parent_slug = sanitize_text_field($_POST['parent_slug']);
+        
+        if (!$parent_slug) {
+            wp_send_json_success(array());
+        }
+
+        $parent = get_term_by('slug', $parent_slug, 'cinema_location');
+        if (!$parent) {
+            wp_send_json_success(array());
+        }
+
+        $children = get_terms(array(
+            'taxonomy' => 'cinema_location',
+            'parent'   => $parent->term_id,
+            'hide_empty' => true
+        ));
+
+        $results = array();
+        foreach ($children as $child) {
+            $results[] = array('slug' => $child->slug, 'name' => $child->name);
+        }
+
+        wp_send_json_success($results);
     }
 
     public function ajax_filter_handler()

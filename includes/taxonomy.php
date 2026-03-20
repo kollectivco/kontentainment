@@ -40,20 +40,25 @@ function ktn_register_taxonomies()
     );
     register_taxonomy('ktn_cast', array('movie', 'tv_show'), $cast_args);
 
-    // Cinema Area Taxonomy
-    $area_labels = array(
-        'name' => _x('Cinema Areas', 'taxonomy general name', 'kontentainment'),
-        'singular_name' => _x('Cinema Area', 'taxonomy singular name', 'kontentainment'),
-        'menu_name' => __('Cinema Areas', 'kontentainment'),
+    // Cinema Location Taxonomy (Hierarchical City > Area)
+    $location_labels = array(
+        'name' => _x('Cinema Locations', 'taxonomy general name', 'kontentainment'),
+        'singular_name' => _x('Cinema Location', 'taxonomy singular name', 'kontentainment'),
+        'menu_name' => __('Cinema Locations', 'kontentainment'),
     );
 
-    $area_args = array(
+    $location_args = array(
         'hierarchical' => true,
-        'labels' => $area_labels,
+        'labels' => $location_labels,
         'show_ui' => true,
         'show_admin_column' => true,
         'query_var' => true,
-        'rewrite' => array('slug' => 'cinemas', 'with_front' => false),
+        'rewrite' => array('slug' => 'location', 'with_front' => false),
     );
-    register_taxonomy('cinema_area', array('ktn_cinema'), $area_args);
+    // Continue supporting legacy cinema_area slug by using it as a rewrite if needed, 
+    // but here we merge them for better structure.
+    register_taxonomy('cinema_location', array('ktn_cinema'), $location_args);
+    
+    // Maintain cinema_area registration as alias for backward compatibility only if needed, 
+    // but better to use a single cleaner one as requested.
 }

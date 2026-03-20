@@ -1,14 +1,79 @@
-.ktn-metabox-wrapper {
-    padding: 10px;
+/**
+ * Cinema Admin UI Styles
+ */
+
+/* Grid Fields */
+.ktn-admin-grid-fields p {
+    margin: 5px 0 15px 0;
 }
 
-.ktn-metabox-wrapper button.ktn-import-btn {
-    margin-right: 5px;
-    margin-bottom: 5px;
+.ktn-admin-grid-fields label {
+    font-weight: 700;
+    color: #1a1a1b;
 }
 
-.ktn-metabox-wrapper .description {
-    color: #666;
-    font-style: italic;
-    font-size: 13px;
+.ktn-admin-grid-fields select,
+.ktn-admin-grid-fields input {
+    margin-top: 5px !important;
+}
+
+/* Side Box Fields */
+.ktn-admin-side-fields p {
+    margin-bottom: 20px;
+}
+
+.ktn-admin-side-fields input[type="text"],
+.ktn-admin-side-fields input[type="url"],
+.ktn-admin-side-fields select {
+    margin-top: 8px !important;
+    padding: 8px !important;
+}
+
+.ktn-media-field-wrapper .ktn-media-btns {
+    margin-top: 10px;
+}
+
+.ktn-media-field-wrapper .button {
+    flex: 1;
+    text-align: center;
+}
+
+.ktn-media-field-wrapper .ktn-preview img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+/* Sync Box */
+.ktn-status-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.ktn-status-active { background: #dcfce7; color: #166534; }
+.ktn-status-inactive { background: #fee2e2; color: #991b1b; }
+
+/* Showtimes Table UI */
+.ktn-admin-showtimes-list h2 {
+    font-size: 18px !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ktn-movie-row {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.ktn-times-grid div {
+    min-width: 80px;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.ktn-times-grid div:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
 }

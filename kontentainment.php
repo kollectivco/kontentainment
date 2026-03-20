@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Kontentainment
- * Plugin URI:  #
- * Description: A custom movie and TV show system that imports media data from TMDB using an IMDb ID.
+ * Plugin URI:  https://kollectiv.net
+ * Description: A premium movie and cinema discovery platform.
  * Version:     1.5.1
  * Author:      Kollectiv
  * Author URI:  https://kollectiv.net
@@ -19,6 +19,7 @@ define('KTN_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('KTN_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('KTN_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
+// Core includes
 require_once KTN_PLUGIN_DIR . 'includes/helpers.php';
 require_once KTN_PLUGIN_DIR . 'includes/post-type.php';
 require_once KTN_PLUGIN_DIR . 'includes/taxonomy.php';
@@ -71,8 +72,14 @@ function ktn_init_github_updater()
 }
 
 // Custom Cron Schedule
-add_filter('cron_schedules', 'ktn_add_cron_twelve_hours');
-function ktn_add_cron_twelve_hours($schedules) {
+add_filter('cron_schedules', 'ktn_add_cron_schedules');
+function ktn_add_cron_schedules($schedules) {
+    if (!isset($schedules['two_hours'])) {
+        $schedules['two_hours'] = array(
+            'interval' => 2 * HOUR_IN_SECONDS,
+            'display'  => __('Every 2 Hours', 'kontentainment'),
+        );
+    }
     if (!isset($schedules['twelve_hours'])) {
         $schedules['twelve_hours'] = array(
             'interval' => 12 * HOUR_IN_SECONDS,
@@ -82,20 +89,40 @@ function ktn_add_cron_twelve_hours($schedules) {
     return $schedules;
 }
 
-// Cron Hook
-add_action('ktn_sync_all_cinemas_cron', 'ktn_execute_auto_sync');
-function ktn_execute_auto_sync() {
+/**
+ * 2-Hour Auto Sync Job
+ */
+add_action('ktn_cinema_auto_sync_job', 'ktn_execute_2h_auto_sync');
+function ktn_execute_2h_auto_sync() {
     if (class_exists('Ktn_Cinema_Importer')) {
-        Ktn_Cinema_Importer::syncAllCinemas();
+        // Only sync cinemas that have "Enabled Auto Sync" checked
+        Ktn_Cinema_Importer::syncAllCinemas(true); 
+    }
+}
+
+/**
+ * Legacy 12-Hour Sync Job (kept for manual/all active)
+ */
+add_action('ktn_sync_all_cinemas_cron', 'ktn_execute_legacy_sync');
+function ktn_execute_legacy_sync() {
+    if (class_exists('Ktn_Cinema_Importer')) {
+        Ktn_Cinema_Importer::syncAllCinemas(false); // Sync all active regardless of 2h toggle
     }
 }
 
 register_activation_hook(__FILE__, 'ktn_activate_plugin');
 function ktn_activate_plugin()
 {
+    ktn_init_database(); // Ensure DB is updated
     ktn_register_post_types();
     ktn_register_taxonomies();
     
+    // Schedule 2-hour job
+    if (!wp_next_scheduled('ktn_cinema_auto_sync_job')) {
+        wp_schedule_event(time(), 'two_hours', 'ktn_cinema_auto_sync_job');
+    }
+
+    // Schedule 12-hour job (legacy)
     if (!wp_next_scheduled('ktn_sync_all_cinemas_cron')) {
         wp_schedule_event(time(), 'twelve_hours', 'ktn_sync_all_cinemas_cron');
     }
@@ -106,6 +133,7 @@ function ktn_activate_plugin()
 register_deactivation_hook(__FILE__, 'ktn_deactivate_plugin');
 function ktn_deactivate_plugin()
 {
+    wp_clear_scheduled_hook('ktn_cinema_auto_sync_job');
     wp_clear_scheduled_hook('ktn_sync_all_cinemas_cron');
     flush_rewrite_rules();
 }
