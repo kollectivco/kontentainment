@@ -300,31 +300,43 @@ class Ktn_Bulk_Cinema_Importer {
         update_post_meta($post_id, '_ktn_cinema_auto_sync', 'yes');
         update_post_meta($post_id, '_ktn_cinema_status', 'active');
 
+        // Save City/Area Meta for the edit screen
+        $city_term = get_term($city_id, 'cinema_location');
+        $area_term = get_term($area_id, 'cinema_location');
+        if ($city_term && !is_wp_error($city_term)) {
+            update_post_meta($post_id, '_ktn_cinema_city', $city_term->name);
+        }
+        if ($area_term && !is_wp_error($area_term)) {
+            update_post_meta($post_id, '_ktn_cinema_area', $area_term->name);
+        }
+
         // Assign Taxonomy (City/Area)
         $term_ids = array_filter(array($city_id, $area_id));
         if (!empty($term_ids)) {
             wp_set_object_terms($post_id, array_map('intval', $term_ids), 'cinema_location', false);
         }
 
-        // Run sync if requested
+        // Run sync (Full Import)
         $sync_message = '';
-        if ($sync_now) {
-            $sync_res = Ktn_Cinema_Importer::syncCinema($post_id);
-            if (is_array($sync_res)) {
-                $sync_message = $sync_res['message'];
-            } elseif (is_wp_error($sync_res)) {
-                $sync_message = 'Sync Error: ' . $sync_res->get_error_message();
-            }
-        } else {
-             $sync_message = __('Cinema created/updated. Sync pending.', 'kontentainment');
-        }
+        $sync_res = Ktn_Cinema_Importer::syncCinema($post_id, true);
+        
+        $final_name = get_the_title($post_id);
+        $sync_message = is_array($sync_res) ? $sync_res['message'] : 'Sync completed.';
+        $success = is_array($sync_res) ? $sync_res['success'] : true;
 
-        wp_send_json_success(array(
-            'id' => $post_id,
-            'name' => get_the_title($post_id),
-            'status_label' => $status_label,
-            'message' => $msg_prefix . ' ' . $sync_message
-        ));
+        if ($success) {
+            wp_send_json_success(array(
+                'id' => $post_id,
+                'name' => $final_name,
+                'status_label' => $status_label,
+                'message' => $msg_prefix . ' ' . $sync_message
+            ));
+        } else {
+            wp_send_json_error(array(
+                'name' => $final_name,
+                'message' => $sync_message
+            ));
+        }
     }
 
     private function find_existing_cinema($url, $elcinema_id) {

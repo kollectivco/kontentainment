@@ -341,11 +341,12 @@ function ktn_handle_cinema_admin_actions()
     // Sync Action
     if (isset($_GET['ktn_action']) && $_GET['ktn_action'] === 'sync_cinema') {
         if (check_admin_referer('ktn_sync_cinema_' . $post_id)) {
-            $result = Ktn_Cinema_Importer::syncCinema($post_id);
-            if (!is_wp_error($result)) {
-                add_settings_error('ktn_cinema', 'sync_success', sprintf(__('Successfully synced %d showtimes.', 'kontentainment'), $result), 'success');
+            $result = Ktn_Cinema_Importer::syncCinema($post_id, false);
+            if (is_array($result) && $result['success']) {
+                add_settings_error('ktn_cinema', 'sync_success', sprintf(__('Successfully synced %d showtimes.', 'kontentainment'), $result['added']), 'success');
             } else {
-                add_settings_error('ktn_cinema', 'sync_fail', $result->get_error_message(), 'error');
+                $err = is_array($result) ? $result['message'] : __('Unknown sync error.', 'kontentainment');
+                add_settings_error('ktn_cinema', 'sync_fail', $err, 'error');
             }
         }
     }

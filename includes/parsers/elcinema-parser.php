@@ -52,11 +52,17 @@ class Ktn_Elcinema_Parser
 
         // Details Block (Logo, Phone, Address)
         if (preg_match('/<div[^>]*class="[^"]*list-details[^"]*"[^>]*>(.*?)<\/div>/is', $html, $m) || 
-            preg_match('/<ul[^>]*class="[^"]*list-details[^"]*"[^>]*>(.*?)<\/ul>/is', $html, $m)) {
+            preg_match('/<ul[^>]*class="[^"]*list-details[^"]*"[^>]*>(.*?)<\/ul>/is', $html, $m) ||
+            preg_match('/<div[^>]*class="[^"]*theater-image[^"]*"[^>]*>(.*?)<\/div>/is', $html, $m)) {
             $details = $m[1];
             if (preg_match('/src="([^"]*)"/i', $details, $logoMatch)) $logo = $logoMatch[1];
             if (preg_match('/fa-phone.*?<\/i>(.*?)</is', $details, $pMatch)) $phone = trim(strip_tags($pMatch[1]));
             if (preg_match('/fa-map-marker.*?<\/i>(.*?)</is', $details, $aMatch)) $address = trim(strip_tags($aMatch[1]));
+        }
+
+        // Fallback logo from og:image
+        if (empty($logo) && preg_match('/<meta[^>]*property="og:image"[^>]*content="([^"]*)"/i', $html, $ogM)) {
+            $logo = $ogM[1];
         }
 
         // Location via Breadcrumbs (Country > City > Area)
