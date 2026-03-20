@@ -63,7 +63,7 @@
 .ktn-filter-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 20px;
     align-items: center;
     margin-bottom: 40px;
     background: #fff;
@@ -76,6 +76,7 @@
 .ktn-sub-tabs {
     display: flex;
     gap: 15px;
+    justify-content: center;
 }
 
 .ktn-sub-tab {
@@ -97,8 +98,8 @@
 
 .ktn-search-box {
     position: relative;
-    flex: 1;
-    min-width: 250px;
+    flex: 2;
+    min-width: 300px;
 }
 
 .ktn-search-box input {
@@ -109,6 +110,7 @@
     font-size: 14px !important;
     outline: none !important;
     transition: border-color 0.2s !important;
+    box-sizing: border-box;
 }
 
 .ktn-search-box input:focus {
@@ -123,7 +125,13 @@
     color: #9ca3af;
 }
 
+.ktn-dropdown-wrapper {
+    flex: 1;
+    min-width: 200px;
+}
+
 .ktn-select {
+    width: 100%;
     padding: 12px 35px 12px 15px !important;
     border: 1px solid #e5e7eb !important;
     border-radius: 10px !important;
@@ -131,7 +139,6 @@
     background-color: #fff !important;
     cursor: pointer !important;
     appearance: none !important;
-    min-width: 180px !important;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
     background-position: right 12px center !important;
@@ -194,27 +201,67 @@
     font-weight: 600;
 }
 
+/* MOBILE OPTIMIZATIONS */
 @media (max-width: 768px) {
+    .ktn-guides-header h1 {
+        font-size: 28px;
+    }
     .ktn-filter-row {
+        padding: 20px;
+        gap: 15px;
         flex-direction: column;
         align-items: stretch;
-    }
-    .ktn-sub-tabs {
-        justify-content: space-between;
-    }
-    .ktn-sub-tab {
-        flex: 1;
         text-align: center;
     }
     .ktn-search-box {
+        min-width: 100%;
         order: -1;
     }
-    .ktn-results-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 20px;
+    .ktn-dropdown-wrapper {
+        min-width: 100%;
     }
-    .ktn-results-grid:has(.ktn-premium-movie-card) {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    .ktn-sub-tabs {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .ktn-sub-tab {
+        flex: 1;
+        min-width: 80px;
+        white-space: nowrap;
     }
 }
 
+@media (max-width: 600px) {
+    .ktn-guides-container {
+        padding: 0 15px;
+        margin: 20px auto;
+    }
+    .ktn-guides-tabs {
+        width: 90%;
+        max-width: 400px;
+    }
+    .ktn-tab-btn {
+        padding: 8px 15px;
+        font-size: 14px;
+        flex: 1;
+    }
+    
+    /* 2 Cards per row core requirement */
+    .ktn-results-grid, 
+    .ktn-results-grid:has(.ktn-premium-movie-card) {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 15px !important;
+    }
+    
+    .ktn-no-results {
+        padding: 40px 20px;
+    }
+}
+
+@media (max-width: 400px) {
+    .ktn-results-grid, 
+    .ktn-results-grid:has(.ktn-premium-movie-card) {
+        gap: 10px !important;
+    }
+}
