@@ -193,71 +193,16 @@ class KTN_Movies_Widget extends KTN_Elementor_Base_Widget {
             while ($query->have_posts()) {
                 $query->the_post();
                 $post_id = get_the_ID();
-                $title = get_the_title();
-                $permalink = get_permalink();
-                
-                $poster_url = has_post_thumbnail() ? get_the_post_thumbnail_url($post_id, 'medium_large') : '';
-                if (!$poster_url) {
-                    $poster_path = get_post_meta($post_id, '_movie_poster_path', true);
-                    if ($poster_path) $poster_url = "https://image.tmdb.org/t/p/w500" . $poster_path;
-                }
-                
-                $rating = get_post_meta($post_id, '_movie_vote_average', true);
-                $release_date = get_post_meta($post_id, '_movie_release_date', true);
-                $tagline = get_post_meta($post_id, '_movie_tagline', true);
-                
-                $genes_str = '';
-                $terms = get_the_terms($post_id, 'movie_genre') ?: get_the_terms($post_id, 'ktn_genre');
-                if ($terms && !is_wp_error($terms)) {
-                    $genes_str = implode(', ', array_slice(wp_list_pluck($terms, 'name'), 0, 2));
-                }
-
-                ?>
-                <div class="ktn-elem-movie-card">
-                    <?php if ($settings['show_poster'] === 'yes'): ?>
-                        <div class="ktn-elem-poster">
-                            <?php if ($settings['show_rating'] === 'yes' && $rating): ?>
-                                <span class="ktn-elem-badge"><?php echo esc_html(round($rating, 1)); ?> ⭐️</span>
-                            <?php endif; ?>
-                            <a href="<?php echo esc_url($permalink); ?>">
-                                <?php if ($poster_url): ?>
-                                    <img src="<?php echo esc_url($poster_url); ?>" alt="<?php echo esc_attr($title); ?>">
-                                <?php else: ?>
-                                    <div class="ktn-elem-no-poster">No Poster</div>
-                                <?php endif; ?>
-                            </a>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <div class="ktn-elem-content">
-                        <?php if ($settings['show_title'] === 'yes'): ?>
-                            <h3 class="ktn-elem-title"><a href="<?php echo esc_url($permalink); ?>"><?php echo esc_html($title); ?></a></h3>
-                        <?php endif; ?>
-
-                        <div class="ktn-elem-meta">
-                            <?php if ($settings['show_genres'] === 'yes' && $genes_str): ?>
-                                <span class="ktn-meta-genre"><?php echo esc_html($genes_str); ?></span>
-                            <?php endif; ?>
-                            <?php if ($settings['show_date'] === 'yes' && $release_date): ?>
-                                <span class="ktn-meta-date"><?php echo esc_html(date('Y', strtotime($release_date))); ?></span>
-                            <?php endif; ?>
-                        </div>
-
-                        <?php if ($settings['show_excerpt'] === 'yes' && $tagline): ?>
-                            <div class="ktn-elem-excerpt"><?php echo esc_html(wp_trim_words($tagline, 12, '...')); ?></div>
-                        <?php endif; ?>
-
-                        <?php if ($settings['show_cta'] === 'yes'): ?>
-                            <div class="ktn-elem-actions">
-                                <a href="<?php echo esc_url($permalink); ?>" class="ktn-btn-primary">View Details</a>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-                <?php
+                echo Ktn_Card_System::render_movie_card($post_id, array(
+                    'show_rating'  => ($settings['show_rating'] === 'yes'),
+                    'show_year'    => ($settings['show_date'] === 'yes'),
+                    'show_genre'   => ($settings['show_genres'] === 'yes'),
+                    'show_excerpt' => ($settings['show_excerpt'] === 'yes'),
+                    'show_cta'     => ($settings['show_cta'] === 'yes')
+                ));
             }
             echo '</div>';
-            wp_reset_postdata();
+            wp_reset_postdata();a();
         } else {
             echo '<p class="ktn-elem-empty">No movies found matching criteria.</p>';
         }

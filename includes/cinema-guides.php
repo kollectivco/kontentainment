@@ -189,25 +189,12 @@ class Ktn_Cinema_Guides
             while ($query->have_posts()) {
                 $query->the_post();
                 $id = get_the_ID();
-                $poster = get_post_meta($id, '_movie_poster_path', true);
-                $poster_url = $poster ? 'https://image.tmdb.org/t/p/w500' . $poster : KTN_PLUGIN_URL . 'assets/img/no-poster.jpg';
-                $rating = get_post_meta($id, '_movie_vote_average', true);
-                $year = date('Y', strtotime(get_post_meta($id, '_movie_release_date', true)));
                 
-                $html .= '<div class="ktn-media-card">';
-                $html .= '  <a href="' . get_permalink() . '" class="ktn-card-link">';
-                $html .= '    <div class="ktn-card-poster">';
-                $html .= '      <img src="' . esc_url($poster_url) . '" alt="' . esc_attr(get_the_title()) . '">';
-                if ($rating) {
-                    $html .= '    <span class="ktn-card-rating"><span class="dashicons dashicons-star-filled"></span> ' . number_format($rating, 1) . '</span>';
-                }
-                $html .= '    </div>';
-                $html .= '    <div class="ktn-card-info">';
-                $html .= '      <h3>' . get_the_title() . '</h3>';
-                $html .= '      <p class="ktn-card-meta">' . esc_html($year) . ' • ' . $this->get_genres_csv($id) . '</p>';
-                $html .= '    </div>';
-                $html .= '  </a>';
-                $html .= '</div>';
+                $html .= Ktn_Card_System::render_movie_card($id, array(
+                    'show_rating' => true,
+                    'show_year'   => true,
+                    'show_genre'  => true
+                ));
             }
             wp_reset_postdata();
         } else {
@@ -253,30 +240,11 @@ class Ktn_Cinema_Guides
             while ($query->have_posts()) {
                 $query->the_post();
                 $id = get_the_ID();
-                $logo = get_post_meta($id, '_ktn_cinema_logo', true);
-                $logo_url = $logo ? $logo : KTN_PLUGIN_URL . 'assets/img/no-logo.png';
-                $city = get_post_meta($id, '_ktn_cinema_city', true);
-                $area = get_post_meta($id, '_ktn_cinema_area', true);
-                $rating = get_post_meta($id, '_ktn_cinema_rating', true);
-
-                $html .= '<div class="ktn-cinema-card">';
-                $html .= '  <a href="' . get_permalink() . '" class="ktn-card-link">';
-                $html .= '    <div class="ktn-cinema-logo-box">';
-                $html .= '      <img src="' . esc_url($logo_url) . '" alt="' . esc_attr(get_the_title()) . '">';
-                $html .= '    </div>';
-                $html .= '    <div class="ktn-card-info">';
-                $html .= '      <h3>' . get_the_title() . '</h3>';
-                $html .= '      <div class="ktn-cinema-loc">';
-                $html .= '        <span class="dashicons dashicons-location"></span> ' . esc_html($area) . ', ' . esc_html($city);
-                $html .= '      </div>';
-                if ($rating) {
-                    $html .= '    <div class="ktn-cinema-rating">';
-                    $html .= '      <span class="dashicons dashicons-star-filled"></span> ' . esc_html($rating);
-                    $html .= '    </div>';
-                }
-                $html .= '    </div>';
-                $html .= '  </a>';
-                $html .= '</div>';
+                $html .= Ktn_Card_System::render_cinema_card($id, array(
+                    'show_rating'   => true,
+                    'show_location' => true,
+                    'show_cta'      => true
+                ));
             }
             wp_reset_postdata();
         } else {

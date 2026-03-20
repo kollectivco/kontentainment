@@ -144,41 +144,14 @@ class KTN_Cinemas_Widget extends KTN_Elementor_Base_Widget {
                         $today
                     ));
                 }
-
-                ?>
-                <div class="ktn-elem-cinema-card">
-                    <?php if ($settings['show_area'] === 'yes' && $area_name): ?>
-                        <span class="ktn-elem-badge ktn-badge-area"><?php echo esc_html($area_name); ?></span>
-                    <?php endif; ?>
-                    
-                    <?php if ($settings['show_logo'] === 'yes'): ?>
-                        <div class="ktn-elem-cinema-logo">
-                            <a href="<?php echo esc_url($permalink); ?>">
-                                <?php if ($logo): ?>
-                                    <img src="<?php echo esc_url($logo); ?>" alt="<?php echo esc_attr($title); ?>">
-                                <?php else: ?>
-                                    <div class="ktn-no-logo"><i class="fa fa-film"></i></div>
-                                <?php endif; ?>
-                            </a>
-                        </div>
-                    <?php endif; ?>
-
-                    <div class="ktn-elem-cinema-info">
-                        <h3><a href="<?php echo esc_url($permalink); ?>"><?php echo esc_html($title); ?></a></h3>
-                        <div class="ktn-elem-meta">
-                            <?php if ($settings['show_address'] === 'yes' && $address): ?>
-                                <span><i class="fa fa-map-marker"></i> <?php echo esc_html(wp_trim_words($address, 6)); ?></span>
-                            <?php endif; ?>
-                            <?php if ($settings['show_count'] === 'yes' && $playing_count > 0): ?>
-                                <span class="ktn-meta-highlight"><i class="fa fa-ticket"></i> <?php echo intval($playing_count); ?> Movies</span>
-                            <?php endif; ?>
-                        </div>
-                        <?php if ($settings['show_btn'] === 'yes'): ?>
-                            <a href="<?php echo esc_url($permalink); ?>" class="ktn-btn-secondary">Showtimes</a>
-                        <?php endif; ?>
-                    </div>
-                </div>
-                <?php
+                echo Ktn_Card_System::render_cinema_card($post_id, array(
+                    'show_rating'   => true,
+                    'show_location' => ($settings['show_area'] === 'yes'),
+                    'show_address'  => ($settings['show_address'] === 'yes'),
+                    'show_count'    => ($settings['show_count'] === 'yes'),
+                    'movie_count'   => $playing_count,
+                    'show_cta'      => ($settings['show_btn'] === 'yes')
+                ));
             }
             echo '</div>';
             wp_reset_postdata();

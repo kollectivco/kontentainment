@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment
  * Plugin URI:  #
  * Description: A custom movie and TV show system that imports media data from TMDB using an IMDb ID.
- * Version:     1.5.0
+ * Version:     1.5.1
  * Author:      Kollectiv
  * Author URI:  https://kollectiv.net
  * License:     GPL2
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KTN_PLUGIN_VERSION', '1.5.0');
+define('KTN_PLUGIN_VERSION', '1.5.1');
 define('KTN_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('KTN_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('KTN_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -34,9 +34,18 @@ require_once KTN_PLUGIN_DIR . 'includes/importer-cinema.php';
 require_once KTN_PLUGIN_DIR . 'includes/metabox-cinema.php';
 require_once KTN_PLUGIN_DIR . 'includes/admin-showtimes.php';
 require_once KTN_PLUGIN_DIR . 'includes/cinema-guides.php';
+require_once KTN_PLUGIN_DIR . 'includes/card-system.php';
 
 // Elementor Integration
 require_once KTN_PLUGIN_DIR . 'elementor/manager.php';
+
+// Frontend Assets
+add_action('wp_enqueue_scripts', 'ktn_enqueue_frontend_assets');
+function ktn_enqueue_frontend_assets()
+{
+    wp_enqueue_style('ktn-card-system', KTN_PLUGIN_URL . 'assets/css/card-system.css', array(), KTN_PLUGIN_VERSION);
+    wp_enqueue_style('dashicons');
+}
 
 // Plugin Update Checker setup
 require_once KTN_PLUGIN_DIR . 'includes/plugin-update-checker/plugin-update-checker.php';
