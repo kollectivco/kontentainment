@@ -533,17 +533,18 @@
 
 /* Premium Chip for showtimes */
 .ktn-premium-chip {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 6px 12px;
-    min-width: 70px;
-    transition: all 0.2s ease;
-    cursor: default;
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important; 
+    padding: 4px 10px !important;
+    min-width: 65px !important;
+    transition: all 0.2s ease !important;
+    cursor: default !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
 }
 .ktn-premium-chip:hover {
     border-color: #cbd5e1;
@@ -553,19 +554,19 @@
 }
 
 .ktn-chip-time {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #111827;
-    line-height: 1;
+    font-size: 0.88rem !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    line-height: 1 !important;
 }
 
 .ktn-chip-meta {
-    font-size: 0.6rem;
-    font-weight: 600;
-    color: #64748b;
-    margin-top: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    font-size: 0.55rem !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    margin-top: 2px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
 }
 
 .ktn-card-cta {
@@ -755,12 +756,14 @@
     gap: 20px;
 }
 
+/* Template Spacing (Single Movie Page) */
 .ktn-st-cinema-card {
-    background: #ffffff;
-    border: 1px solid #f1f5f9;
-    border-radius: 14px;
-    padding: 18px;
-    transition: all 0.2s ease;
+    background: #ffffff !important;
+    border: 1px solid #f1f5f9 !important;
+    border-radius: 12px !important;
+    padding: 12px !important;
+    transition: all 0.2s ease !important;
+    margin-bottom: 15px !important;
 }
 
 .ktn-st-cinema-card:hover {
@@ -769,12 +772,12 @@
 }
 
 .ktn-cinema-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-    gap: 15px;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    margin-bottom: 10px !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
 }
 
 .ktn-cinema-card-info {
@@ -782,8 +785,8 @@
 }
 
 .ktn-cinema-card-name {
-    margin: 0 0 6px 0;
-    font-size: 1.25rem;
+    margin: 0 0 2px 0 !important;
+    font-size: 1.15rem !important;
     font-weight: 700;
     color: #1e293b;
 }
@@ -822,26 +825,56 @@
 }
 
 .ktn-cinema-card-times {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+}
+
+/* Elementor Widget Compactness */
+.ktn-elem-showtime-block {
+    margin-bottom: 18px !important;
+    padding-bottom: 12px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.ktn-elem-showtime-block:last-child {
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+}
+
+.ktn-elem-group-title {
+    margin: 0 0 8px 0 !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+}
+
+.ktn-elem-chips-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
 }
 
 @media (max-width: 640px) {
     .ktn-st-container {
-        padding: 24px;
+        padding: 20px !important;
     }
     .ktn-st-header-flex {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 20px;
-    }
-    .ktn-st-date-tabs {
-        width: 100%;
-        justify-content: flex-start;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 15px !important;
     }
     .ktn-cinema-card-header {
         flex-direction: column;
         align-items: flex-start;
+    }
+    .ktn-st-cinema-card {
+        padding: 12px !important;
+    }
+    .ktn-premium-chip {
+        min-width: 60px !important;
+        padding: 3px 8px !important;
+    }
+    .ktn-chip-time {
+        font-size: 0.82rem !important;
     }
 }
