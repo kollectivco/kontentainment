@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment
  * Plugin URI:  https://kollectiv.net
  * Description: A premium movie and cinema discovery platform.
- * Version:     1.6.2
+ * Version:     1.6.4
  * Author:      Kollectiv
  * Author URI:  https://kollectiv.net
  * License:     GPL2
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KTN_PLUGIN_VERSION', '1.6.2');
+define('KTN_PLUGIN_VERSION', '1.6.4');
 define('KTN_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('KTN_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('KTN_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -34,6 +34,7 @@ require_once KTN_PLUGIN_DIR . 'includes/scraper.php';
 require_once KTN_PLUGIN_DIR . 'includes/importer-cinema.php';
 require_once KTN_PLUGIN_DIR . 'includes/metabox-cinema.php';
 require_once KTN_PLUGIN_DIR . 'includes/admin-showtimes.php';
+require_once KTN_PLUGIN_DIR . 'includes/admin-bulk-import.php';
 require_once KTN_PLUGIN_DIR . 'includes/cinema-guides.php';
 require_once KTN_PLUGIN_DIR . 'includes/card-system.php';
 

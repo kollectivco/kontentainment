@@ -128,20 +128,43 @@ class Ktn_Cinema_Importer
         }
 
         // --- Hierarchy Taxonomy Mapping (City/Area) ---
-        $city = !empty($metadata['city']) ? sanitize_text_field($metadata['city']) : '';
-        $area = !empty($metadata['area']) ? sanitize_text_field($metadata['area']) : '';
-        
-        if ($city) {
-             $city_term = wp_insert_term($city, 'cinema_location', array('parent' => 0));
-             $city_id = is_wp_error($city_term) ? $city_term->get_error_data() : $city_term['term_id'];
-             $term_ids = array((int)$city_id);
+        $existing_terms = wp_get_object_terms($post_id, 'cinema_location', array('fields' => 'ids'));
+        if (empty($existing_terms) || is_wp_error($existing_terms)) {
+            $city = !empty($metadata['city']) ? sanitize_text_field($metadata['city']) : '';
+            $area = !empty($metadata['area']) ? sanitize_text_field($metadata['area']) : '';
+            
+            if ($city) {
+                $city_term = wp_insert_term($city, 'cinema_location', array('parent' => 0));
+                // Retrieve term_id even if it already exists
+                if (is_wp_error($city_term)) {
+                    $existing_city = get_term_by('name', $city, 'cinema_location');
+                    $city_id = $existing_city ? $existing_city->term_id : 0;
+                } else {
+                    $city_id = $city_term['term_id'];
+                }
 
-             if ($area) {
-                  $area_term = wp_insert_term($area, 'cinema_location', array('parent' => $city_id));
-                  $area_id = is_wp_error($area_term) ? $area_term->get_error_data() : $area_term['term_id'];
-                  if ($area_id) $term_ids[] = (int)$area_id;
-             }
-             wp_set_object_terms($post_id, $term_ids, 'cinema_location', false);
+                if ($city_id) {
+                    $term_ids = array((int)$city_id);
+                    if ($area) {
+                        $area_term = wp_insert_term($area, 'cinema_location', array('parent' => $city_id));
+                        if (is_wp_error($area_term)) {
+                            // Check if area exists under this city
+                            $existing_area = get_terms(array(
+                                'taxonomy' => 'cinema_location',
+                                'name' => $area,
+                                'parent' => $city_id,
+                                'hide_empty' => false,
+                                'number' => 1
+                            ));
+                            $area_id = !empty($existing_area) ? $existing_area[0]->term_id : 0;
+                        } else {
+                            $area_id = $area_term['term_id'];
+                        }
+                        if ($area_id) $term_ids[] = (int)$area_id;
+                    }
+                    wp_set_object_terms($post_id, $term_ids, 'cinema_location', false);
+                }
+            }
         }
 
         // --- Save Showtimes to Database ---
@@ -172,15 +195,15 @@ class Ktn_Cinema_Importer
         if ($added > 0) {
             $msg = sprintf(__('Success: Synced %d showtimes.', 'kontentainment'), $added);
             update_post_meta($post_id, '_ktn_last_error', $msg);
-            return $added;
+            return array('success' => true, 'added' => $added, 'message' => $msg);
         } elseif ($useful_meta_count > 0) {
             $msg = __('Partial Success: Cinema details updated, but no showtimes found.', 'kontentainment');
             update_post_meta($post_id, '_ktn_last_error', $msg);
-            return 0;
+            return array('success' => true, 'added' => 0, 'message' => $msg);
         } else {
             $msg = __('Failed: No useful data extracted from source.', 'kontentainment');
             update_post_meta($post_id, '_ktn_last_error', $msg);
-            return new WP_Error('sync_failed', $msg);
+            return array('success' => false, 'added' => 0, 'message' => $msg);
         }
     }
 
@@ -193,7 +216,9 @@ class Ktn_Cinema_Importer
         $total = 0;
         foreach ($cinemas as $cinema) {
              $res = self::syncCinema($cinema->ID);
-             if (!is_wp_error($res)) $total += $res;
+             if (is_array($res) && isset($res['added'])) {
+                 $total += $res['added'];
+             }
         }
         return $total;
     }
