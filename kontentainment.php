@@ -4,7 +4,8 @@
  * Plugin URI:  #
  * Description: A custom movie and TV show system that imports media data from TMDB using an IMDb ID.
  * Version:     1.4.8
- * Author:      Antigravity
+ * Author:      Kollectiv
+ * Author URI:  https://kollectiv.net
  * License:     GPL2
  * Text Domain: kontentainment
  */
