@@ -51,14 +51,13 @@ function ktn_enqueue_frontend_assets()
 
 // Plugin Update Checker setup
 require_once KTN_PLUGIN_DIR . 'includes/plugin-update-checker/plugin-update-checker.php';
-use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 add_action('plugins_loaded', 'ktn_init_github_updater');
 function ktn_init_github_updater()
 {
     $github_repo_url = 'https://github.com/kollectivco/kontentainment';
     
-    $ktnUpdateChecker = PucFactory::buildUpdateChecker(
+    $ktnUpdateChecker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
         $github_repo_url,
         __FILE__,
         'kontentainment'
@@ -127,7 +126,7 @@ function ktn_execute_legacy_sync() {
 register_activation_hook(__FILE__, 'ktn_activate_plugin');
 function ktn_activate_plugin()
 {
-    ktn_init_database(); // Ensure DB is updated
+    ktn_create_database_tables(); // Ensure DB is updated
     ktn_register_post_types();
     ktn_register_taxonomies();
     
