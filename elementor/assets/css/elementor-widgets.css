@@ -402,7 +402,7 @@
     width: 100%;
     position: relative;
     overflow: hidden;
-    padding-bottom: 20px;
+    padding: 10px 0 30px;
 }
 
 .ktn-mobile-swiper {
@@ -411,11 +411,12 @@
 }
 
 .ktn-premium-poster-card {
-    background: #000; /* Fallback */
+    background: #000;
     overflow: hidden;
     position: relative;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s ease;
     width: 100%;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .ktn-premium-poster-card:active {
@@ -427,6 +428,7 @@
     text-decoration: none;
     color: #fff;
     width: 100%;
+    height: 100%;
 }
 
 .ktn-mobile-card-poster {
@@ -434,7 +436,8 @@
     position: relative;
     overflow: hidden;
     display: block;
-    /* Ratio is handled by inline style from Elementor controls */
+    object-fit: cover;
+    /* Aspect ratio is handled by Elementor controls inline */
 }
 
 .ktn-mobile-card-poster img {
@@ -442,6 +445,7 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    transform: translateZ(0); /* Hardware acceleration for WebView */
 }
 
 /* Gradient Overlay */
@@ -450,37 +454,55 @@
     bottom: 0;
     left: 0;
     right: 0;
+    top: 50%; /* Starts from middle to bottom for better coverage */
     padding: 40px 14px 14px;
-    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    pointer-events: none; /* Let clicks pass through to link */
+    transition: background 0.3s ease;
 }
 
 .ktn-mobile-card-title {
     margin: 0;
-    font-size: 1.05em;
+    font-size: 1.1em;
     font-weight: 800;
     color: #ffffff;
     line-height: 1.25;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6);
     display: -webkit-box;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
 /* Swiper Dots Styling */
-.swiper-pagination-bullet {
-    background: var(--ktn-primary) !important;
-    opacity: 0.3 !important;
+.swiper-pagination {
+    bottom: 0 !important;
 }
+
+.swiper-pagination-bullet {
+    background: var(--ktn-primary, #e21221) !important;
+    opacity: 0.3 !important;
+    transition: all 0.3s ease !important;
+}
+
 .swiper-pagination-bullet-active {
     opacity: 1 !important;
-    width: 20px !important;
+    width: 18px !important;
     border-radius: 4px !important;
 }
 
-/* Visibility Logic: Hide on Desktop/Tablet */
+/* Utility: Hide Empty State Styling */
+.ktn-mobile-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+}
+
+/* Visibility Logic: Desktop/Tablet (Standard Elementor breakpoints) */
 @media (min-width: 1025px) {
     .elementor-widget-ktn-movies-mobile-widget {
         display: none !important;
@@ -493,7 +515,7 @@
     }
 }
 
-/* Ensure it shows on mobile */
+/* Ensure mobile-only widget is visible but ONLY as a slider */
 @media (max-width: 767px) {
     .elementor-widget-ktn-movies-mobile-widget {
         display: block !important;
