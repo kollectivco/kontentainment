@@ -330,6 +330,21 @@ function ktn_ajax_get_areas_by_city() {
 }
 
 /**
+ * Add "Sync All" button to Top Bar (Views area)
+ */
+add_filter('views_edit-ktn_cinema', 'ktn_cinema_add_sync_all_view');
+function ktn_cinema_add_sync_all_view($views) {
+    if (current_user_can('manage_options')) {
+        $url = wp_nonce_url(
+            admin_url('edit.php?post_type=ktn_cinema&ktn_action=list_sync_all'),
+            'ktn_list_sync_all'
+        );
+        $views['sync_all'] = '<a href="' . $url . '" class="button button-secondary" style="margin-left:10px; vertical-align:middle; background:#f0f0f1; border-color:#2271b1; color:#2271b1; font-weight:600;">' . __('Sync All Showtimes', 'kontentainment') . '</a>';
+    }
+    return $views;
+}
+
+/**
  * Add "Sync Now" row action to All Cinemas list
  */
 add_filter('post_row_actions', 'ktn_cinema_add_sync_row_action', 10, 2);
@@ -339,7 +354,7 @@ function ktn_cinema_add_sync_row_action($actions, $post) {
             admin_url('edit.php?post_type=ktn_cinema&ktn_action=list_sync_cinema&post=' . $post->ID),
             'ktn_list_sync_cinema_' . $post->ID
         );
-        $actions['ktn_sync'] = '<a href="' . $url . '" style="color:#0073aa; font-weight:700;">' . __('Sync Now', 'kontentainment') . '</a>';
+        $actions['ktn_sync'] = '<a href="' . $url . '" style="color:#2271b1; font-weight:700;">' . __('Sync Now', 'kontentainment') . '</a>';
     }
     return $actions;
 }
@@ -350,7 +365,26 @@ function ktn_cinema_add_sync_row_action($actions, $post) {
 add_action('admin_init', 'ktn_handle_cinema_admin_actions');
 function ktn_handle_cinema_admin_actions()
 {
-    // List Sync Action (Showtimes Only)
+    // Global Sync Action (All Cinemas)
+    if (isset($_GET['ktn_action']) && $_GET['ktn_action'] === 'list_sync_all') {
+        if (check_admin_referer('ktn_list_sync_all')) {
+            if (!current_user_can('manage_options')) return;
+            
+            $result = Ktn_Cinema_Importer::syncAllCinemas(false, false); // auto_sync_only=false, refresh_meta=false
+            
+            $redirect = admin_url('edit.php?post_type=ktn_cinema');
+            $redirect = add_query_arg([
+                'ktn_notice' => 'sync_all_success',
+                'cinemas'    => $result['total_cinemas'] ?? 0,
+                'added'      => $result['total_added'] ?? 0
+            ], $redirect);
+            
+            wp_redirect($redirect);
+            exit;
+        }
+    }
+
+    // List Sync Action (Single Cinema)
     if (isset($_GET['ktn_action']) && $_GET['ktn_action'] === 'list_sync_cinema' && isset($_GET['post'])) {
         $post_id = intval($_GET['post']);
         if (check_admin_referer('ktn_list_sync_cinema_' . $post_id)) {
@@ -418,18 +452,26 @@ add_action('admin_notices', 'ktn_cinema_sync_notices');
 function ktn_cinema_sync_notices() {
     global $pagenow, $post_type;
     if ($pagenow === 'edit.php' && $post_type === 'ktn_cinema' && isset($_GET['ktn_notice'])) {
-        if ($_GET['ktn_notice'] === 'sync_success') {
+        if ($_GET['ktn_notice'] === 'sync_all_success') {
+            $cinemas = intval($_GET['cinemas']);
+            $added = intval($_GET['added']);
+            
+            echo '<div class="notice notice-success is-dismissible">';
+            echo '<p><strong>' . __('Global Sync Complete', 'kontentainment') . '</strong></p>';
+            echo '<p>' . sprintf(__('Successfully refreshed showtimes for %d cinemas. Total rows updated: %d.', 'kontentainment'), $cinemas, $added) . '</p>';
+            echo '</div>';
+        } elseif ($_GET['ktn_notice'] === 'sync_success') {
             $added = intval($_GET['added']);
             $matched = intval($_GET['matched']);
             $unmatched = intval($_GET['unmatched']);
             
             echo '<div class="notice notice-success is-dismissible">';
             echo '<p><strong>' . __('Cinema Sync Complete (Showtimes Only)', 'kontentainment') . '</strong></p>';
-            echo '<ul>';
+            echo '<ul style="margin: 5px 0 0 20px; list-style: disc;">';
             echo '<li>' . sprintf(__('Showtimes rows updated: %d', 'kontentainment'), $added) . '</li>';
             echo '<li>' . sprintf(__('Matched movies: %d', 'kontentainment'), $matched) . '</li>';
             if ($unmatched > 0) {
-                echo '<li style="color:#d63638;">' . sprintf(__('Unmatched movie titles: %d', 'kontentainment'), $unmatched) . '</li>';
+                echo '<li style="color:#d63638; font-weight:600;">' . sprintf(__('Unmatched movie titles: %d', 'kontentainment'), $unmatched) . '</li>';
             } else {
                 echo '<li style="color:#00a32a;">' . __('All movies matched successfully!', 'kontentainment') . '</li>';
             }

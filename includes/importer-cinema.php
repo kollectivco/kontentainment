@@ -208,19 +208,21 @@ class Ktn_Cinema_Importer
         }
     }
 
-    public static function syncAllCinemas($auto_sync_only = false) {
+    public static function syncAllCinemas($auto_sync_only = false, $refresh_meta = true) {
         $args = array('post_type' => 'ktn_cinema', 'posts_per_page' => -1, 'post_status' => 'publish');
         $args['meta_query'] = array('relation' => 'AND', array('key' => '_ktn_cinema_status', 'value' => 'active', 'compare' => '='));
         if ($auto_sync_only) $args['meta_query'][] = array('key' => '_ktn_cinema_auto_sync', 'value' => 'yes', 'compare' => '=');
         
         $cinemas = get_posts($args);
-        $total = 0;
+        $total_added = 0;
+        $count = 0;
         foreach ($cinemas as $cinema) {
-             $res = self::syncCinema($cinema->ID);
+             $res = self::syncCinema($cinema->ID, $refresh_meta);
              if (is_array($res) && isset($res['added'])) {
-                 $total += $res['added'];
+                 $total_added += $res['added'];
+                 $count++;
              }
         }
-        return $total;
+        return array('total_cinemas' => $count, 'total_added' => $total_added);
     }
 }
