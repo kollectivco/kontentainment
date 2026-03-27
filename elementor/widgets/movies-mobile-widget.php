@@ -112,16 +112,16 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
 
         $this->end_controls_section();
 
-        // STYLE TAB - SLIDER (Using Style tab for Layout controls as requested/standard)
+        // STYLE TAB - SLIDER
         $this->start_controls_section('section_layout_slider', [
             'label' => esc_html__('Slider Behavior', 'kontentainment'),
             'tab' => \Elementor\Controls_Manager::TAB_STYLE,
         ]);
 
         $this->add_control('slides_per_view', [
-            'label' => esc_html__('Slides per View (Mobile)', 'kontentainment'),
+            'label' => esc_html__('Slides per View', 'kontentainment'),
             'type' => \Elementor\Controls_Manager::NUMBER,
-            'default' => 2.2,
+            'default' => 2.1,
             'min' => 1,
             'max' => 5,
             'step' => 0.05,
@@ -136,26 +136,26 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
         $this->add_control('loop', [
             'label' => esc_html__('Loop', 'kontentainment'),
             'type' => \Elementor\Controls_Manager::SWITCHER,
-            'default' => 'yes',
+            'default' => 'no',
         ]);
 
         $this->add_control('autoplay', [
             'label' => esc_html__('Autoplay', 'kontentainment'),
             'type' => \Elementor\Controls_Manager::SWITCHER,
-            'default' => 'no',
+            'default' => 'yes',
         ]);
 
         $this->add_control('autoplay_delay', [
             'label' => esc_html__('Autoplay Delay (ms)', 'kontentainment'),
             'type' => \Elementor\Controls_Manager::NUMBER,
-            'default' => 3000,
+            'default' => 4000,
             'condition' => ['autoplay' => 'yes'],
         ]);
 
         $this->add_control('transition_speed', [
             'label' => esc_html__('Transition Speed (ms)', 'kontentainment'),
             'type' => \Elementor\Controls_Manager::NUMBER,
-            'default' => 500,
+            'default' => 600,
         ]);
 
         $this->add_control('centered_slides', [
@@ -164,39 +164,12 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
             'default' => 'no',
         ]);
 
-        $this->add_control('free_mode', [
-            'label' => esc_html__('Free Mode (Momentum)', 'kontentainment'),
-            'type' => \Elementor\Controls_Manager::SWITCHER,
-            'default' => 'no',
-        ]);
-
-        $this->add_control('show_dots', [
-            'label' => esc_html__('Show Pagination Dots', 'kontentainment'),
-            'type' => \Elementor\Controls_Manager::SWITCHER,
-            'default' => 'yes',
-        ]);
-
         $this->end_controls_section();
 
         // STYLE TAB - CARD
         $this->start_controls_section('section_layout_card', [
-            'label' => esc_html__('Card Layout', 'kontentainment'),
+            'label' => esc_html__('Card & Overlay', 'kontentainment'),
             'tab' => \Elementor\Controls_Manager::TAB_STYLE,
-        ]);
-
-        $this->add_control('poster_ratio', [
-            'label' => esc_html__('Poster Ratio', 'kontentainment'),
-            'type' => \Elementor\Controls_Manager::SELECT,
-            'default' => '2/3',
-            'options' => [
-                '2/3' => 'Tall (2:3)',
-                '3/4' => 'Standard (3:4)',
-                '1/1' => 'Square (1:1)',
-                '16/9' => 'Wide (16:9)',
-            ],
-            'selectors' => [
-                '{{WRAPPER}} .ktn-mobile-card-poster' => 'aspect-ratio: {{VALUE}};',
-            ],
         ]);
 
         $this->add_responsive_control('card_radius_dim', [
@@ -204,15 +177,15 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
             'type' => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => ['px', '%', 'em'],
             'default' => [
-                'top' => '20',
-                'right' => '20',
-                'bottom' => '20',
-                'left' => '20',
+                'top' => '24',
+                'right' => '24',
+                'bottom' => '24',
+                'left' => '24',
                 'unit' => 'px',
                 'isLinked' => true,
             ],
             'selectors' => [
-                '{{WRAPPER}} .ktn-mobile-movie-card' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                '{{WRAPPER}} .ktn-mobile-movie-card, {{WRAPPER}} .ktn-mobile-card-poster' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
             ],
         ]);
 
@@ -222,9 +195,9 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
             'range' => [
                 'px' => ['min' => 0, 'max' => 1, 'step' => 0.1],
             ],
-            'default' => ['size' => 0.8],
+            'default' => ['size' => 0.9],
             'selectors' => [
-                '{{WRAPPER}} .ktn-mobile-card-overlay' => 'background: linear-gradient(to top, rgba(0,0,0,{{SIZE}}) 0%, rgba(0,0,0,calc({{SIZE}} / 2)) 60%, transparent 100%);',
+                '{{WRAPPER}} .ktn-mobile-card-overlay' => 'background: linear-gradient(to top, rgba(0,0,0,{{SIZE}}) 0%, rgba(0,0,0,calc({{SIZE}} / 2)) 70%, transparent 100%);',
             ],
         ]);
 
@@ -276,42 +249,6 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
         ]);
 
         $this->end_controls_section();
-
-        // STYLE TAB - DOTS
-        $this->start_controls_section('section_style_dots', [
-            'label' => esc_html__('Dots (Pagination)', 'kontentainment'),
-            'tab' => \Elementor\Controls_Manager::TAB_STYLE,
-            'condition' => ['show_dots' => 'yes'],
-        ]);
-
-        $this->add_control('dots_color', [
-            'label' => esc_html__('Dots Color', 'kontentainment'),
-            'type' => \Elementor\Controls_Manager::COLOR,
-            'default' => '#e21221',
-            'selectors' => [
-                '{{WRAPPER}} .swiper-pagination-bullet' => 'background: {{VALUE}} !important;',
-            ],
-        ]);
-
-        $this->add_control('dots_size', [
-            'label' => esc_html__('Dots Size', 'kontentainment'),
-            'type' => \Elementor\Controls_Manager::SLIDER,
-            'default' => ['size' => 6],
-            'selectors' => [
-                '{{WRAPPER}} .swiper-pagination-bullet' => 'width: {{SIZE}}px; height: {{SIZE}}px;',
-            ],
-        ]);
-
-        $this->add_control('dots_active_width', [
-            'label' => esc_html__('Active Dot Width', 'kontentainment'),
-            'type' => \Elementor\Controls_Manager::SLIDER,
-            'default' => ['size' => 18],
-            'selectors' => [
-                '{{WRAPPER}} .swiper-pagination-bullet-active' => 'width: {{SIZE}}px !important;',
-            ],
-        ]);
-
-        $this->end_controls_section();
     }
 
     protected function render() {
@@ -320,7 +257,7 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
         $args = [
             'post_type' => 'movie',
             'post_status' => 'publish',
-            'posts_per_page' => $settings['posts_per_page'],
+            'posts_per_page' => (int) $settings['posts_per_page'],
         ];
 
         global $wpdb;
@@ -400,28 +337,25 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
 
         $query = new \WP_Query($args);
 
-        // Enhanced Swiper Config
         $slider_options = [
             'slidesPerView' => (float) $settings['slides_per_view'],
             'spaceBetween'  => (int) $settings['space_between'],
             'loop'          => ($settings['loop'] === 'yes') ? true : false,
-            'speed'         => (int) $settings['transition_speed'] ? (int) $settings['transition_speed'] : 500,
+            'speed'         => (int) $settings['transition_speed'],
             'centeredSlides'=> ($settings['centered_slides'] === 'yes'),
-            'freeMode'      => ($settings['free_mode'] === 'yes'),
             'autoplay'      => ($settings['autoplay'] === 'yes') ? [
                 'delay' => (int) $settings['autoplay_delay'],
                 'disableOnInteraction' => false,
                 'pauseOnMouseEnter' => false
             ] : false,
-            'pagination'    => ($settings['show_dots'] === 'yes') ? ['el' => '.swiper-pagination', 'clickable' => true] : false,
-            'observer'      => true,
-            'observeParents'=> true,
+            'observer' => true,
+            'observeParents' => true,
             'watchOverflow' => true,
         ];
 
         echo '<div class="ktn-mobile-slider-wrapper ktn-movies-mobile-slider" data-settings=\'' . json_encode($slider_options) . '\'>';
         if ($query->have_posts()) {
-            echo '<div class="swiper-container ktn-mobile-swiper">';
+            echo '<div class="ktn-mobile-swiper swiper">';
             echo '<div class="swiper-wrapper">';
             while ($query->have_posts()) {
                 $query->the_post();
@@ -430,13 +364,10 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
                 echo '</div>';
             }
             echo '</div>';
-            if ($settings['show_dots'] === 'yes') {
-                echo '<div class="swiper-pagination"></div>';
-            }
             echo '</div>';
             wp_reset_postdata();
         } else {
-            echo '<p class="ktn-mobile-empty">' . esc_html__('No movies found.', 'kontentainment') . '</p>';
+            echo '<p class="ktn-mobile-empty">' . esc_html__('No movies available.', 'kontentainment') . '</p>';
         }
         echo '</div>';
     }
@@ -461,7 +392,7 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
                 <div class="ktn-mobile-card-link">
             <?php endif; ?>
 
-                <div class="ktn-mobile-card-poster">
+                <div class="ktn-mobile-card-poster" style="background-image: url('<?php echo esc_url($poster_url); ?>');">
                     <img src="<?php echo esc_url($poster_url); ?>" alt="<?php echo esc_attr($title); ?>" loading="lazy">
                     <div class="ktn-mobile-card-overlay">
                         <h4 class="ktn-mobile-card-title"><?php echo esc_html($title); ?></h4>
