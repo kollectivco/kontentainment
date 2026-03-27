@@ -113,48 +113,6 @@ function ktn_ajax_import_media()
     ));
 }
 
-/**
- * Search TMDB for a movie by its title and return the first result's details.
- */
-function ktn_search_tmdb_movie_by_title($title)
-{
-    $token = get_option('ktn_tmdb_bearer_token');
-    if (empty($token) || empty($title)) {
-        return new WP_Error('missing_params', 'Search requires a bearer token and a title.');
-    }
-
-    $language = get_option('ktn_default_language', 'en-US');
-    $url = "https://api.themoviedb.org/3/search/movie?query=" . urlencode($title) . "&language={$language}&page=1";
-    
-    $args = array(
-        'headers' => array(
-            'Authorization' => 'Bearer ' . $token,
-            'Accept' => 'application/json',
-        ),
-        'timeout' => 20
-    );
-
-    $response = wp_remote_get($url, $args);
-    if (is_wp_error($response)) return $response;
-
-    $code = wp_remote_retrieve_response_code($response);
-    if (200 !== $code) return new WP_Error('http_error', "HTTP Status: $code");
-
-    $body = wp_remote_retrieve_body($response);
-    $data = JSON_decode($body, true);
-
-    if (!empty($data['results'])) {
-        // Return first primary match
-        return array(
-            'id' => $data['results'][0]['id'],
-            'type' => 'movie',
-            'title' => $data['results'][0]['title']
-        );
-    }
-
-    return new WP_Error('not_found', 'No results found on TMDB for title: ' . $title);
-}
-
 function ktn_get_tmdb_id_by_imdb($imdb_id, $token, $language)
 {
     $cache_key = 'ktn_tmdb_find_' . md5($imdb_id . $language);

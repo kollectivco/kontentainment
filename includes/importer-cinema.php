@@ -41,7 +41,7 @@ class Ktn_Cinema_Importer
         return null;
     }
 
-    public static function syncCinema($post_id, $refresh_meta = true, $showtimes_only = false) {
+    public static function syncCinema($post_id, $refresh_meta = true) {
         global $wpdb;
         $table_name = $wpdb->prefix . 'ktn_showtimes';
 
@@ -88,11 +88,11 @@ class Ktn_Cinema_Importer
         $metadata = $sync_data['metadata'] ?? array();
         $showtimes = $sync_data['showtimes'] ?? array();
 
-        // --- Autofill Cinema Meta (Skip if showtimes_only) ---
+        // --- Autofill Cinema Meta ---
         $best_name = !empty($metadata['english_name']) ? $metadata['english_name'] : (!empty($metadata['name']) ? $metadata['name'] : '');
         $current_post = get_post($post_id);
 
-        if (!$showtimes_only) {
+        if ($refresh_meta) {
             // Update title and slug if needed
             $needs_title_update = ($best_name && ($current_post->post_title === 'Auto Draft' || $current_post->post_title === 'Processing...' || empty($current_post->post_title) || $current_post->post_title === 'Untitled'));
             $needs_slug_update = ($current_post->post_name === 'processing' || $current_post->post_name === 'auto-draft');
@@ -106,71 +106,49 @@ class Ktn_Cinema_Importer
                  wp_update_post($update_args);
             }
 
-            if ($refresh_meta) {
-                $meta_fields = [
-                    'theater_id' => '_ktn_cinema_theater_id',
-                    'arabic_name' => '_ktn_cinema_arabic_name',
-                    'english_name' => '_ktn_cinema_english_name',
-                    'logo' => '_ktn_cinema_logo',
-                    'cover_image' => '_ktn_cinema_cover_image',
-                    'rating' => '_ktn_cinema_rating',
-                    'address' => '_ktn_cinema_address',
-                    'area' => '_ktn_cinema_area',
-                    'city' => '_ktn_cinema_city',
-                    'country' => '_ktn_cinema_country',
-                    'phone' => '_ktn_cinema_phone',
-                    'notes' => '_ktn_cinema_notes',
-                    'maps_url' => '_ktn_cinema_maps_url'
-                ];
+            $meta_fields = [
+                'theater_id' => '_ktn_cinema_theater_id',
+                'arabic_name' => '_ktn_cinema_arabic_name',
+                'english_name' => '_ktn_cinema_english_name',
+                'logo' => '_ktn_cinema_logo',
+                'cover_image' => '_ktn_cinema_cover_image',
+                'rating' => '_ktn_cinema_rating',
+                'address' => '_ktn_cinema_address',
+                'area' => '_ktn_cinema_area',
+                'city' => '_ktn_cinema_city',
+                'country' => '_ktn_cinema_country',
+                'phone' => '_ktn_cinema_phone',
+                'notes' => '_ktn_cinema_notes',
+                'maps_url' => '_ktn_cinema_maps_url'
+            ];
 
-                foreach ($meta_fields as $key => $meta_key) {
-                     if (!empty($metadata[$key])) {
-                          $val = ($key === 'logo' || $key === 'maps_url' || $key === 'cover_image') ? esc_url_raw($metadata[$key]) : sanitize_text_field($metadata[$key]);
-                          update_post_meta($post_id, $meta_key, $val);
-                     }
-                }
-
-                if (!empty($metadata['notes'])) {
-                     wp_update_post(array('ID' => $post_id, 'post_content' => wp_kses_post($metadata['notes'])));
-                }
+            foreach ($meta_fields as $key => $meta_key) {
+                 if (!empty($metadata[$key])) {
+                      $val = ($key === 'logo' || $key === 'maps_url' || $key === 'cover_image') ? esc_url_raw($metadata[$key]) : sanitize_text_field($metadata[$key]);
+                      update_post_meta($post_id, $meta_key, $val);
+                 }
             }
 
-            // --- Hierarchy Taxonomy Mapping (City/Area) ---
-            if ($refresh_meta) {
-                $existing_terms = wp_get_object_terms($post_id, 'cinema_location', array('fields' => 'ids'));
-                if (empty($existing_terms) || is_wp_error($existing_terms)) {
-                    $city = !empty($metadata['city']) ? sanitize_text_field($metadata['city']) : '';
-                    $area = !empty($metadata['area']) ? sanitize_text_field($metadata['area']) : '';
-                    
-                    if ($city) {
-                        $city_term = wp_insert_term($city, 'cinema_location', array('parent' => 0));
-                        if (is_wp_error($city_term)) {
-                            $existing_city = get_term_by('name', $city, 'cinema_location');
-                            $city_id = $existing_city ? $existing_city->term_id : 0;
-                        } else {
-                            $city_id = $city_term['term_id'];
-                        }
+            if (!empty($metadata['notes'])) {
+                 wp_update_post(array('ID' => $post_id, 'post_content' => wp_kses_post($metadata['notes'])));
+            }
 
-                        if ($city_id) {
-                            $term_ids = array((int)$city_id);
-                            if ($area) {
-                                $area_term = wp_insert_term($area, 'cinema_location', array('parent' => $city_id));
-                                if (is_wp_error($area_term)) {
-                                    $existing_area = get_terms(array(
-                                        'taxonomy' => 'cinema_location',
-                                        'name' => $area,
-                                        'parent' => $city_id,
-                                        'hide_empty' => false,
-                                        'number' => 1
-                                    ));
-                                    $area_id = !empty($existing_area) ? $existing_area[0]->term_id : 0;
-                                } else {
-                                    $area_id = $area_term['term_id'];
-                                }
-                                if ($area_id) $term_ids[] = (int)$area_id;
-                            }
-                            wp_set_object_terms($post_id, $term_ids, 'cinema_location', false);
+            // Hierarchy Taxonomy
+            $existing_terms = wp_get_object_terms($post_id, 'cinema_location', array('fields' => 'ids'));
+            if (empty($existing_terms) || is_wp_error($existing_terms)) {
+                $city = !empty($metadata['city']) ? sanitize_text_field($metadata['city']) : '';
+                $area = !empty($metadata['area']) ? sanitize_text_field($metadata['area']) : '';
+                if ($city) {
+                    $city_term = wp_insert_term($city, 'cinema_location', array('parent' => 0));
+                    $city_id = !is_wp_error($city_term) ? $city_term['term_id'] : (get_term_by('name', $city, 'cinema_location')->term_id ?? 0);
+                    if ($city_id) {
+                        $term_ids = array((int)$city_id);
+                        if ($area) {
+                            $area_term = wp_insert_term($area, 'cinema_location', array('parent' => $city_id));
+                            $area_id = !is_wp_error($area_term) ? $area_term['term_id'] : 0;
+                            if ($area_id) $term_ids[] = (int)$area_id;
                         }
+                        wp_set_object_terms($post_id, $term_ids, 'cinema_location', false);
                     }
                 }
             }
@@ -179,53 +157,15 @@ class Ktn_Cinema_Importer
         // --- Save Showtimes to Database ---
         $wpdb->delete($table_name, array('cinema_id' => $post_id));
         $added = 0;
-        $newly_imported = 0;
-        $matched_count = 0;
-        $processed_movies = array();
+        $matched_movie_ids = array();
+        $unmatched_titles = array();
 
         foreach ($showtimes as $row) {
              $movie_id = self::matchMovieTitle($row['movie_title']);
-             
-             // Auto-import if missing and TMDB enabled
-             if (!$movie_id && function_exists('ktn_search_tmdb_movie_by_title')) {
-                 $search_res = ktn_search_tmdb_movie_by_title($row['movie_title']);
-                 if (!is_wp_error($search_res)) {
-                     // Check again if we already have this TMDB ID locally to avoid double import
-                     $existing_tmdb = new WP_Query(array(
-                         'post_type' => 'movie',
-                         'meta_key' => '_movie_tmdb_id',
-                         'meta_value' => $search_res['id'],
-                         'posts_per_page' => 1,
-                         'fields' => 'ids'
-                     ));
-                     
-                     if ($existing_tmdb->have_posts()) {
-                         $movie_id = $existing_tmdb->posts[0];
-                     } else {
-                         // Create empty movie post first
-                         $new_post_id = wp_insert_post(array(
-                             'post_title' => $search_res['title'],
-                             'post_type'  => 'movie',
-                             'post_status' => 'publish'
-                         ));
-                         
-                         if (!is_wp_error($new_post_id)) {
-                             $token = get_option('ktn_tmdb_bearer_token');
-                             $lang = get_option('ktn_default_language', 'en-US');
-                             $details = ktn_get_tmdb_media_details($search_res['id'], 'movie', $token, $lang);
-                             if (!is_wp_error($details)) {
-                                 ktn_process_and_save_data($new_post_id, $details, $details['external_ids']['imdb_id'] ?? '', 'movie');
-                                 $movie_id = $new_post_id;
-                                 $newly_imported++;
-                             }
-                         }
-                     }
-                 }
-             }
-
-             if ($movie_id && !isset($processed_movies[$movie_id])) {
-                 $matched_count++;
-                 $processed_movies[$movie_id] = true;
+             if ($movie_id) {
+                 $matched_movie_ids[] = $movie_id;
+             } else {
+                 $unmatched_titles[] = $row['movie_title'];
              }
 
              $wpdb->insert($table_name, array(
@@ -247,24 +187,25 @@ class Ktn_Cinema_Importer
 
         update_post_meta($post_id, '_ktn_cinema_last_sync', current_time('mysql'));
         
-        $result = array(
-            'success' => true, 
-            'added' => $added, 
-            'matched' => $matched_count, 
-            'imported' => $newly_imported
-        );
+        $matched_count = count(array_unique($matched_movie_ids));
+        $unmatched_count = count(array_unique($unmatched_titles));
 
+        // Success Logic
         if ($added > 0) {
-            $result['message'] = sprintf(__('Success: Synced %d showtimes. Matched %d movies (%d newly imported).', 'kontentainment'), $added, $matched_count, $newly_imported);
-        } elseif (!$refresh_meta || $showtimes_only) {
-            $result['message'] = __('Success: Manual sync complete.', 'kontentainment');
+            $msg = sprintf(__('Success: Synced %d showtimes.', 'kontentainment'), $added);
+            update_post_meta($post_id, '_ktn_last_error', $msg);
+            return array(
+                'success'   => true, 
+                'added'     => $added, 
+                'matched'   => $matched_count,
+                'unmatched' => $unmatched_count,
+                'message'   => $msg
+            );
         } else {
-            $result['success'] = false;
-            $result['message'] = __('Failed: No useful data extracted from source.', 'kontentainment');
+            $msg = __('No showtimes found at source.', 'kontentainment');
+            update_post_meta($post_id, '_ktn_last_error', $msg);
+            return array('success' => true, 'added' => 0, 'matched' => 0, 'unmatched' => 0, 'message' => $msg);
         }
-
-        update_post_meta($post_id, '_ktn_last_error', $result['message']);
-        return $result;
     }
 
     public static function syncAllCinemas($auto_sync_only = false) {
