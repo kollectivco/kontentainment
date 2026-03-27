@@ -205,7 +205,7 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
             'label' => esc_html__('Title Alignment', 'kontentainment'),
             'type' => \Elementor\Controls_Manager::CHOOSE,
             'options' => [
-                'flex-start' => [
+                'left' => [
                     'title' => esc_html__('Left', 'kontentainment'),
                     'icon' => 'eicon-text-align-left',
                 ],
@@ -214,10 +214,9 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
                     'icon' => 'eicon-text-align-center',
                 ],
             ],
-            'default' => 'flex-start',
+            'default' => 'center',
             'selectors' => [
-                '{{WRAPPER}} .ktn-mobile-card-overlay' => 'align-items: {{VALUE}};',
-                '{{WRAPPER}} .ktn-mobile-card-title' => 'text-align: {{VALUE}};',
+                '{{WRAPPER}} .ktn-mobile-card-title' => '{{VALUE === "center" ? "left: 50%; transform: translateX(-50%); text-align: center;" : "left: 18px; transform: none; text-align: left;"}}',
             ],
         ]);
 
