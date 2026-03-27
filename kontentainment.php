@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment
  * Plugin URI:  https://kollectiv.net
  * Description: A premium movie and cinema discovery platform.
- * Version:     1.6.19
+ * Version:     1.6.20
  * Author:      Kollectiv
  * Author URI:  https://kollectiv.net
  * License:     GPL2
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KTN_PLUGIN_VERSION', '1.6.19');
+define('KTN_PLUGIN_VERSION', '1.6.20');
 define('KTN_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('KTN_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('KTN_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -80,7 +80,7 @@ function ktn_puc_custom_user_agent($options) {
     if (!isset($options['headers'])) {
         $options['headers'] = array();
     }
-    $options['headers']['User-Agent'] = 'KontentainmentUpdater/1.6.19; ' . get_bloginfo('url');
+    $options['headers']['User-Agent'] = 'KontentainmentUpdater/1.6.20; ' . get_bloginfo('url');
     return $options;
 }
 
@@ -123,6 +123,33 @@ function ktn_execute_legacy_sync() {
     }
 }
 
+add_action('admin_init', 'ktn_handle_activation_redirect');
+/**
+ * Handle one-time redirect after plugin activation.
+ */
+function ktn_handle_activation_redirect() {
+    // Only proceed if our special flag is set
+    if (get_option('ktn_activation_redirect')) {
+        delete_option('ktn_activation_redirect');
+
+        // Safety Checks
+        if (
+            !is_admin() || 
+            !current_user_can('manage_options') ||
+            wp_doing_ajax() ||
+            (defined('DOING_CRON') && DOING_CRON) ||
+            (defined('REST_REQUEST') && REST_REQUEST) ||
+            isset($_GET['activate-multi']) || // Skip bulk
+            (isset($_GET['page']) && $_GET['page'] === 'kontentainment-settings')
+        ) {
+            return;
+        }
+
+        wp_safe_redirect(admin_url('edit.php?post_type=movie&page=kontentainment-settings'));
+        exit;
+    }
+}
+
 register_activation_hook(__FILE__, 'ktn_activate_plugin');
 function ktn_activate_plugin()
 {
@@ -130,6 +157,9 @@ function ktn_activate_plugin()
     ktn_register_post_types();
     ktn_register_taxonomies();
     
+    // Set flag for one-time redirect
+    add_option('ktn_activation_redirect', true);
+
     // Schedule 2-hour job
     if (!wp_next_scheduled('ktn_cinema_auto_sync_job')) {
         wp_schedule_event(time(), 'two_hours', 'ktn_cinema_auto_sync_job');
