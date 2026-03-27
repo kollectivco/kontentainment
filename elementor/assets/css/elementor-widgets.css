@@ -396,3 +396,122 @@
     flex-wrap: wrap;
     gap: 8px;
 }
+
+/* KTN Movies Mobile Widget */
+.ktn-mobile-movies-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+.ktn-mobile-movie-card {
+    background: var(--ktn-surface);
+    border-radius: var(--ktn-radius-md);
+    border: 1px solid var(--ktn-border);
+    overflow: hidden;
+    transition: var(--ktn-transition);
+}
+
+.ktn-mobile-card-link {
+    display: flex;
+    text-decoration: none;
+    color: inherit;
+    height: 120px;
+}
+
+.ktn-mobile-card-poster {
+    width: 90px;
+    height: 100%;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.ktn-mobile-card-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ktn-mobile-card-rating {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.ktn-mobile-card-details {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.ktn-mobile-card-title {
+    margin: 0 0 4px 0;
+    font-size: 1.1em;
+    font-weight: 700;
+    color: var(--ktn-text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ktn-mobile-card-meta {
+    display: flex;
+    gap: 8px;
+    font-size: 0.8em;
+    color: var(--ktn-text-muted);
+    margin-bottom: 8px;
+}
+
+.ktn-mobile-card-genre {
+    color: var(--ktn-primary);
+    font-weight: 600;
+}
+
+.ktn-mobile-card-action {
+    margin-top: auto;
+}
+
+.ktn-mobile-btn {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--ktn-primary);
+    background: var(--ktn-secondary);
+    padding: 4px 10px;
+    border-radius: 4px;
+    transition: var(--ktn-transition);
+}
+
+/* Visibility Logic: Hide on Desktop/Tablet */
+@media (min-width: 1025px) {
+    .elementor-widget-ktn-movies-mobile-widget {
+        display: none !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .elementor-widget-ktn-movies-mobile-widget {
+        display: none !important;
+    }
+}
+
+/* Ensure it shows on mobile */
+@media (max-width: 767px) {
+    .elementor-widget-ktn-movies-mobile-widget {
+        display: block !important;
+    }
+}

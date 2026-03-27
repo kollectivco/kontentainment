@@ -60,6 +60,21 @@ class KTN_Movies_Widget extends KTN_Elementor_Base_Widget {
             'condition' => ['source' => 'area'],
         ]);
 
+        // Cinema dropdown
+        $cinemas = get_posts(['post_type' => 'ktn_cinema', 'posts_per_page' => -1]);
+        $cinema_options = [];
+        if (!empty($cinemas)) {
+            foreach ($cinemas as $cinema) {
+                $cinema_options[$cinema->ID] = $cinema->post_title;
+            }
+        }
+        $this->add_control('cinema_id', [
+            'label' => esc_html__('Select Cinema', 'kontentainment'),
+            'type' => \Elementor\Controls_Manager::SELECT,
+            'options' => $cinema_options,
+            'condition' => ['source' => 'cinema'],
+        ]);
+
         $this->add_control('posts_per_page', [
             'label' => esc_html__('Movies Count', 'kontentainment'),
             'type' => \Elementor\Controls_Manager::NUMBER,
@@ -184,6 +199,19 @@ class KTN_Movies_Widget extends KTN_Elementor_Base_Widget {
                 $args['post__in'] = [0];
             }
         }
+        elseif ($settings['source'] === 'cinema' && !empty($settings['cinema_id'])) {
+            $today = date('Y-m-d');
+            $cinema_movie_ids = $wpdb->get_col($wpdb->prepare(
+                "SELECT DISTINCT matched_movie_id FROM {$wpdb->prefix}ktn_showtimes WHERE matched_movie_id IS NOT NULL AND cinema_id = %d AND (show_date >= %s OR show_date = 'Today')",
+                $settings['cinema_id'],
+                $today
+            ));
+            if (!empty($cinema_movie_ids)) {
+                $args['post__in'] = $cinema_movie_ids;
+            } else {
+                $args['post__in'] = [0];
+            }
+        }
 
         $query = new \WP_Query($args);
 
@@ -202,7 +230,7 @@ class KTN_Movies_Widget extends KTN_Elementor_Base_Widget {
                 ));
             }
             echo '</div>';
-            wp_reset_postdata();a();
+            wp_reset_postdata();
         } else {
             echo '<p class="ktn-elem-empty">No movies found matching criteria.</p>';
         }
