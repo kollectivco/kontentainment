@@ -13,6 +13,7 @@
 /* Backdrop */
 .ktn-media-backdrop {
     height: 480px;
+    background-color: #1e293b; /* Fallback for layout stability */
     background-size: cover;
     background-position: center;
     border-radius: 20px;
@@ -46,7 +47,24 @@
     border-radius: 16px;
     object-fit: cover;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-    background: #eee;
+    background: #f1f5f9;
+    display: block;
+}
+
+.ktn-media-poster.placeholder {
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    position: relative;
+}
+
+.ktn-media-poster.placeholder::after {
+    content: "No Poster";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 0.9rem;
 }
 
 .ktn-media-info {

@@ -72,11 +72,13 @@ $unique_dates = array_keys($grouped_by_date);
     <!-- Cinema Header / Hero -->
     <div class="ktn-cinema-hero-block">
         <div class="ktn-cinema-hero-inner">
-            <?php if ($logo_url): ?>
             <div class="ktn-cinema-logo-container">
-                <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($cinema_name); ?> Logo" class="ktn-cinema-logo">
+                <?php if ($logo_url): ?>
+                <img src="<?php echo esc_url($logo_url); ?>" width="140" height="140" alt="<?php echo esc_attr($cinema_name); ?> Logo" class="ktn-cinema-logo">
+                <?php else: ?>
+                <div class="ktn-cinema-logo placeholder"></div>
+                <?php endif; ?>
             </div>
-            <?php endif; ?>
             
             <div class="ktn-cinema-hero-content">
                 <h1 class="ktn-cinema-main-title"><?php echo esc_html($cinema_name); ?></h1>

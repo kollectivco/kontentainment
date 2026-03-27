@@ -32,15 +32,15 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
 
 <div class="ktn-media-container">
 
-    <?php if ($backdrop_url): ?>
-    <div class="ktn-media-backdrop" style="background-image: url('<?php echo esc_url($backdrop_url); ?>');">
+    <div class="ktn-media-backdrop" style="<?php echo $backdrop_url ? "background-image: url('" . esc_url($backdrop_url) . "');" : "background: #1e293b;"; ?>">
         <div class="ktn-media-backdrop-fade"></div>
     </div>
-    <?php endif; ?>
-
+    
     <header class="ktn-media-header">
         <?php if ($poster_url): ?>
-        <img src="<?php echo esc_url($poster_url); ?>" alt="<?php the_title_attribute(); ?>" class="ktn-media-poster">
+        <img src="<?php echo esc_url($poster_url); ?>" width="250" height="375" alt="<?php the_title_attribute(); ?>" class="ktn-media-poster">
+        <?php else: ?>
+        <div class="ktn-media-poster placeholder"></div>
         <?php endif; ?>
 
         <div class="ktn-media-info">
