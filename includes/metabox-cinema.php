@@ -330,20 +330,61 @@ function ktn_ajax_get_areas_by_city() {
 }
 
 /**
+ * Add "Sync Now" row action to Cinemas list
+ */
+add_filter('post_row_actions', 'ktn_cinema_row_actions', 10, 2);
+function ktn_cinema_row_actions($actions, $post) {
+    if ($post->post_type === 'ktn_cinema' && current_user_can('manage_options')) {
+        $url = wp_nonce_url(
+            admin_url('edit.php?post_type=ktn_cinema&ktn_action=sync_cinema_list&post_id=' . $post->ID),
+            'ktn_sync_now_' . $post->ID
+        );
+        $actions['ktn_sync_now'] = '<a href="' . $url . '" style="color: #2271b1; font-weight: bold;">' . __('Sync Showtimes', 'kontentainment') . '</a>';
+    }
+    return $actions;
+}
+
+/**
  * Handle Actions (Sync & Import)
  */
 add_action('admin_init', 'ktn_handle_cinema_admin_actions');
 function ktn_handle_cinema_admin_actions()
 {
+    // List Table Action (Showtimes Only)
+    if (isset($_GET['ktn_action']) && $_GET['ktn_action'] === 'sync_cinema_list' && isset($_GET['post_id'])) {
+        $post_id = intval($_GET['post_id']);
+        if (check_admin_referer('ktn_sync_now_' . $post_id)) {
+            if (!current_user_can('manage_options')) return;
+
+            $result = Ktn_Cinema_Importer::syncCinema($post_id, false, true); // No meta refresh, showtimes only
+            
+            $redirect_url = admin_url('edit.php?post_type=ktn_cinema');
+            if ($result['success']) {
+                $redirect_url = add_query_arg([
+                    'ktn_sync_success' => 1,
+                    'added' => $result['added'],
+                    'matched' => $result['matched'],
+                    'imported' => $result['imported']
+                ], $redirect_url);
+            } else {
+                $redirect_url = add_query_arg(['ktn_sync_error' => urlencode($result['message'])], $redirect_url);
+            }
+            
+            wp_safe_redirect($redirect_url);
+            exit;
+        }
+    }
+
+    // Individual Post Edit Actions
     if (!isset($_GET['post'])) return;
     $post_id = intval($_GET['post']);
     
-    // Sync Action
+    // Original Sync Action (Full Sync)
     if (isset($_GET['ktn_action']) && $_GET['ktn_action'] === 'sync_cinema') {
         if (check_admin_referer('ktn_sync_cinema_' . $post_id)) {
             $result = Ktn_Cinema_Importer::syncCinema($post_id, false);
             if (is_array($result) && $result['success']) {
-                add_settings_error('ktn_cinema', 'sync_success', sprintf(__('Successfully synced %d showtimes.', 'kontentainment'), $result['added']), 'success');
+                add_settings_error('ktn_cinema', 'sync_success', $result['message'], 'success');
             } else {
                 $err = is_array($result) ? $result['message'] : __('Unknown sync error.', 'kontentainment');
                 add_settings_error('ktn_cinema', 'sync_fail', $err, 'error');
@@ -367,6 +408,37 @@ function ktn_handle_cinema_admin_actions()
                     add_settings_error('ktn_cinema', 'import_fail', __('Failed to import image: ', 'kontentainment') . $attach_id->get_error_message(), 'error');
                 }
             }
+        }
+    }
+}
+
+/**
+ * Admin Notices for Sync Results
+ */
+add_action('admin_notices', 'ktn_cinema_admin_notices');
+function ktn_cinema_admin_notices() {
+    global $pagenow;
+    if ($pagenow === 'edit.php' && isset($_GET['post_type']) && $_GET['post_type'] === 'ktn_cinema') {
+        if (isset($_GET['ktn_sync_success'])) {
+            $added = intval($_GET['added']);
+            $matched = intval($_GET['matched']);
+            $imported = intval($_GET['imported']);
+            ?>
+            <div class="notice notice-success is-dismissible">
+                <p>
+                    <strong><?php _e('Cinema Sync Complete:', 'kontentainment'); ?></strong><br>
+                    - <?php printf(__('Showtimes Updated: %d', 'kontentainment'), $added); ?><br>
+                    - <?php printf(__('Movies Matched: %d', 'kontentainment'), $matched); ?><br>
+                    - <?php printf(__('Newly Imported Movies: %d', 'kontentainment'), $imported); ?>
+                </p>
+            </div>
+            <?php
+        } elseif (isset($_GET['ktn_sync_error'])) {
+            ?>
+            <div class="notice notice-error is-dismissible">
+                <p><?php echo esc_html(urldecode($_GET['ktn_sync_error'])); ?></p>
+            </div>
+            <?php
         }
     }
 }
