@@ -19,6 +19,10 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
         return 'eicon-mobile';
     }
 
+    public function get_script_depends() {
+        return ['ktn-mobile-slider'];
+    }
+
     protected function register_controls() {
         $this->start_controls_section('section_query', [
             'label' => esc_html__('Query', 'kontentainment'),
@@ -119,8 +123,41 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
             'default' => 'yes',
         ]);
 
-        $this->add_control('show_cta', [
-            'label' => esc_html__('Show CTA Button', 'kontentainment'),
+        $this->end_controls_section();
+
+        $this->start_controls_section('section_slider', [
+            'label' => esc_html__('Slider Settings', 'kontentainment'),
+            'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
+        ]);
+
+        $this->add_control('slides_per_view', [
+            'label' => esc_html__('Slides per View', 'kontentainment'),
+            'type' => \Elementor\Controls_Manager::NUMBER,
+            'default' => 2,
+            'min' => 1,
+            'max' => 5,
+        ]);
+
+        $this->add_control('gap', [
+            'label' => esc_html__('Gap (px)', 'kontentainment'),
+            'type' => \Elementor\Controls_Manager::NUMBER,
+            'default' => 15,
+        ]);
+
+        $this->add_control('autoplay', [
+            'label' => esc_html__('Autoplay', 'kontentainment'),
+            'type' => \Elementor\Controls_Manager::SWITCHER,
+            'default' => 'no',
+        ]);
+
+        $this->add_control('loop', [
+            'label' => esc_html__('Loop', 'kontentainment'),
+            'type' => \Elementor\Controls_Manager::SWITCHER,
+            'default' => 'no',
+        ]);
+
+        $this->add_control('dots', [
+            'label' => esc_html__('Show Dots', 'kontentainment'),
             'type' => \Elementor\Controls_Manager::SWITCHER,
             'default' => 'yes',
         ]);
@@ -214,12 +251,29 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
 
         $query = new \WP_Query($args);
 
-        echo '<div class="ktn-mobile-movies-container">';
+        $slider_options = [
+            'slidesPerView' => $settings['slides_per_view'],
+            'spaceBetween'  => $settings['gap'],
+            'loop'          => ($settings['loop'] === 'yes'),
+            'autoplay'      => ($settings['autoplay'] === 'yes') ? ['delay' => 3000] : false,
+            'pagination'    => ($settings['dots'] === 'yes') ? ['el' => '.swiper-pagination', 'clickable' => true] : false,
+        ];
+
+        echo '<div class="ktn-mobile-slider-wrapper ktn-movies-mobile-slider elementor-slick-slider" data-settings=\'' . json_encode($slider_options) . '\'>';
         if ($query->have_posts()) {
+            echo '<div class="swiper-container ktn-mobile-swiper">';
+            echo '<div class="swiper-wrapper">';
             while ($query->have_posts()) {
                 $query->the_post();
+                echo '<div class="swiper-slide">';
                 $this->render_mobile_card(get_the_ID(), $settings);
+                echo '</div>';
             }
+            echo '</div>';
+            if ($settings['dots'] === 'yes') {
+                echo '<div class="swiper-pagination"></div>';
+            }
+            echo '</div>';
             wp_reset_postdata();
         } else {
             echo '<p class="ktn-mobile-empty">' . esc_html__('No movies found.', 'kontentainment') . '</p>';
@@ -246,10 +300,10 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
         if ($terms && !is_wp_error($terms)) {
             $genres = wp_list_pluck($terms, 'name');
         }
-        $genre_text = !empty($genres) ? implode(', ', array_slice($genres, 0, 2)) : '';
+        $genre_text = !empty($genres) ? implode(', ', array_slice($genres, 0, 1)) : '';
 
         ?>
-        <div class="ktn-mobile-movie-card">
+        <div class="ktn-mobile-movie-card ktn-card-slider-item">
             <a href="<?php echo esc_url($permalink); ?>" class="ktn-mobile-card-link">
                 <?php if ($settings['show_poster'] === 'yes'): ?>
                     <div class="ktn-mobile-card-poster">
@@ -277,12 +331,6 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
                             <span class="ktn-mobile-card-year"><?php echo esc_html($year); ?></span>
                         <?php endif; ?>
                     </div>
-
-                    <?php if ($settings['show_cta'] === 'yes'): ?>
-                        <div class="ktn-mobile-card-action">
-                            <span class="ktn-mobile-btn"><?php _e('Book Now', 'kontentainment'); ?></span>
-                        </div>
-                    <?php endif; ?>
                 </div>
             </a>
         </div>

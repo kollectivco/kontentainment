@@ -16,12 +16,17 @@ final class KTN_Elementor_Manager {
 
     public function __construct() {
         add_action('elementor/frontend/after_enqueue_styles', [$this, 'enqueue_styles']);
+        add_action('elementor/frontend/after_enqueue_scripts', [$this, 'enqueue_scripts']);
         add_action('elementor/elements/categories_registered', [$this, 'add_elementor_widget_categories']);
         add_action('elementor/widgets/register', [$this, 'register_widgets']);
     }
 
     public function enqueue_styles() {
         wp_enqueue_style('ktn-elementor-widgets', KTN_PLUGIN_URL . 'elementor/assets/css/elementor-widgets.css', [], KTN_PLUGIN_VERSION);
+    }
+
+    public function enqueue_scripts() {
+        wp_enqueue_script('ktn-mobile-slider', KTN_PLUGIN_URL . 'elementor/assets/js/mobile-slider.js', ['jquery', 'elementor-frontend'], KTN_PLUGIN_VERSION, true);
     }
 
     public function add_elementor_widget_categories($elements_manager) {

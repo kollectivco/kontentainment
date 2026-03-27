@@ -397,12 +397,17 @@
     gap: 8px;
 }
 
-/* KTN Movies Mobile Widget */
-.ktn-mobile-movies-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+/* KTN Movies Mobile Slider Widget */
+.ktn-mobile-slider-wrapper {
     width: 100%;
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 30px; /* Space for pagination */
+}
+
+.ktn-mobile-swiper {
+    width: 100%;
+    padding: 10px 0;
 }
 
 .ktn-mobile-movie-card {
@@ -411,20 +416,25 @@
     border: 1px solid var(--ktn-border);
     overflow: hidden;
     transition: var(--ktn-transition);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .ktn-mobile-card-link {
     display: flex;
+    flex-direction: column;
     text-decoration: none;
     color: inherit;
-    height: 120px;
+    height: 100%;
 }
 
 .ktn-mobile-card-poster {
-    width: 90px;
-    height: 100%;
+    width: 100%;
+    aspect-ratio: 2/3;
     position: relative;
     flex-shrink: 0;
+    overflow: hidden;
 }
 
 .ktn-mobile-card-poster img {
@@ -435,65 +445,64 @@
 
 .ktn-mobile-card-rating {
     position: absolute;
-    top: 6px;
-    right: 6px;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 700;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 800;
     display: flex;
     align-items: center;
-    gap: 2px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    gap: 3px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .ktn-mobile-card-details {
     padding: 12px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     flex-grow: 1;
-    min-width: 0;
 }
 
 .ktn-mobile-card-title {
-    margin: 0 0 4px 0;
-    font-size: 1.1em;
+    margin: 0 0 6px 0;
+    font-size: 0.95em;
     font-weight: 700;
     color: var(--ktn-text-main);
-    white-space: nowrap;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .ktn-mobile-card-meta {
     display: flex;
-    gap: 8px;
-    font-size: 0.8em;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75em;
     color: var(--ktn-text-muted);
-    margin-bottom: 8px;
+    margin-top: auto;
 }
 
 .ktn-mobile-card-genre {
     color: var(--ktn-primary);
     font-weight: 600;
-}
-
-.ktn-mobile-card-action {
-    margin-top: auto;
-}
-
-.ktn-mobile-btn {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 700;
     text-transform: uppercase;
-    color: var(--ktn-primary);
-    background: var(--ktn-secondary);
-    padding: 4px 10px;
-    border-radius: 4px;
-    transition: var(--ktn-transition);
+    letter-spacing: 0.5px;
+}
+
+/* Swiper Dots Styling */
+.swiper-pagination-bullet {
+    background: var(--ktn-primary) !important;
+    opacity: 0.2 !important;
+}
+.swiper-pagination-bullet-active {
+    opacity: 1 !important;
+    width: 18px !important;
+    border-radius: 4px !important;
+    transition: var(--ktn-transition) !important;
 }
 
 /* Visibility Logic: Hide on Desktop/Tablet */
