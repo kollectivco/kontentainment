@@ -130,11 +130,11 @@ else {
 // Convert Gender
 $gender_text = '-';
 if ($gender === 1)
-    $gender_text = 'Female';
+    $gender_text = __('Female', 'kontentainment');
 elseif ($gender === 2)
-    $gender_text = 'Male';
+    $gender_text = __('Male', 'kontentainment');
 elseif ($gender === 3)
-    $gender_text = 'Non-binary';
+    $gender_text = __('Non-binary', 'kontentainment');
 
 // Calculate Age
 $age_text = '';
@@ -143,8 +143,9 @@ if ($birthday) {
         $birthDate = new DateTime($birthday);
         $now = new DateTime();
         $age = $now->diff($birthDate)->y;
-        $age_text = " ({$age} years old)";
-        $birthday = date('F j, Y', strtotime($birthday));
+        $age_text = sprintf(esc_html__(' (%d years old)', 'kontentainment'), $age);
+        $birthday_ts = strtotime($birthday);
+        $birthday = $birthday_ts ? sprintf(esc_html__('%1$s %2$d, %3$d', 'kontentainment'), __(date('F', $birthday_ts), 'kontentainment'), date('j', $birthday_ts), date('Y', $birthday_ts)) : '';
     }
     catch (Exception $e) {
     // fail silently if datetime parsing fails
@@ -207,35 +208,35 @@ $tw_icon = '<svg fill="currentColor" width="24" height="24" viewBox="0 0 24 24">
             <?php
 endif; ?>
 
-            <h3 style="font-size: 1.4em; font-weight: bold; margin-bottom: 15px;">Personal Info</h3>
+            <h3 style="font-size: 1.4em; font-weight: bold; margin-bottom: 15px;"><?php esc_html_e('Personal Info', 'kontentainment'); ?></h3>
 
             <div style="margin-bottom: 20px;">
-                <strong style="display:block; font-size: 1em;">Known For</strong>
+                <strong style="display:block; font-size: 1em;"><?php esc_html_e('Known For', 'kontentainment'); ?></strong>
                 <span style="font-size: 0.95em; color: #444;">
-                    <?php echo esc_html($known_for_department ? $known_for_department : 'Acting'); ?>
+                    <?php echo esc_html($known_for_department ? __($known_for_department, 'kontentainment') : __('Acting', 'kontentainment')); ?>
                 </span>
             </div>
             <div style="margin-bottom: 20px;">
-                <strong style="display:block; font-size: 1em;">Known Credits</strong>
+                <strong style="display:block; font-size: 1em;"><?php esc_html_e('Known Credits', 'kontentainment'); ?></strong>
                 <span style="font-size: 0.95em; color: #444;">
                     <?php echo esc_html($known_credits_count); ?>
                 </span>
             </div>
             <div style="margin-bottom: 20px;">
-                <strong style="display:block; font-size: 1em;">Gender</strong>
+                <strong style="display:block; font-size: 1em;"><?php esc_html_e('Gender', 'kontentainment'); ?></strong>
                 <span style="font-size: 0.95em; color: #444;">
                     <?php echo esc_html($gender_text); ?>
                 </span>
             </div>
             <div style="margin-bottom: 20px;">
-                <strong style="display:block; font-size: 1em;">Birthday</strong>
+                <strong style="display:block; font-size: 1em;"><?php esc_html_e('Birthday', 'kontentainment'); ?></strong>
                 <span style="font-size: 0.95em; color: #444;">
                     <?php echo esc_html($birthday); ?>
                     <?php echo esc_html($age_text); ?>
                 </span>
             </div>
             <div style="margin-bottom: 20px;">
-                <strong style="display:block; font-size: 1em;">Place of Birth</strong>
+                <strong style="display:block; font-size: 1em;"><?php esc_html_e('Place of Birth', 'kontentainment'); ?></strong>
                 <span style="font-size: 0.95em; color: #444;">
                     <?php echo esc_html($place_of_birth ? $place_of_birth : '-'); ?>
                 </span>
@@ -243,7 +244,7 @@ endif; ?>
 
             <?php if (!empty($also_known_as)): ?>
             <div style="margin-bottom: 20px;">
-                <strong style="display:block; font-size: 1em; margin-bottom: 5px;">Also Known As</strong>
+                <strong style="display:block; font-size: 1em; margin-bottom: 5px;"><?php esc_html_e('Also Known As', 'kontentainment'); ?></strong>
                 <?php foreach (array_slice($also_known_as, 0, 5) as $aka): ?>
                 <span style="display:block; font-size: 0.9em; color: #444; margin-bottom: 4px;">
                     <?php echo esc_html($aka); ?>
@@ -263,7 +264,7 @@ endif; ?>
 
             <?php if ($bio): ?>
             <div style="margin-bottom: 40px;">
-                <h2 style="font-size: 1.3em; font-weight: bold; margin-bottom: 12px;">Biography</h2>
+                <h2 style="font-size: 1.3em; font-weight: bold; margin-bottom: 12px;"><?php esc_html_e('Biography', 'kontentainment'); ?></h2>
                 <div style="font-size: 1em; line-height: 1.6; color: #000;">
                     <?php echo wp_kses_post(nl2br($bio)); ?>
                 </div>
@@ -273,12 +274,12 @@ endif; ?>
 
             <?php if ($local_media_query->have_posts()): ?>
             <div style="margin-bottom: 40px;">
-                <h2 style="font-size: 1.3em; font-weight: bold; margin-bottom: 15px;">Known For</h2>
+                <h2 style="font-size: 1.3em; font-weight: bold; margin-bottom: 15px;"><?php esc_html_e('Known For', 'kontentainment'); ?></h2>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px;">
                     <?php while ($local_media_query->have_posts()):
         $local_media_query->the_post();
         $poster_path = get_post_meta(get_the_ID(), '_movie_poster_path', true);
-        $poster_url = $poster_path ? "https://image.tmdb.org/t/p/w500" . $poster_path : "https://via.placeholder.com/500x750?text=No+Poster";
+        $poster_url = $poster_path ? "https://image.tmdb.org/t/p/w500" . $poster_path : "https://via.placeholder.com/500x750?text=" . urlencode(__('No Poster', 'kontentainment'));
 ?>
                     <a href="<?php the_permalink(); ?>" class="ktn-related-card"
                         style="text-decoration: none; color: inherit; display: block; position: relative; border-radius: 8px; overflow: hidden; background: #fff; text-align: center;">
@@ -300,7 +301,7 @@ endif; ?>
 
             <?php if (!empty($acting_credits)): ?>
             <div>
-                <h2 style="font-size: 1.3em; font-weight: bold; margin-bottom: 15px;">Acting</h2>
+                <h2 style="font-size: 1.3em; font-weight: bold; margin-bottom: 15px;"><?php esc_html_e('Acting', 'kontentainment'); ?></h2>
                 <div
                     style="border: 1px solid #e3e3e3; border-radius: 8px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 40px;">
                     <?php
@@ -309,6 +310,7 @@ endif; ?>
         $year = $release_date ? substr($release_date, 0, 4) : '—';
         $title = $credit['title'] ?? $credit['name'] ?? '';
         $character = $credit['character'] ?? '';
+        $acting_credits_as_text = __('as', 'kontentainment');
 ?>
                     <div
                         style="display: flex; padding: 15px 20px; border-bottom: 1px solid #f0f0f0; align-items: flex-start;">
@@ -325,15 +327,14 @@ endif; ?>
                             </strong>
                             <?php if ($character): ?>
                             <span style="color: #666; font-size: 0.95em; display: block;">
-                                as
+                                <?php echo esc_html($acting_credits_as_text); ?>
                                 <?php echo esc_html($character); ?>
                             </span>
                             <?php
         endif; ?>
                             <?php if (isset($credit['episode_count']) && $credit['episode_count'] > 0): ?>
                             <span style="color: #999; font-size: 0.85em; display: inline-block; margin-top: 2px;">
-                                <?php echo esc_html($credit['episode_count']); ?> episode
-                                <?php echo ($credit['episode_count'] > 1 ? 's' : ''); ?>
+                                <?php printf(esc_html(_n('%d episode', '%d episodes', $credit['episode_count'], 'kontentainment')), $credit['episode_count']); ?>
                             </span>
                             <?php
         endif; ?>

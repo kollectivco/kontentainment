@@ -56,12 +56,12 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
             <?php endif; ?>
 
             <div class="ktn-media-meta">
-                <span class="ktn-meta-badge type"><?php echo $post_type === 'tv_show' ? 'TV Show' : 'Movie'; ?></span>
+                <span class="ktn-meta-badge type"><?php echo $post_type === 'tv_show' ? esc_html__('TV Show', 'kontentainment') : esc_html__('Movie', 'kontentainment'); ?></span>
                 <?php if ($rating): ?>
                 <span class="ktn-meta-badge rating">&#9733; <?php echo esc_html($rating); ?>/10</span>
                 <?php endif; ?>
                 <?php if ($runtime): ?>
-                <span class="ktn-meta-badge runtime"><?php echo esc_html($runtime); ?> min</span>
+                <span class="ktn-meta-badge runtime"><?php printf(esc_html__('%d min', 'kontentainment'), $runtime); ?></span>
                 <?php endif; ?>
                 <?php if ($certification): ?>
                 <span class="ktn-meta-badge cert"><?php echo esc_html($certification); ?></span>
@@ -77,7 +77,7 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
             <?php endif; ?>
 
             <div class="ktn-media-overview">
-                <p><strong>Overview:</strong><br>
+                <p><strong><?php esc_html_e('Overview:', 'kontentainment'); ?></strong><br>
                     <?php echo wp_kses_post($overview); ?>
                 </p>
             </div>
@@ -85,14 +85,14 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
             <div class="ktn-media-credits">
                 <?php if ($director): ?>
                 <div class="ktn-credit-item">
-                    <strong>Director:</strong>
+                    <strong><?php esc_html_e('Director:', 'kontentainment'); ?></strong>
                     <span><?php echo esc_html($director); ?></span>
                 </div>
                 <?php endif; ?>
 
                 <?php if (!empty($writers) && is_array($writers)): ?>
                 <div class="ktn-credit-item">
-                    <strong>Writers:</strong>
+                    <strong><?php esc_html_e('Writers:', 'kontentainment'); ?></strong>
                     <span><?php echo esc_html(implode(', ', $writers)); ?></span>
                 </div>
                 <?php endif; ?>
@@ -104,12 +104,12 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
         $cast = json_decode($cast_json, true);
         if (!empty($cast)): ?>
         <section class="ktn-media-credits-section" style="margin-top: 50px;">
-            <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 25px;">Cast</h2>
+            <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 25px;"><?php esc_html_e('Cast', 'kontentainment'); ?></h2>
             <div style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 25px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
                 <?php foreach ($cast as $actor):
                     $term_link = get_term_link($actor['name'], 'ktn_cast');
                     $actor_url = is_wp_error($term_link) ? '#' : esc_url($term_link);
-                    $actor_img = $actor['profile_path'] ? "https://image.tmdb.org/t/p/w185" . $actor['profile_path'] : "https://via.placeholder.com/185x278?text=No+Photo";
+                    $actor_img = $actor['profile_path'] ? "https://image.tmdb.org/t/p/w185" . $actor['profile_path'] : "https://via.placeholder.com/185x278?text=" . urlencode(__('No Photo', 'kontentainment'));
                 ?>
                 <a href="<?php echo $actor_url; ?>" style="scroll-snap-align: start; text-decoration: none; flex: 0 0 160px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; color: inherit; display: block; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition: all 0.2s;">
                     <img src="<?php echo esc_url($actor_img); ?>" alt="<?php echo esc_attr($actor['name']); ?>" style="width: 100%; height: 220px; object-fit: cover; display: block;">
@@ -154,13 +154,20 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
             <div class="ktn-st-header-flex">
                 <h2 class="ktn-st-section-title">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ticket-play"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="m9 9 5 3-5 3Z"/></svg>
-                    Theater Showtimes
+                    <?php esc_html_e('Theater Showtimes', 'kontentainment'); ?>
                 </h2>
                 <div class="ktn-st-date-tabs">
                     <div class="ktn-st-tabs-scroll">
                         <?php $is_first = true; foreach ($unique_dates as $date): ?>
                         <button class="ktn-st-date-btn <?php echo $is_first ? 'active' : ''; ?>" data-date-target="media-date-<?php echo esc_attr(md5($date)); ?>">
-                            <?php echo esc_html(strtotime($date) ? date('D, M j', strtotime($date)) : $date); ?>
+                            <?php 
+                            $date_ts = strtotime($date);
+                            if ($date_ts) {
+                                printf(esc_html__('%1$s, %2$s %3$d', 'kontentainment'), __(date('D', $date_ts), 'kontentainment'), __(date('M', $date_ts), 'kontentainment'), date('j', $date_ts));
+                            } else {
+                                echo esc_html($date);
+                            }
+                            ?>
                         </button>
                         <?php $is_first = false; endforeach; ?>
                     </div>
@@ -200,7 +207,7 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
                                     <?php endif; ?>
                                 </div>
                                 <?php if ($cinema_link): ?>
-                                    <a href="<?php echo esc_url($cinema_link); ?>" class="ktn-cinema-card-link">View Cinema &rarr;</a>
+                                    <a href="<?php echo esc_url($cinema_link); ?>" class="ktn-cinema-card-link"><?php esc_html_e('View Cinema &rarr;', 'kontentainment'); ?></a>
                                 <?php endif; ?>
                             </div>
                             
@@ -220,7 +227,7 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
                         <?php if ($total_cinemas > $cinema_limit): ?>
                         <div class="ktn-st-load-more-cinemas-wrapper">
                             <button class="ktn-st-load-more-btn" data-hidden-count="<?php echo ($total_cinemas - $cinema_limit); ?>">
-                                <span class="ktn-btn-text">+<?php echo ($total_cinemas - $cinema_limit); ?> <?php _e('More Cinemas', 'kontentainment'); ?></span>
+                                <span class="ktn-btn-text"><?php printf(esc_html(_n('+%d More Cinema', '+%d More Cinemas', $total_cinemas - $cinema_limit, 'kontentainment')), $total_cinemas - $cinema_limit); ?></span>
                                 <span class="dashicons dashicons-arrow-down-alt2"></span>
                             </button>
                         </div>
@@ -235,14 +242,14 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
 
     <?php if ($trailer_url): ?>
     <section class="ktn-media-trailer" style="margin-top: 50px;">
-        <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 25px;">Trailer</h2>
+        <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 25px;"><?php esc_html_e('Trailer', 'kontentainment'); ?></h2>
         <div style="max-width: 900px; margin: 0 auto;">
             <?php
             $embed = wp_oembed_get($trailer_url);
             if ($embed) {
                 echo '<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">' . str_replace('<iframe', '<iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"', $embed) . '</div>';
             } else {
-                echo '<a href="' . esc_url($trailer_url) . '" target="_blank" class="button">Watch Trailer on YouTube</a>';
+                echo '<a href="' . esc_url($trailer_url) . '" target="_blank" class="button">' . esc_html__('Watch Trailer on YouTube', 'kontentainment') . '</a>';
             }
             ?>
         </div>
@@ -263,7 +270,7 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
     $related_query = new WP_Query($related_args);
 
     if ($related_query->have_posts()):
-        $section_title = $post_type === 'tv_show' ? 'Related TV Shows' : 'Related Movies';
+        $section_title = $post_type === 'tv_show' ? esc_html__('Related TV Shows', 'kontentainment') : esc_html__('Related Movies', 'kontentainment');
     ?>
     <section class="ktn-related-media">
         <h2 class="ktn-related-title"><?php echo esc_html($section_title); ?></h2>
@@ -272,7 +279,7 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
                 <?php while ($related_query->have_posts()): $related_query->the_post();
                     $rel_id = get_the_ID();
                     $rel_poster_path = get_post_meta($rel_id, '_movie_poster_path', true);
-                    $rel_poster_url = $rel_poster_path ? "https://image.tmdb.org/t/p/w500" . $rel_poster_path : "https://via.placeholder.com/500x750?text=No+Poster";
+                    $rel_poster_url = $rel_poster_path ? "https://image.tmdb.org/t/p/w500" . $rel_poster_path : "https://via.placeholder.com/500x750?text=" . urlencode(__('No Poster', 'kontentainment'));
                 ?>
                 <a href="<?php the_permalink(); ?>" class="ktn-related-card">
                     <img src="<?php echo esc_url($rel_poster_url); ?>" alt="<?php the_title_attribute(); ?>" class="ktn-related-poster">

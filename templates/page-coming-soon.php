@@ -48,7 +48,7 @@ $coming_soon_query = new WP_Query($args);
 <div class="ktn-archive-wrapper">
     <div class="ktn-archive-header">
         <h1 class="ktn-archive-title"><?php esc_html_e('Coming Soon', 'kontentainment'); ?></h1>
-        <p class="ktn-archive-description">Discover movies releasing soon.</p>
+        <p class="ktn-archive-description"><?php esc_html_e('Discover movies releasing soon.', 'kontentainment'); ?></p>
     </div>
 
     <?php if ($coming_soon_query->have_posts()): ?>
@@ -83,7 +83,12 @@ $coming_soon_query = new WP_Query($args);
             <div class="ktn-archive-card ktn-movie-card">
                 <?php if ($release_date): ?>
                     <div class="ktn-badge" style="background:#111; color:#fff;">
-                        <?php echo esc_html(date('M j, Y', strtotime($release_date))); ?>
+                        <?php 
+                        $release_date_ts = strtotime($release_date);
+                        if ($release_date_ts) {
+                            printf(esc_html__('%1$s %2$d, %3$d', 'kontentainment'), __(date('M', $release_date_ts), 'kontentainment'), date('j', $release_date_ts), date('Y', $release_date_ts));
+                        }
+                        ?>
                     </div>
                 <?php endif; ?>
                 
@@ -91,7 +96,7 @@ $coming_soon_query = new WP_Query($args);
                     <?php if ($poster_url): ?>
                         <img src="<?php echo esc_url($poster_url); ?>" alt="<?php the_title_attribute(); ?> Poster">
                     <?php else: ?>
-                        <div style="font-size: 1.5rem; color: #ccc;">No Poster</div>
+                        <div style="font-size: 1.5rem; color: #ccc;"><?php esc_html_e('No Poster', 'kontentainment'); ?></div>
                     <?php endif; ?>
                 </div>
 
@@ -110,7 +115,7 @@ $coming_soon_query = new WP_Query($args);
                     <?php if ($trailer_url): ?>
                         <a href="<?php echo esc_url($trailer_url); ?>" target="_blank" class="ktn-trailer-link">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align: middle; margin-right: 5px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                            Watch Trailer
+                            <?php esc_html_e('Watch Trailer', 'kontentainment'); ?>
                         </a>
                     <?php endif; ?>
 
@@ -121,7 +126,7 @@ $coming_soon_query = new WP_Query($args);
                     <?php endif; ?>
                     
                     <div class="ktn-card-action">
-                        <a href="<?php the_permalink(); ?>">View Details</a>
+                        <a href="<?php the_permalink(); ?>"><?php esc_html_e('View Details', 'kontentainment'); ?></a>
                     </div>
                 </div>
             </div>
@@ -136,14 +141,14 @@ $coming_soon_query = new WP_Query($args);
             'format' => '?paged=%#%',
             'current' => max(1, get_query_var('paged')),
             'total' => $coming_soon_query->max_num_pages,
-            'prev_text' => '&laquo; Previous',
-            'next_text' => 'Next &raquo;',
+            'prev_text' => esc_html__('&laquo; Previous', 'kontentainment'),
+            'next_text' => esc_html__('Next &raquo;', 'kontentainment'),
         ));
         echo '</div>';
         wp_reset_postdata();
         ?>
     <?php else: ?>
-        <p style="text-align: center; color: #777;">No movies are in the coming soon list.</p>
+        <p style="text-align: center; color: #777;"><?php esc_html_e('No movies are in the coming soon list.', 'kontentainment'); ?></p>
     <?php endif; ?>
 
 </div>

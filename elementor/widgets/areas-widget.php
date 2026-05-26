@@ -94,7 +94,7 @@ class KTN_Areas_Widget extends KTN_Elementor_Base_Widget {
                     <div class="ktn-area-content">
                         <h3 class="ktn-area-title"><?php echo esc_html($area->name); ?></h3>
                         <?php if ($settings['show_count'] === 'yes'): ?>
-                            <span class="ktn-area-count"><?php echo intval($area->count); ?> Cinemas</span>
+                            <span class="ktn-area-count"><?php printf(esc_html(_n('%d Cinema', '%d Cinemas', $area->count, 'kontentainment')), $area->count); ?></span>
                         <?php endif; ?>
                         <?php if ($settings['show_desc'] === 'yes' && !empty($area->description)): ?>
                             <p class="ktn-area-desc"><?php echo wp_trim_words($area->description, 15); ?></p>
@@ -106,7 +106,7 @@ class KTN_Areas_Widget extends KTN_Elementor_Base_Widget {
             }
             echo '</div>';
         } else {
-            echo '<p>No cinematic areas found.</p>';
+            echo '<p>' . esc_html__('No cinematic areas found.', 'kontentainment') . '</p>';
         }
 
         echo '</div>';

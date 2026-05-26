@@ -1,0 +1,116 @@
+/**
+ * Premium Right-to-Left (RTL) Stylesheet for Kontentainment
+ * Optimizes typography, grids, layout alignments, flexboxes, margins, and micro-interactions for Arabic flow.
+ */
+
+/* General RTL Document Flows & Alignments */
+.ktn-archive-wrapper,
+.ktn-cinema-page-wrapper,
+.ktn-media-container,
+.ktn-cast-container,
+.ktn-guides-container,
+.ktn-elementor-showtimes-wrapper,
+.ktn-elementor-cinemas-wrapper,
+.ktn-elementor-movies-wrapper,
+.ktn-elementor-areas-wrapper {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+/* Float / Flex Directions & Margins */
+.ktn-archive-header,
+.ktn-guides-header {
+    text-align: center !important; /* Retain center on headers */
+}
+
+/* Movie Poster / Rating Card */
+.ktn-premium-movie-card .ktn-card-badge-rating {
+    left: auto !important;
+    right: 15px !important;
+}
+
+/* Dynamic Date tabs scroll flows */
+.ktn-date-tabs-scroll,
+.ktn-st-tabs-scroll {
+    text-align: right !important;
+}
+
+.ktn-st-date-btn {
+    white-space: nowrap !important;
+}
+
+/* Cinema / Movie Single lists */
+.ktn-cinema-hero-inner,
+.ktn-card-main-flex {
+    flex-direction: row !important;
+}
+
+@media (max-width: 768px) {
+    .ktn-cinema-hero-inner,
+    .ktn-card-main-flex {
+        flex-direction: column !important;
+    }
+}
+
+/* Fix separators */
+.ktn-meta-runtime::before,
+.ktn-meta-genres::before {
+    margin-right: 0 !important;
+    margin-left: 12px !important;
+}
+
+/* Action arrows & link states */
+.ktn-card-cta:hover {
+    transform: translateX(-4px) !important;
+}
+
+/* Cinema info list icons spacing */
+.ktn-info-panel-list li i,
+.ktn-st-cinema-card .dashicons,
+.ktn-card-meta-item svg,
+.ktn-cinema-card-meta svg,
+.ktn-card-location span.dashicons,
+.ktn-card-movie-count span.dashicons {
+    margin-left: 6px !important;
+    margin-right: 0 !important;
+}
+
+/* Cast sliders snap alignment */
+.ktn-media-credits-section div {
+    text-align: right !important;
+}
+
+/* Arrow flips in guides */
+.ktn-area-arrow {
+    transform: scaleX(-1) !important;
+}
+
+/* Specific elements inside Elementor widgets */
+.ktn-search-box span.dashicons {
+    right: auto !important;
+    left: 10px !important;
+}
+
+.ktn-search-box input {
+    padding-left: 40px !important;
+    padding-right: 15px !important;
+}
+
+/* CTA buttons inside guides */
+.ktn-card-cta .dashicons {
+    transform: scaleX(-1) !important;
+}
+
+.ktn-card-cta:hover .dashicons {
+    transform: scaleX(-1) translateX(3px) !important;
+}
+
+.ktn-badge {
+    right: auto !important;
+    left: 15px !important;
+}
+
+/* Cinema Card stars */
+.ktn-premium-cinema-card .ktn-card-stars {
+    flex-direction: row-reverse !important;
+}

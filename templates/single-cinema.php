@@ -103,7 +103,7 @@ $unique_dates = array_keys($grouped_by_date);
 
                 <div class="ktn-cinema-hero-actions">
                     <?php if ($map_link): ?>
-                        <a href="<?php echo esc_url($map_link); ?>" target="_blank" class="ktn-cinema-btn-primary">Get Directions</a>
+                        <a href="<?php echo esc_url($map_link); ?>" target="_blank" class="ktn-cinema-btn-primary"><?php esc_html_e('Get Directions', 'kontentainment'); ?></a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -113,7 +113,7 @@ $unique_dates = array_keys($grouped_by_date);
         <div class="ktn-cinema-notes-panel">
             <div class="ktn-cinema-notes-title">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                Cinema Notes
+                <?php esc_html_e('Cinema Notes', 'kontentainment'); ?>
             </div>
             <div class="ktn-cinema-notes-content">
                 <?php echo wp_kses_post(wpautop($notes)); ?>
@@ -125,8 +125,8 @@ $unique_dates = array_keys($grouped_by_date);
     <?php if (empty($grouped_by_date)): ?>
     <div class="ktn-cinema-empty-state">
         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ticket"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 11v2"/><path d="M13 17v2"/></svg>
-        <h3>No showtimes currently available</h3>
-        <p>There are no movies playing at this cinema right now. Please check back later.</p>
+        <h3><?php esc_html_e('No showtimes currently available', 'kontentainment'); ?></h3>
+        <p><?php esc_html_e('There are no movies playing at this cinema right now. Please check back later.', 'kontentainment'); ?></p>
     </div>
     <?php else: ?>
 
@@ -136,9 +136,9 @@ $unique_dates = array_keys($grouped_by_date);
             <?php $is_first = true;
             foreach ($unique_dates as $index => $date): 
                 $timestamp = strtotime($date);
-                $day_name = $timestamp ? date('D', $timestamp) : '';
+                $day_name = $timestamp ? __(date('D', $timestamp), 'kontentainment') : '';
                 $day_num = $timestamp ? date('j', $timestamp) : '';
-                $month_name = $timestamp ? date('M', $timestamp) : '';
+                $month_name = $timestamp ? __(date('M', $timestamp), 'kontentainment') : '';
             ?>
             <button class="ktn-date-tab-btn <?php echo $is_first ? 'active' : ''; ?>"
                 data-date-target="date-<?php echo esc_attr(md5($date)); ?>">
@@ -208,10 +208,10 @@ $unique_dates = array_keys($grouped_by_date);
                         <div class="ktn-card-poster ktn-poster-fallback">
                             <?php if ($permalink): ?>
                             <a href="<?php echo esc_url($permalink); ?>">
-                                <div class="ktn-fallback-inner">No Poster</div>
+                                <div class="ktn-fallback-inner"><?php esc_html_e('No Poster', 'kontentainment'); ?></div>
                             </a>
                             <?php else: ?>
-                                <div class="ktn-fallback-inner">No Poster</div>
+                                <div class="ktn-fallback-inner"><?php esc_html_e('No Poster', 'kontentainment'); ?></div>
                             <?php endif; ?>
                         </div>
                         <?php endif; ?>
@@ -234,7 +234,7 @@ $unique_dates = array_keys($grouped_by_date);
                                     <span class="ktn-meta-cert"><?php echo esc_html($certification); ?></span>
                                 <?php endif; ?>
                                 <?php if ($runtime): ?>
-                                    <span class="ktn-meta-runtime"><?php echo esc_html($runtime); ?> min</span>
+                                    <span class="ktn-meta-runtime"><?php printf(esc_html__('%d min', 'kontentainment'), $runtime); ?></span>
                                 <?php endif; ?>
                                 <?php if ($genres_str): ?>
                                     <span class="ktn-meta-genres"><?php echo esc_html($genres_str); ?></span>
@@ -255,7 +255,7 @@ $unique_dates = array_keys($grouped_by_date);
                             </div>
                             
                             <?php if ($permalink): ?>
-                                <a href="<?php echo esc_url($permalink); ?>" class="ktn-card-cta">View Details &rarr;</a>
+                                <a href="<?php echo esc_url($permalink); ?>" class="ktn-card-cta"><?php esc_html_e('View Details &rarr;', 'kontentainment'); ?></a>
                             <?php endif; ?>
                         </div>
                     </div>

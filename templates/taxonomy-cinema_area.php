@@ -15,16 +15,16 @@ $areas = get_terms([
 
 <div class="ktn-archive-wrapper">
     <div class="ktn-archive-header">
-        <h1 class="ktn-archive-title"><?php echo esc_html($current_term->name); ?> Cinemas</h1>
+        <h1 class="ktn-archive-title"><?php printf(esc_html__('%s Cinemas', 'kontentainment'), esc_html($current_term->name)); ?></h1>
         <?php if ($current_term->description): ?>
             <p class="ktn-archive-description"><?php echo esc_html($current_term->description); ?></p>
         <?php else: ?>
-            <p class="ktn-archive-description">Cinemas located in <?php echo esc_html($current_term->name); ?>.</p>
+            <p class="ktn-archive-description"><?php printf(esc_html__('Cinemas located in %s.', 'kontentainment'), esc_html($current_term->name)); ?></p>
         <?php endif; ?>
         
         <?php if (!empty($areas) && !is_wp_error($areas)): ?>
         <div class="ktn-archive-filters" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-            <a href="<?php echo esc_url(get_post_type_archive_link('ktn_cinema')); ?>" class="ktn-premium-chip" style="text-decoration: none; padding: 6px 14px; background: #f0f0f0; color: #333; border-radius: 20px; font-weight: 500; font-size: 0.9rem; transition: background 0.2s;">All Areas</a>
+            <a href="<?php echo esc_url(get_post_type_archive_link('ktn_cinema')); ?>" class="ktn-premium-chip" style="text-decoration: none; padding: 6px 14px; background: #f0f0f0; color: #333; border-radius: 20px; font-weight: 500; font-size: 0.9rem; transition: background 0.2s;"><?php esc_html_e('All Areas', 'kontentainment'); ?></a>
             <?php foreach ($areas as $area): ?>
                 <a href="<?php echo esc_url(get_term_link($area)); ?>" class="ktn-premium-chip <?php echo ($current_term->term_id === $area->term_id) ? 'active' : ''; ?>" style="text-decoration: none; padding: 6px 14px; border-radius: 20px; font-weight: 500; font-size: 0.9rem; transition: background 0.2s; <?php echo ($current_term->term_id === $area->term_id) ? 'background: #111; color: #fff;' : 'background: #f0f0f0; color: #333;'; ?>"><?php echo esc_html($area->name); ?></a>
             <?php endforeach; ?>
@@ -68,21 +68,21 @@ $areas = get_terms([
                     
                     <div class="ktn-card-meta">
                         <?php if ($address): ?>
-                            <span class="ktn-card-meta-item" title="Address">
+                            <span class="ktn-card-meta-item" title="<?php esc_attr_e('Address', 'kontentainment'); ?>">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                                 <?php echo esc_html(wp_trim_words($address, 5, '...')); ?>
                             </span>
                         <?php endif; ?>
                         <?php if ($playing_count > 0): ?>
-                            <span class="ktn-card-meta-item" title="Playing Movies">
+                            <span class="ktn-card-meta-item" title="<?php esc_attr_e('Playing Movies', 'kontentainment'); ?>">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                                <?php echo absint($playing_count); ?> Movies Playing
+                                <?php printf(esc_html(_n('%d Movie Playing', '%d Movies Playing', $playing_count, 'kontentainment')), $playing_count); ?>
                             </span>
                         <?php endif; ?>
                     </div>
                     
                     <div class="ktn-card-action">
-                        <a href="<?php the_permalink(); ?>">View Showtimes</a>
+                        <a href="<?php the_permalink(); ?>"><?php esc_html_e('View Showtimes', 'kontentainment'); ?></a>
                     </div>
                 </div>
             </div>
@@ -91,12 +91,12 @@ $areas = get_terms([
         
         <?php 
         the_posts_pagination(array(
-            'prev_text' => '&laquo; Previous',
-            'next_text' => 'Next &raquo;',
+            'prev_text' => esc_html__('&laquo; Previous', 'kontentainment'),
+            'next_text' => esc_html__('Next &raquo;', 'kontentainment'),
         )); 
         ?>
     <?php else: ?>
-        <p style="text-align: center; color: #777;">No cinemas found in this area.</p>
+        <p style="text-align: center; color: #777;"><?php esc_html_e('No cinemas found in this area.', 'kontentainment'); ?></p>
     <?php endif; ?>
 
 </div>

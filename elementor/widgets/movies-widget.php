@@ -232,7 +232,7 @@ class KTN_Movies_Widget extends KTN_Elementor_Base_Widget {
             echo '</div>';
             wp_reset_postdata();
         } else {
-            echo '<p class="ktn-elem-empty">No movies found matching criteria.</p>';
+            echo '<p class="ktn-elem-empty">' . esc_html__('No movies found matching criteria.', 'kontentainment') . '</p>';
         }
         echo '</div>';
     }

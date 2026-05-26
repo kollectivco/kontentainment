@@ -61,7 +61,7 @@ class KTN_Cinema_Single_Widget extends KTN_Elementor_Base_Widget {
         $post_id = ($settings['context'] === 'manual' && $settings['cinema_id']) ? intval($settings['cinema_id']) : get_the_ID();
 
         if (!$post_id || get_post_type($post_id) !== 'ktn_cinema') {
-            echo '<div class="ktn-elem-notice">Cinema data not found. Please ensure context is correct.</div>';
+            echo '<div class="ktn-elem-notice">' . esc_html__('Cinema data not found. Please ensure context is correct.', 'kontentainment') . '</div>';
             return;
         }
 
@@ -87,17 +87,17 @@ class KTN_Cinema_Single_Widget extends KTN_Elementor_Base_Widget {
             
             echo '<ul class="ktn-info-panel-list">';
             if ($address) echo '<li><i class="fa fa-map-marker"></i> ' . esc_html($address) . '</li>';
-            if ($area_name) echo '<li><i class="fa fa-map"></i> Area: <a href="' . esc_url(get_term_link($terms[0])) . '">' . esc_html($area_name) . '</a></li>';
+            if ($area_name) echo '<li><i class="fa fa-map"></i> ' . esc_html__('Area:', 'kontentainment') . ' <a href="' . esc_url(get_term_link($terms[0])) . '">' . esc_html($area_name) . '</a></li>';
             echo '</ul>';
             if ($address) {
-                echo '<a href="https://maps.google.com/?q=' . urlencode($address) . '" target="_blank" class="ktn-btn-secondary"><i class="fa fa-external-link"></i> Get Directions</a>';
+                echo '<a href="https://maps.google.com/?q=' . urlencode($address) . '" target="_blank" class="ktn-btn-secondary"><i class="fa fa-external-link"></i> ' . esc_html__('Get Directions', 'kontentainment') . '</a>';
             }
             
         } elseif ($block === 'notes') {
             $content = get_post_field('post_content', $post_id);
             if (!empty($content)) {
                 echo '<div class="ktn-notes">';
-                echo '<h3>Cinema Information</h3>';
+                echo '<h3>' . esc_html__('Cinema Information', 'kontentainment') . '</h3>';
                 echo apply_filters('the_content', $content);
                 echo '</div>';
             }
@@ -112,10 +112,10 @@ class KTN_Cinema_Single_Widget extends KTN_Elementor_Base_Widget {
             if ($count > 0) {
                 echo '<div class="ktn-stats-box">';
                 echo '<span class="ktn-stats-number">' . intval($count) . '</span>';
-                echo '<span class="ktn-stats-label">Movies Now Playing</span>';
+                echo '<span class="ktn-stats-label">' . esc_html__('Movies Now Playing', 'kontentainment') . '</span>';
                 echo '</div>';
             } else {
-                echo '<p>No movies playing right now.</p>';
+                echo '<p>' . esc_html__('No movies playing right now.', 'kontentainment') . '</p>';
             }
         }
 

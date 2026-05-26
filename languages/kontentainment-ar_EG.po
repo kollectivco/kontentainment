@@ -1,0 +1,474 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Kontentainment\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-26 21:00+0300\n"
+"PO-Revision-Date: 2026-05-26 21:00+0300\n"
+"Last-Translator: Antigravity\n"
+"Language-Team: Egyptian Arabic\n"
+"Language: ar_EG\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+
+#: templates/archive-cinema.php:17
+#: templates/taxonomy-cinema_area.php:18
+msgid "All Cinemas"
+msgstr "كل السينمات"
+
+#: templates/archive-cinema.php:18
+msgid "Discover the best cinemas across different areas."
+msgstr "اكتشف أحسن السينمات في مختلف المناطق."
+
+#: templates/archive-cinema.php:22
+#: templates/taxonomy-cinema_area.php:27
+msgid "All Areas"
+msgstr "كل المناطق"
+
+#: templates/archive-cinema.php:73
+#: templates/taxonomy-cinema_area.php:72
+#: elementor/widgets/cinema-single-widget.php:84
+#: includes/card-system.php:138
+msgid "Address"
+msgstr "العنوان"
+
+#: templates/archive-cinema.php:77
+#: templates/taxonomy-cinema_area.php:77
+msgid "Playing Movies"
+msgstr "الأفلام المعروضة"
+
+#: templates/archive-cinema.php:79
+#: templates/taxonomy-cinema_area.php:79
+#, php-format
+msgid "%d Movie Playing"
+msgid_plural "%d Movies Playing"
+msgstr[0] "لا توجد أفلام معروضة"
+msgstr[1] "فيلم معروض واحد"
+msgstr[2] "فيلمان معروضان"
+msgstr[3] "%d أفلام معروضة"
+msgstr[4] "%d فيلمًا معروضًا"
+msgstr[5] "%d فيلم معروض"
+
+#: templates/archive-cinema.php:84
+#: templates/taxonomy-cinema_area.php:85
+msgid "View Showtimes"
+msgstr "عرض مواعيد العرض"
+
+#: templates/archive-cinema.php:93
+#: templates/page-coming-soon.php:139
+#: templates/page-now-playing.php:124
+#: templates/taxonomy-cinema_area.php:93
+msgid "&laquo; Previous"
+msgstr "&laquo; السابق"
+
+#: templates/archive-cinema.php:94
+#: templates/page-coming-soon.php:140
+#: templates/page-now-playing.php:125
+#: templates/taxonomy-cinema_area.php:94
+msgid "Next &raquo;"
+msgstr "التالي &raquo;"
+
+#: templates/archive-cinema.php:98
+msgid "No cinemas found."
+msgstr "ملقناش أي سينمات."
+
+#: templates/taxonomy-cinema_area.php:99
+msgid "No cinemas found in this area."
+msgstr "ملقناش أي سينمات في المنطقة دي."
+
+#: templates/page-coming-soon.php:50
+msgid "Coming Soon"
+msgstr "قريبًا في السينما"
+
+#: templates/page-coming-soon.php:51
+msgid "Discover movies releasing soon."
+msgstr "اكتشف الأفلام اللي هتنزل قريب."
+
+#: templates/page-coming-soon.php:94
+#: templates/single-cinema.php:209
+#: templates/single-cinema.php:212
+#: templates/single-media.php:275
+msgid "No Poster"
+msgstr "لا يوجد بوستر"
+
+#: templates/page-coming-soon.php:113
+msgid "Watch Trailer"
+msgstr "شاهد التريلر"
+
+#: templates/page-coming-soon.php:124
+#: templates/single-cinema.php:256
+#: includes/card-system.php:100
+msgid "View Details"
+msgstr "عرض التفاصيل"
+
+#: templates/page-coming-soon.php:146
+msgid "No movies are in the coming soon list."
+msgstr "مفيش أفلام في قائمة المعروض قريبًا."
+
+#: templates/page-now-playing.php:37
+msgid "Now Playing"
+msgstr "يعرض حاليًا"
+
+#: templates/page-now-playing.php:38
+msgid "Movies currently showing in cinemas."
+msgstr "الأفلام اللي شغالة في السينمات دلوقتي."
+
+#: templates/page-now-playing.php:109
+msgid "View Movie"
+msgstr "عرض الفيلم"
+
+#: templates/page-now-playing.php:131
+msgid "No movies are currently playing."
+msgstr "مفيش أفلام معروضة دلوقتي."
+
+#: templates/single-cinema.php:104
+#: elementor/widgets/cinema-single-widget.php:93
+msgid "Get Directions"
+msgstr "اعرف السكة"
+
+#: templates/single-cinema.php:114
+msgid "Cinema Notes"
+msgstr "ملاحظات السينما"
+
+#: templates/single-cinema.php:126
+msgid "No showtimes currently available"
+msgstr "مفيش مواعيد عرض متاحة دلوقتي"
+
+#: templates/single-cinema.php:127
+msgid "There are no movies playing at this cinema right now. Please check back later."
+msgstr "مفيش أفلام معروضة في السينما دي دلوقتي. ياريت تشيك تاني بعدين."
+
+#: templates/single-media.php:59
+msgid "TV Show"
+msgstr "برنامج تلفزيوني"
+
+#: templates/single-media.php:59
+msgid "Movie"
+msgstr "فيلم"
+
+#: templates/single-media.php:80
+msgid "Overview:"
+msgstr "قصة الفيلم:"
+
+#: templates/single-media.php:88
+#: elementor/widgets/movie-single-widget.php:150
+msgid "Director:"
+msgstr "المخرج:"
+
+#: templates/single-media.php:95
+msgid "Writers:"
+msgstr "الكتاب:"
+
+#: templates/single-media.php:107
+msgid "Cast"
+msgstr "طاقم العمل"
+
+#: templates/single-media.php:112
+#: templates/taxonomy-ktn_cast.php:9
+msgid "No Photo"
+msgstr "مفيش صورة"
+
+#: templates/single-media.php:157
+msgid "Theater Showtimes"
+msgstr "حفلات ومواعيد العرض"
+
+#: templates/single-media.php:203
+#: includes/card-system.php:195
+msgid "View Cinema"
+msgstr "عرض السينما"
+
+#: templates/single-media.php:223
+#, php-format
+msgid "+%d More Cinema"
+msgid_plural "+%d More Cinemas"
+msgstr[0] "لا توجد سينمات أخرى"
+msgstr[1] "+سينما واحدة تانية"
+msgstr[2] "+سينمتين تانين"
+msgstr[3] "+%d سينمات تانية"
+msgstr[4] "+%d سينما تانية"
+msgstr[5] "+%d سينما تانية"
+
+#: templates/single-media.php:245
+msgid "Watch Trailer on YouTube"
+msgstr "اتفرج على التريلر على يوتيوب"
+
+#: templates/single-media.php:266
+msgid "Related TV Shows"
+msgstr "برامج تلفزيونية مشابهة"
+
+#: templates/single-media.php:266
+msgid "Related Movies"
+msgstr "أفلام مشابهة"
+
+#: templates/taxonomy-ktn_cast.php:210
+msgid "Personal Info"
+msgstr "معلومات شخصية"
+
+#: templates/taxonomy-ktn_cast.php:213
+msgid "Known For"
+msgstr "مشهور بـ"
+
+#: templates/taxonomy-ktn_cast.php:216
+msgid "Acting"
+msgstr "التمثيل"
+
+#: templates/taxonomy-ktn_cast.php:219
+msgid "Known Credits"
+msgstr "الأعمال المعروفة"
+
+#: templates/taxonomy-ktn_cast.php:225
+msgid "Gender"
+msgstr "النوع"
+
+#: templates/taxonomy-ktn_cast.php:231
+msgid "Birthday"
+msgstr "تاريخ الميلاد"
+
+#: templates/taxonomy-ktn_cast.php:238
+msgid "Place of Birth"
+msgstr "مكان الميلاد"
+
+#: templates/taxonomy-ktn_cast.php:246
+msgid "Also Known As"
+msgstr "مشهور برضه بـ"
+
+#: templates/taxonomy-ktn_cast.php:266
+msgid "Biography"
+msgstr "السيرة الذاتية"
+
+#: templates/taxonomy-ktn_cast.php:328
+msgid "as"
+msgstr "في دور"
+
+#: templates/taxonomy-ktn_cast.php:335
+#, php-format
+msgid "%d episode"
+msgid_plural "%d episodes"
+msgstr[0] "لا توجد حلقات"
+msgstr[1] "حلقة واحدة"
+msgstr[2] "حلقتين"
+msgstr[3] "%d حلقات"
+msgstr[4] "%d حلقة"
+msgstr[5] "%d حلقة"
+
+#: elementor/widgets/showtimes-widget.php:103
+msgid "No context available for showtimes."
+msgstr "مفيش بيانات متاحة للمواعيد."
+
+#: elementor/widgets/showtimes-widget.php:127
+msgid "No showtimes available."
+msgstr "مفيش مواعيد عرض حفلات متاحة."
+
+#: elementor/widgets/areas-widget.php:109
+msgid "No cinematic areas found."
+msgstr "ملقناش أي مناطق سينمائية."
+
+#: elementor/widgets/movies-widget.php:207
+msgid "No movies found matching criteria."
+msgstr "ملقناش أفلام مطابقة للبحث."
+
+#: elementor/widgets/cinema-single-widget.php:64
+msgid "Cinema data not found. Please ensure context is correct."
+msgstr "ملقناش بيانات السينما دي. اتأكد من الرابط."
+
+#: elementor/widgets/cinema-single-widget.php:90
+msgid "Area:"
+msgstr "المنطقة:"
+
+#: elementor/widgets/cinema-single-widget.php:100
+msgid "Cinema Information"
+msgstr "معلومات السينما"
+
+#: elementor/widgets/cinema-single-widget.php:115
+msgid "Movies Now Playing"
+msgstr "الأفلام المعروضة دلوقتي"
+
+#: elementor/widgets/cinema-single-widget.php:118
+msgid "No movies playing right now."
+msgstr "مفيش أفلام شغالة دلوقتي."
+
+#: elementor/widgets/movie-single-widget.php:66
+msgid "Movie data not found. Please ensure context is correct."
+msgstr "ملقناش بيانات الفيلم ده. اتأكد من الرابط."
+
+#: elementor/widgets/movie-single-widget.php:123
+msgid "No cast information available."
+msgstr "مفيش بيانات لطاقم العمل."
+
+#: elementor/widgets/movie-single-widget.php:140
+msgid "No YouTube trailer found."
+msgstr "ملقناش تريلر على يوتيوب."
+
+#: elementor/widgets/movie-single-widget.php:143
+msgid "No trailer available."
+msgstr "مفيش تريلر متاح."
+
+#: elementor/widgets/movie-single-widget.php:151
+msgid "Certification:"
+msgstr "التصنيف الإرشادي:"
+
+#: elementor/widgets/movie-single-widget.php:152
+msgid "Language:"
+msgstr "اللغة الأصلية:"
+
+#: templates/single-cinema.php:104
+#: templates/single-cinema.php:256
+#: templates/single-media.php:203
+#: elementor/widgets/cinema-single-widget.php:93
+#: elementor/widgets/movie-single-widget.php:95
+#: includes/card-system.php:100
+#: includes/card-system.php:195
+#, php-format
+msgid "View Details &rarr;"
+msgstr "عرض التفاصيل &larr;"
+
+#: templates/single-media.php:203
+#, php-format
+msgid "View Cinema &rarr;"
+msgstr "عرض السينما &larr;"
+
+#: templates/taxonomy-ktn_cast.php:133
+msgid "Female"
+msgstr "أنثى"
+
+#: templates/taxonomy-ktn_cast.php:135
+msgid "Male"
+msgstr "ذكر"
+
+#: templates/taxonomy-ktn_cast.php:137
+msgid "Non-binary"
+msgstr "غير ثنائي"
+
+#: templates/taxonomy-ktn_cast.php:146
+#, php-format
+msgid " (%d years old)"
+msgstr " (%d سنة)"
+
+#: templates/single-cinema.php:235
+#: templates/single-media.php:64
+#: elementor/widgets/movie-single-widget.php:95
+#, php-format
+msgid "%d min"
+msgstr "%d دقيقة"
+
+#: elementor/widgets/areas-widget.php:97
+#, php-format
+msgid "%d Cinema"
+msgid_plural "%d Cinemas"
+msgstr[0] "لا توجد سينمات"
+msgstr[1] "سينما واحدة"
+msgstr[2] "سينمتين"
+msgstr[3] "%d سينمات"
+msgstr[4] "%d سينما"
+msgstr[5] "%d سينما"
+
+# --- Day Translations ---
+msgid "Sun"
+msgstr "الأحد"
+
+msgid "Mon"
+msgstr "الإثنين"
+
+msgid "Tue"
+msgstr "الثلاثاء"
+
+msgid "Wed"
+msgstr "الأربعاء"
+
+msgid "Thu"
+msgstr "الخميس"
+
+msgid "Fri"
+msgstr "الجمعة"
+
+msgid "Sat"
+msgstr "السبت"
+
+# --- Month Translations ---
+msgid "Jan"
+msgstr "يناير"
+
+msgid "Feb"
+msgstr "فبراير"
+
+msgid "Mar"
+msgstr "مارس"
+
+msgid "Apr"
+msgstr "أبريل"
+
+msgid "May"
+msgstr "مايو"
+
+msgid "Jun"
+msgstr "يونيو"
+
+msgid "Jul"
+msgstr "يوليو"
+
+msgid "Aug"
+msgstr "أغسطس"
+
+msgid "Sep"
+msgstr "سبتمبر"
+
+msgid "Oct"
+msgstr "أكتوبر"
+
+msgid "Nov"
+msgstr "نوفمبر"
+
+msgid "Dec"
+msgstr "ديسمبر"
+
+# --- Full Month Translations ---
+msgid "January"
+msgstr "يناير"
+
+msgid "February"
+msgstr "فبراير"
+
+msgid "March"
+msgstr "مارس"
+
+msgid "April"
+msgstr "أبريل"
+
+msgid "June"
+msgstr "يونيو"
+
+msgid "July"
+msgstr "يوليو"
+
+msgid "August"
+msgstr "أغسطس"
+
+msgid "September"
+msgstr "سبتمبر"
+
+msgid "October"
+msgstr "أكتوبر"
+
+msgid "November"
+msgstr "نوفمبر"
+
+msgid "December"
+msgstr "ديسمبر"
+
+# --- Page date structures ---
+#, php-format
+msgid "%1$s %2$d, %3$d"
+msgstr "%2$d %1$s %3$d"
+
+#, php-format
+msgid "%1$s, %2$s %3$d"
+msgstr "%1$s، %3$d %2$s"
+
+#, php-format
+msgid "%s Cinemas"
+msgstr "سينمات %s"
+
+#, php-format
+msgid "Cinemas located in %s."
+msgstr "السينمات اللي موجودة في %s."

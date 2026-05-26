@@ -100,7 +100,7 @@ class KTN_Showtimes_Widget extends KTN_Elementor_Base_Widget {
         }
 
         if (!$post_id) {
-            echo '<p>No context available for showtimes.</p>';
+            echo '<p>' . esc_html__('No context available for showtimes.', 'kontentainment') . '</p>';
             return;
         }
 
@@ -124,7 +124,7 @@ class KTN_Showtimes_Widget extends KTN_Elementor_Base_Widget {
         }
 
         if (empty($showtimes) || is_wp_error($showtimes)) {
-            echo '<div class="ktn-elem-empty-showtimes"><i class="fa fa-calendar-times-o"></i> No showtimes available.</div>';
+            echo '<div class="ktn-elem-empty-showtimes"><i class="fa fa-calendar-times-o"></i> ' . esc_html__('No showtimes available.', 'kontentainment') . '</div>';
             return;
         }
 
@@ -144,9 +144,9 @@ class KTN_Showtimes_Widget extends KTN_Elementor_Base_Widget {
             $is_first = true;
             foreach ($unique_dates as $date) {
                 $timestamp = strtotime($date);
-                $day_name = $timestamp ? date('D', $timestamp) : '';
+                $day_name = $timestamp ? __(date('D', $timestamp), 'kontentainment') : '';
                 $day_num = $timestamp ? date('j', $timestamp) : '';
-                $month_name = $timestamp ? date('M', $timestamp) : '';
+                $month_name = $timestamp ? __(date('M', $timestamp), 'kontentainment') : '';
                 
                 $active_class = $is_first ? 'active' : '';
                 $target_id = 'elem-date-' . md5($date);

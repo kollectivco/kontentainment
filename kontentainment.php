@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment
  * Plugin URI:  https://kollectiv.net
  * Description: A premium movie and cinema discovery platform.
- * Version:     1.7.2
+ * Version:     1.7.3
  * Author:      Kollectiv
  * Author URI:  https://kollectiv.net
  * License:     GPL2
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KTN_PLUGIN_VERSION', '1.7.2');
+define('KTN_PLUGIN_VERSION', '1.7.3');
 define('KTN_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('KTN_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('KTN_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -41,12 +41,35 @@ require_once KTN_PLUGIN_DIR . 'includes/card-system.php';
 // Elementor Integration
 require_once KTN_PLUGIN_DIR . 'elementor/manager.php';
 
+// Localization Setup
+add_action('plugins_loaded', 'ktn_load_textdomain');
+function ktn_load_textdomain()
+{
+    load_plugin_textdomain('kontentainment', false, dirname(plugin_basename(__FILE__)) . '/languages');
+}
+
+add_filter('plugin_locale', 'ktn_set_plugin_locale', 10, 2);
+function ktn_set_plugin_locale($locale, $domain)
+{
+    if ($domain === 'kontentainment') {
+        if (!is_admin()) {
+            return 'ar_EG';
+        } else {
+            return 'en_US';
+        }
+    }
+    return $locale;
+}
+
 // Frontend Assets
 add_action('wp_enqueue_scripts', 'ktn_enqueue_frontend_assets');
 function ktn_enqueue_frontend_assets()
 {
     wp_enqueue_style('ktn-card-system', KTN_PLUGIN_URL . 'assets/css/card-system.css', array(), KTN_PLUGIN_VERSION);
     wp_enqueue_style('dashicons');
+    if (is_rtl()) {
+        wp_enqueue_style('ktn-rtl', KTN_PLUGIN_URL . 'assets/css/kontentainment-rtl.css', array(), KTN_PLUGIN_VERSION);
+    }
 }
 
 // Plugin Update Checker setup
@@ -80,7 +103,7 @@ function ktn_puc_custom_user_agent($options) {
     if (!isset($options['headers'])) {
         $options['headers'] = array();
     }
-    $options['headers']['User-Agent'] = 'KontentainmentUpdater/1.7.2; ' . get_bloginfo('url');
+    $options['headers']['User-Agent'] = 'KontentainmentUpdater/1.7.3; ' . get_bloginfo('url');
     return $options;
 }
 

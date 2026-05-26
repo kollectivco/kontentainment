@@ -15,11 +15,11 @@ $areas = get_terms([
 <div class="ktn-archive-wrapper">
     <div class="ktn-archive-header">
         <h1 class="ktn-archive-title"><?php esc_html_e('All Cinemas', 'kontentainment'); ?></h1>
-        <p class="ktn-archive-description">Discover the best cinemas across different areas.</p>
+        <p class="ktn-archive-description"><?php esc_html_e('Discover the best cinemas across different areas.', 'kontentainment'); ?></p>
         
         <?php if (!empty($areas) && !is_wp_error($areas)): ?>
         <div class="ktn-archive-filters" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-            <a href="<?php echo esc_url(get_post_type_archive_link('ktn_cinema')); ?>" class="ktn-premium-chip active" style="text-decoration: none; padding: 6px 14px; background: #111; color: #fff; border-radius: 20px; font-weight: 500; font-size: 0.9rem;">All Areas</a>
+            <a href="<?php echo esc_url(get_post_type_archive_link('ktn_cinema')); ?>" class="ktn-premium-chip active" style="text-decoration: none; padding: 6px 14px; background: #111; color: #fff; border-radius: 20px; font-weight: 500; font-size: 0.9rem;"><?php esc_html_e('All Areas', 'kontentainment'); ?></a>
             <?php foreach ($areas as $area): ?>
                 <a href="<?php echo esc_url(get_term_link($area)); ?>" class="ktn-premium-chip" style="text-decoration: none; padding: 6px 14px; background: #f0f0f0; color: #333; border-radius: 20px; font-weight: 500; font-size: 0.9rem; transition: background 0.2s;"><?php echo esc_html($area->name); ?></a>
             <?php endforeach; ?>
@@ -67,21 +67,21 @@ $areas = get_terms([
                     
                     <div class="ktn-card-meta">
                         <?php if ($address): ?>
-                            <span class="ktn-card-meta-item" title="Address">
+                            <span class="ktn-card-meta-item" title="<?php esc_attr_e('Address', 'kontentainment'); ?>">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                                 <?php echo esc_html(wp_trim_words($address, 5, '...')); ?>
                             </span>
                         <?php endif; ?>
                         <?php if ($playing_count > 0): ?>
-                            <span class="ktn-card-meta-item" title="Playing Movies">
+                            <span class="ktn-card-meta-item" title="<?php esc_attr_e('Playing Movies', 'kontentainment'); ?>">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                                <?php echo absint($playing_count); ?> Movies Playing
+                                <?php printf(esc_html(_n('%d Movie Playing', '%d Movies Playing', $playing_count, 'kontentainment')), $playing_count); ?>
                             </span>
                         <?php endif; ?>
                     </div>
                     
                     <div class="ktn-card-action">
-                        <a href="<?php the_permalink(); ?>">View Showtimes</a>
+                        <a href="<?php the_permalink(); ?>"><?php esc_html_e('View Showtimes', 'kontentainment'); ?></a>
                     </div>
                 </div>
             </div>
@@ -90,12 +90,12 @@ $areas = get_terms([
         
         <?php 
         the_posts_pagination(array(
-            'prev_text' => '&laquo; Previous',
-            'next_text' => 'Next &raquo;',
+            'prev_text' => esc_html__('&laquo; Previous', 'kontentainment'),
+            'next_text' => esc_html__('Next &raquo;', 'kontentainment'),
         )); 
         ?>
     <?php else: ?>
-        <p style="text-align: center; color: #777;">No cinemas found.</p>
+        <p style="text-align: center; color: #777;"><?php esc_html_e('No cinemas found.', 'kontentainment'); ?></p>
     <?php endif; ?>
 
 </div>

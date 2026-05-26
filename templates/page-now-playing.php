@@ -35,7 +35,7 @@ $now_playing_query = new WP_Query($args);
 <div class="ktn-archive-wrapper">
     <div class="ktn-archive-header">
         <h1 class="ktn-archive-title"><?php esc_html_e('Now Playing', 'kontentainment'); ?></h1>
-        <p class="ktn-archive-description">Movies currently showing in cinemas.</p>
+        <p class="ktn-archive-description"><?php esc_html_e('Movies currently showing in cinemas.', 'kontentainment'); ?></p>
     </div>
 
     <?php if ($now_playing_query->have_posts()): ?>
@@ -77,7 +77,7 @@ $now_playing_query = new WP_Query($args);
                     <?php if ($poster_url): ?>
                         <img src="<?php echo esc_url($poster_url); ?>" alt="<?php the_title_attribute(); ?> Poster">
                     <?php else: ?>
-                        <div style="font-size: 1.5rem; color: #ccc;">No Poster</div>
+                        <div style="font-size: 1.5rem; color: #ccc;"><?php esc_html_e('No Poster', 'kontentainment'); ?></div>
                     <?php endif; ?>
                 </div>
 
@@ -94,7 +94,12 @@ $now_playing_query = new WP_Query($args);
                         <?php if ($release_date): ?>
                             <span class="ktn-card-meta-item">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                <?php echo esc_html(date('M j, Y', strtotime($release_date))); ?>
+                                <?php 
+                                $release_date_ts = strtotime($release_date);
+                                if ($release_date_ts) {
+                                    printf(esc_html__('%1$s %2$d, %3$d', 'kontentainment'), __(date('M', $release_date_ts), 'kontentainment'), date('j', $release_date_ts), date('Y', $release_date_ts));
+                                }
+                                ?>
                             </span>
                         <?php endif; ?>
                     </div>
@@ -106,7 +111,7 @@ $now_playing_query = new WP_Query($args);
                     <?php endif; ?>
                     
                     <div class="ktn-card-action">
-                        <a href="<?php the_permalink(); ?>">View Movie</a>
+                        <a href="<?php the_permalink(); ?>"><?php esc_html_e('View Movie', 'kontentainment'); ?></a>
                     </div>
                 </div>
             </div>
@@ -121,14 +126,14 @@ $now_playing_query = new WP_Query($args);
             'format' => '?paged=%#%',
             'current' => max(1, get_query_var('paged')),
             'total' => $now_playing_query->max_num_pages,
-            'prev_text' => '&laquo; Previous',
-            'next_text' => 'Next &raquo;',
+            'prev_text' => esc_html__('&laquo; Previous', 'kontentainment'),
+            'next_text' => esc_html__('Next &raquo;', 'kontentainment'),
         ));
         echo '</div>';
         wp_reset_postdata();
         ?>
     <?php else: ?>
-        <p style="text-align: center; color: #777;">No movies are currently playing.</p>
+        <p style="text-align: center; color: #777;"><?php esc_html_e('No movies are currently playing.', 'kontentainment'); ?></p>
     <?php endif; ?>
 
 </div>

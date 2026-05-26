@@ -63,7 +63,7 @@ class KTN_Movie_Single_Widget extends KTN_Elementor_Base_Widget {
         $post_id = ($settings['context'] === 'manual' && $settings['movie_id']) ? intval($settings['movie_id']) : get_the_ID();
 
         if (!$post_id || get_post_type($post_id) !== 'movie') {
-            echo '<div class="ktn-elem-notice">Movie data not found. Please ensure context is correct.</div>';
+            echo '<div class="ktn-elem-notice">' . esc_html__('Movie data not found. Please ensure context is correct.', 'kontentainment') . '</div>';
             return;
         }
 
@@ -92,7 +92,7 @@ class KTN_Movie_Single_Widget extends KTN_Elementor_Base_Widget {
             $runtime = get_post_meta($post_id, '_movie_runtime', true);
             echo '<div class="ktn-meta-row">';
             if ($rating) echo '<span class="ktn-meta-badge"><i class="fa fa-star"></i> ' . esc_html(round($rating, 1)) . '</span>';
-            if ($runtime) echo '<span class="ktn-meta-text"><i class="fa fa-clock-o"></i> ' . esc_html($runtime) . ' min</span>';
+            if ($runtime) echo '<span class="ktn-meta-text"><i class="fa fa-clock-o"></i> ' . sprintf(esc_html__('%d min', 'kontentainment'), $runtime) . '</span>';
             if ($release) echo '<span class="ktn-meta-text"><i class="fa fa-calendar"></i> ' . esc_html($release) . '</span>';
             echo '</div>';
             
@@ -120,7 +120,7 @@ class KTN_Movie_Single_Widget extends KTN_Elementor_Base_Widget {
                 }
                 echo '</div>';
             } else {
-                echo '<p>No cast information available.</p>';
+                echo '<p>' . esc_html__('No cast information available.', 'kontentainment') . '</p>';
             }
         } elseif ($block === 'trailer') {
             $trailers = get_post_meta($post_id, '_movie_trailers', true);
@@ -137,19 +137,19 @@ class KTN_Movie_Single_Widget extends KTN_Elementor_Base_Widget {
                     echo '<iframe width="100%" height="400" src="https://www.youtube.com/embed/' . esc_attr($yt_key) . '" frameborder="0" allowfullscreen></iframe>';
                     echo '</div>';
                 } else {
-                    echo '<p>No YouTube trailer found.</p>';
+                    echo '<p>' . esc_html__('No YouTube trailer found.', 'kontentainment') . '</p>';
                 }
             } else {
-                echo '<p>No trailer available.</p>';
+                echo '<p>' . esc_html__('No trailer available.', 'kontentainment') . '</p>';
             }
         } elseif ($block === 'info') {
             $director = get_post_meta($post_id, '_movie_director', true);
             $lang = get_post_meta($post_id, '_movie_original_language', true);
             $cert = get_post_meta($post_id, '_movie_certification', true);
             echo '<ul class="ktn-info-panel-list">';
-            if ($director) echo '<li><strong>Director:</strong> ' . esc_html($director) . '</li>';
-            if ($cert) echo '<li><strong>Certification:</strong> <span class="ktn-badge-outline">' . esc_html($cert) . '</span></li>';
-            if ($lang) echo '<li><strong>Language:</strong> ' . esc_html(strtoupper($lang)) . '</li>';
+            if ($director) echo '<li><strong>' . esc_html__('Director:', 'kontentainment') . '</strong> ' . esc_html($director) . '</li>';
+            if ($cert) echo '<li><strong>' . esc_html__('Certification:', 'kontentainment') . '</strong> <span class="ktn-badge-outline">' . esc_html($cert) . '</span></li>';
+            if ($lang) echo '<li><strong>' . esc_html__('Language:', 'kontentainment') . '</strong> ' . esc_html(strtoupper($lang)) . '</li>';
             echo '</ul>';
         }
 
