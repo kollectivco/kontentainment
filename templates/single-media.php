@@ -185,6 +185,7 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
                         foreach ($cinemas as $cinema_name => $times): 
                             $cinema_count++;
                             $cinema_post_id = $times[0]->cinema_id;
+                            $display_cinema_name = $cinema_post_id ? get_the_title($cinema_post_id) : $cinema_name;
                             $cinema_link = get_permalink($cinema_post_id);
                             $cinema_address = get_post_meta($cinema_post_id, '_ktn_cinema_address', true);
                             $cinema_city = get_post_meta($cinema_post_id, '_ktn_cinema_city', true);
@@ -195,9 +196,9 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
                                 <div class="ktn-cinema-card-info">
                                     <h3 class="ktn-cinema-card-name">
                                         <?php if ($cinema_link): ?>
-                                            <a href="<?php echo esc_url($cinema_link); ?>"><?php echo esc_html($cinema_name); ?></a>
+                                            <a href="<?php echo esc_url($cinema_link); ?>"><?php echo esc_html($display_cinema_name); ?></a>
                                         <?php else: ?>
-                                            <?php echo esc_html($cinema_name); ?>
+                                            <?php echo esc_html($display_cinema_name); ?>
                                         <?php endif; ?>
                                     </h3>
                                     <?php if ($cinema_address || $cinema_city): ?>

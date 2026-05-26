@@ -174,7 +174,10 @@ $unique_dates = array_keys($grouped_by_date);
                     $certification = '';
                     $genres_str = '';
 
+                    $display_movie_title = $movie_title;
+
                     if ($matched_id && get_post_type($matched_id) === 'movie') {
+                        $display_movie_title = get_the_title($matched_id);
                         $permalink = get_permalink($matched_id);
                         if (has_post_thumbnail($matched_id)) {
                             $poster_url = get_the_post_thumbnail_url($matched_id, 'medium');
@@ -200,7 +203,7 @@ $unique_dates = array_keys($grouped_by_date);
                         <?php if ($poster_url): ?>
                         <div class="ktn-card-poster">
                             <a href="<?php echo esc_url($permalink); ?>">
-                                <img src="<?php echo esc_url($poster_url); ?>" alt="<?php echo esc_attr($movie_title); ?> Poster">
+                                <img src="<?php echo esc_url($poster_url); ?>" alt="<?php echo esc_attr($display_movie_title); ?>">
                             </a>
                         </div>
                         <?php else: ?>
@@ -219,13 +222,13 @@ $unique_dates = array_keys($grouped_by_date);
                         <div class="ktn-card-content">
                             <h3 class="ktn-card-movie-title">
                                 <?php if ($permalink): ?>
-                                    <a href="<?php echo esc_url($permalink); ?>"><?php echo esc_html($movie_title); ?></a>
+                                    <a href="<?php echo esc_url($permalink); ?>"><?php echo esc_html($display_movie_title); ?></a>
                                 <?php else: ?>
-                                    <?php echo esc_html($movie_title); ?>
+                                    <?php echo esc_html($display_movie_title); ?>
                                 <?php endif; ?>
                             </h3>
 
-                            <?php if ($original_title && strtolower($original_title) !== strtolower($movie_title)): ?>
+                            <?php if ($original_title && strtolower($original_title) !== strtolower($display_movie_title)): ?>
                                 <div class="ktn-card-orig-title"><?php echo esc_html($original_title); ?></div>
                             <?php endif; ?>
 

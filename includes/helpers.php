@@ -97,3 +97,28 @@ function ktn_sideload_image($url, $post_id, $set_as_thumbnail = false)
 
     return $id;
 }
+
+/**
+ * Dynamically replace the title of cinemas with their Arabic names on the frontend.
+ */
+add_filter('the_title', 'ktn_translate_frontend_post_titles', 10, 2);
+function ktn_translate_frontend_post_titles($title, $post_id = 0)
+{
+    if (is_admin()) {
+        return $title;
+    }
+    if (!$post_id) {
+        return $title;
+    }
+    $post = get_post($post_id);
+    if (!$post) {
+        return $title;
+    }
+    if ($post->post_type === 'ktn_cinema') {
+        $arabic_name = get_post_meta($post_id, '_ktn_cinema_arabic_name', true) ?: get_post_meta($post_id, 'arabic_name', true);
+        if (!empty($arabic_name)) {
+            return $arabic_name;
+        }
+    }
+    return $title;
+}

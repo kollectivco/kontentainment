@@ -179,12 +179,14 @@ class KTN_Showtimes_Widget extends KTN_Elementor_Base_Widget {
                     if ($mode === 'current_movie') {
                         $cinema_id = $times[0]->cinema_id;
                         $cinema_link = get_permalink($cinema_id);
-                        echo '<a href="' . esc_url($cinema_link) . '">' . esc_html($group_name) . '</a>';
+                        $display_group_name = $cinema_id ? get_the_title($cinema_id) : $group_name;
+                        echo '<a href="' . esc_url($cinema_link) . '">' . esc_html($display_group_name) . '</a>';
                     } else {
                         $matched_id = $times[0]->matched_movie_id;
                         $movie_link = get_permalink($matched_id);
                         if ($matched_id && get_post_type($matched_id) === 'movie') {
-                            echo '<a href="' . esc_url($movie_link) . '">' . esc_html($group_name) . '</a>';
+                            $display_group_name = get_the_title($matched_id);
+                            echo '<a href="' . esc_url($movie_link) . '">' . esc_html($display_group_name) . '</a>';
                         } else {
                             echo esc_html($group_name);
                         }

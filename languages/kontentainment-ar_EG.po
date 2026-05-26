@@ -472,3 +472,46 @@ msgstr "سينمات %s"
 #, php-format
 msgid "Cinemas located in %s."
 msgstr "السينمات اللي موجودة في %s."
+
+# --- Cinema Guides Page Translations ---
+msgid "Cinema Guides"
+msgstr "دليل السينما"
+
+msgid "Explore the latest movies and top-rated cinemas near you."
+msgstr "اكتشف أحدث الأفلام والسينمات الأعلى تقييمًا القريبة منك."
+
+msgid "Movies"
+msgstr "الأفلام"
+
+msgid "Cinemas"
+msgstr "السينمات"
+
+msgid "All Movies"
+msgstr "كل الأفلام"
+
+msgid "English Movies"
+msgstr "الأفلام الأجنبية"
+
+msgid "Arabic Movies"
+msgstr "الأفلام العربية"
+
+msgid "Type Your Movie Name"
+msgstr "اكتب اسم الفيلم"
+
+msgid "All Genres"
+msgstr "كل التصنيفات"
+
+msgid "Type Your Cinema Name"
+msgstr "اكتب اسم السينما"
+
+msgid "All Governorates"
+msgstr "كل المحافظات"
+
+msgid "Select Area"
+msgstr "اختر المنطقة"
+
+msgid "No movies found matching your criteria."
+msgstr "ملقناش أفلام مطابقة للبحث بتاعك."
+
+msgid "No cinemas found in this location."
+msgstr "ملقناش سينمات في الموقع ده."
