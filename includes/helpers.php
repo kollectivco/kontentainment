@@ -205,7 +205,7 @@ function ktn_get_translated_movie_cast($post_id)
     }
     
     $translated_json = get_post_meta($post_id, '_movie_cast_arabic', true);
-    if (!empty($translated_json)) {
+    if (!empty($translated_json) && strpos($translated_json, '"u06') === false) {
         return $translated_json;
     }
     
@@ -236,8 +236,8 @@ function ktn_get_translated_movie_cast($post_id)
                 $idx++;
             }
         }
-        $translated_json = wp_json_encode($cast);
-        update_post_meta($post_id, '_movie_cast_arabic', $translated_json);
+        $translated_json = wp_json_encode($cast, JSON_UNESCAPED_UNICODE);
+        update_post_meta($post_id, '_movie_cast_arabic', wp_slash($translated_json));
         return $translated_json;
     }
     
@@ -287,7 +287,7 @@ function ktn_get_translated_movie_writers($post_id)
     }
     
     $translated_json = get_post_meta($post_id, '_movie_writers_arabic', true);
-    if (!empty($translated_json)) {
+    if (!empty($translated_json) && strpos($translated_json, '"u06') === false) {
         return json_decode($translated_json, true);
     }
     
@@ -304,7 +304,7 @@ function ktn_get_translated_movie_writers($post_id)
         $translated_writers[] = (!empty($translated_lines[$idx])) ? trim($translated_lines[$idx]) : $writer;
     }
     
-    update_post_meta($post_id, '_movie_writers_arabic', wp_json_encode($translated_writers));
+    update_post_meta($post_id, '_movie_writers_arabic', wp_slash(wp_json_encode($translated_writers, JSON_UNESCAPED_UNICODE)));
     return $translated_writers;
 }
 
