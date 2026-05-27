@@ -12,11 +12,11 @@ $source_url = get_post_meta($post_id, '_ktn_cinema_url', true);
 
 // Optional metadata
 $arabic_name = get_post_meta($post_id, '_ktn_cinema_arabic_name', true) ?: get_post_meta($post_id, 'arabic_name', true);
-$address = get_post_meta($post_id, '_ktn_cinema_address', true) ?: get_post_meta($post_id, 'address', true);
+$address = ktn_get_translated_cinema_address($post_id);
 $city = get_post_meta($post_id, '_ktn_cinema_city', true) ?: get_post_meta($post_id, 'city', true);
 $area = get_post_meta($post_id, '_ktn_cinema_area', true) ?: get_post_meta($post_id, 'area', true);
 $country = get_post_meta($post_id, '_ktn_cinema_country', true) ?: get_post_meta($post_id, 'country', true);
-$notes = get_post_meta($post_id, '_ktn_cinema_notes', true) ?: get_post_meta($post_id, 'notes', true);
+$notes = ktn_get_translated_cinema_notes($post_id);
 if (empty($notes) && !empty($post->post_content)) {
     $notes = $post->post_content;
 }

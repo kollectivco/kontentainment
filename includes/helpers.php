@@ -128,3 +128,221 @@ function ktn_translate_frontend_post_titles($title, $post_id = 0)
     }
     return $title;
 }
+
+/**
+ * Translate text from English to Arabic using Google's free Translate API.
+ */
+function ktn_translate_text_free($text, $sl = 'en', $tl = 'ar')
+{
+    if (empty($text)) {
+        return '';
+    }
+    
+    $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
+    $url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=" . urlencode($sl) . "&tl=" . urlencode($tl) . "&dt=t&q=" . urlencode($text);
+    
+    $response = wp_remote_get($url, array('timeout' => 15));
+    if (is_wp_error($response)) {
+        return $text;
+    }
+    
+    $body = wp_remote_retrieve_body($response);
+    $data = json_decode($body, true);
+    
+    if (is_array($data) && isset($data[0])) {
+        $translated = '';
+        foreach ($data[0] as $sentence) {
+            if (isset($sentence[0])) {
+                $translated .= $sentence[0];
+            }
+        }
+        return trim($translated);
+    }
+    
+    return $text;
+}
+
+/**
+ * Retrieve the movie overview, translated to Arabic if it is an Arabic movie.
+ */
+function ktn_get_translated_movie_overview($post_id)
+{
+    $overview = get_post_meta($post_id, '_movie_overview', true);
+    $original_lang = get_post_meta($post_id, '_movie_original_language', true);
+    
+    if ($original_lang !== 'ar') {
+        return $overview;
+    }
+    
+    $translated = get_post_meta($post_id, '_movie_overview_arabic', true);
+    if (!empty($translated)) {
+        return $translated;
+    }
+    
+    if (is_admin()) {
+        return $overview;
+    }
+    
+    $translated = ktn_translate_text_free($overview);
+    if (!empty($translated)) {
+        update_post_meta($post_id, '_movie_overview_arabic', $translated);
+        return $translated;
+    }
+    
+    return $overview;
+}
+
+/**
+ * Retrieve the movie cast JSON, with names/characters translated to Arabic if it is an Arabic movie.
+ */
+function ktn_get_translated_movie_cast($post_id)
+{
+    $cast_json = get_post_meta($post_id, '_movie_cast', true);
+    $original_lang = get_post_meta($post_id, '_movie_original_language', true);
+    
+    if ($original_lang !== 'ar' || empty($cast_json)) {
+        return $cast_json;
+    }
+    
+    $translated_json = get_post_meta($post_id, '_movie_cast_arabic', true);
+    if (!empty($translated_json)) {
+        return $translated_json;
+    }
+    
+    if (is_admin()) {
+        return $cast_json;
+    }
+    
+    $cast = json_decode($cast_json, true);
+    if (is_array($cast)) {
+        foreach ($cast as $key => $actor) {
+            if (isset($actor['name'])) {
+                $cast[$key]['name'] = ktn_translate_text_free($actor['name']);
+            }
+            if (isset($actor['character'])) {
+                $cast[$key]['character'] = ktn_translate_text_free($actor['character']);
+            }
+        }
+        $translated_json = wp_json_encode($cast);
+        update_post_meta($post_id, '_movie_cast_arabic', $translated_json);
+        return $translated_json;
+    }
+    
+    return $cast_json;
+}
+
+/**
+ * Retrieve the movie director, translated to Arabic if it is an Arabic movie.
+ */
+function ktn_get_translated_movie_director($post_id)
+{
+    $director = get_post_meta($post_id, '_movie_director', true);
+    $original_lang = get_post_meta($post_id, '_movie_original_language', true);
+    
+    if ($original_lang !== 'ar' || empty($director)) {
+        return $director;
+    }
+    
+    $translated = get_post_meta($post_id, '_movie_director_arabic', true);
+    if (!empty($translated)) {
+        return $translated;
+    }
+    
+    if (is_admin()) {
+        return $director;
+    }
+    
+    $translated = ktn_translate_text_free($director);
+    if (!empty($translated)) {
+        update_post_meta($post_id, '_movie_director_arabic', $translated);
+        return $translated;
+    }
+    
+    return $director;
+}
+
+/**
+ * Retrieve the movie writers array, translated to Arabic if it is an Arabic movie.
+ */
+function ktn_get_translated_movie_writers($post_id)
+{
+    $writers = get_post_meta($post_id, '_movie_writers', true);
+    $original_lang = get_post_meta($post_id, '_movie_original_language', true);
+    
+    if ($original_lang !== 'ar' || empty($writers) || !is_array($writers)) {
+        return $writers;
+    }
+    
+    $translated_json = get_post_meta($post_id, '_movie_writers_arabic', true);
+    if (!empty($translated_json)) {
+        return json_decode($translated_json, true);
+    }
+    
+    if (is_admin()) {
+        return $writers;
+    }
+    
+    $translated_writers = array();
+    foreach ($writers as $writer) {
+        $translated_writers[] = ktn_translate_text_free($writer);
+    }
+    
+    update_post_meta($post_id, '_movie_writers_arabic', wp_json_encode($translated_writers));
+    return $translated_writers;
+}
+
+/**
+ * Retrieve the cinema address, translated to Arabic on the frontend.
+ */
+function ktn_get_translated_cinema_address($post_id)
+{
+    $address = get_post_meta($post_id, '_ktn_cinema_address', true) ?: get_post_meta($post_id, 'address', true);
+    if (empty($address)) {
+        return '';
+    }
+    
+    $translated = get_post_meta($post_id, '_ktn_cinema_address_arabic', true);
+    if (!empty($translated)) {
+        return $translated;
+    }
+    
+    if (is_admin()) {
+        return $address;
+    }
+    
+    $translated = ktn_translate_text_free($address);
+    if (!empty($translated)) {
+        update_post_meta($post_id, '_ktn_cinema_address_arabic', $translated);
+        return $translated;
+    }
+    
+    return $address;
+}
+
+/**
+ * Retrieve the cinema notes, translated to Arabic on the frontend.
+ */
+function ktn_get_translated_cinema_notes($post_id)
+{
+    $notes = get_post_meta($post_id, '_ktn_cinema_notes', true) ?: get_post_meta($post_id, 'notes', true);
+    if (empty($notes)) {
+        return '';
+    }
+    
+    $translated = get_post_meta($post_id, '_ktn_cinema_notes_arabic', true);
+    if (!empty($translated)) {
+        return $translated;
+    }
+    
+    if (is_admin()) {
+        return $notes;
+    }
+    
+    $translated = ktn_translate_text_free($notes);
+    if (!empty($translated)) {
+        update_post_meta($post_id, '_ktn_cinema_notes_arabic', $translated);
+        return $translated;
+    }
+    
+    return $notes;
+}
