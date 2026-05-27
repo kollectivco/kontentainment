@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment
  * Plugin URI:  https://kollectiv.net
  * Description: A premium movie and cinema discovery platform.
- * Version:     1.7.5
+ * Version:     1.7.6
  * Author:      Kollectiv
  * Author URI:  https://kollectiv.net
  * License:     GPL2
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KTN_PLUGIN_VERSION', '1.7.5');
+define('KTN_PLUGIN_VERSION', '1.7.6');
 define('KTN_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('KTN_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('KTN_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -46,15 +46,6 @@ add_action('plugins_loaded', 'ktn_load_textdomain');
 function ktn_load_textdomain()
 {
     load_plugin_textdomain('kontentainment', false, dirname(plugin_basename(__FILE__)) . '/languages');
-}
-
-add_filter('locale', 'ktn_set_global_locale');
-function ktn_set_global_locale($locale)
-{
-    if (!is_admin()) {
-        return 'ar_EG';
-    }
-    return 'en_US';
 }
 
 // Frontend Assets
@@ -99,7 +90,7 @@ function ktn_puc_custom_user_agent($options) {
     if (!isset($options['headers'])) {
         $options['headers'] = array();
     }
-    $options['headers']['User-Agent'] = 'KontentainmentUpdater/1.7.5; ' . get_bloginfo('url');
+    $options['headers']['User-Agent'] = 'KontentainmentUpdater/1.7.6; ' . get_bloginfo('url');
     return $options;
 }
 
