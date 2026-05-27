@@ -120,5 +120,11 @@ function ktn_translate_frontend_post_titles($title, $post_id = 0)
             return $arabic_name;
         }
     }
+    if ($post->post_type === 'movie' || $post->post_type === 'tv_show') {
+        $original_title = get_post_meta($post_id, '_movie_original_title', true);
+        if (!empty($original_title)) {
+            return $original_title;
+        }
+    }
     return $title;
 }
