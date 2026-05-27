@@ -153,10 +153,10 @@ class KTN_Showtimes_Widget extends KTN_Elementor_Base_Widget {
                 echo '<button class="ktn-date-tab-btn ' . esc_attr($active_class) . '" data-date-target="' . esc_attr($target_id) . '">';
                 if ($timestamp && $day_name) {
                     echo '<span class="ktn-date-day-name">' . esc_html($day_name) . '</span>';
-                    echo '<span class="ktn-date-day-num">' . esc_html($day_num) . '</span>';
+                    echo '<span class="ktn-date-day-num">' . esc_html(ktn_translate_digits($day_num)) . '</span>';
                     echo '<span class="ktn-date-month">' . esc_html($month_name) . '</span>';
                 } else {
-                    echo '<span class="ktn-date-full">' . esc_html($date) . '</span>';
+                    echo '<span class="ktn-date-full">' . esc_html(ktn_translate_digits($date)) . '</span>';
                 }
                 echo '</button>';
                 $is_first = false;
@@ -206,9 +206,9 @@ class KTN_Showtimes_Widget extends KTN_Elementor_Base_Widget {
                     $meta_str = trim($meta_str);
 
                     echo '<div class="ktn-premium-chip">';
-                    echo '<span class="ktn-chip-time">' . esc_html($t->show_time) . '</span>';
+                    echo '<span class="ktn-chip-time">' . esc_html(ktn_format_show_time_arabic($t->show_time)) . '</span>';
                     if ($meta_str) {
-                        echo '<span class="ktn-chip-meta">' . esc_html($meta_str) . '</span>';
+                        echo '<span class="ktn-chip-meta">' . esc_html(ktn_translate_digits($meta_str)) . '</span>';
                     }
                     echo '</div>';
                 }

@@ -164,9 +164,10 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
                             <?php 
                             $date_ts = strtotime($date);
                             if ($date_ts) {
-                                printf(esc_html__('%1$s, %2$s %3$d', 'kontentainment'), __(date('D', $date_ts), 'kontentainment'), __(date('M', $date_ts), 'kontentainment'), date('j', $date_ts));
+                                $formatted_date = sprintf(esc_html__('%1$s, %2$s %3$d', 'kontentainment'), __(date('D', $date_ts), 'kontentainment'), __(date('M', $date_ts), 'kontentainment'), date('j', $date_ts));
+                                echo esc_html(ktn_translate_digits($formatted_date));
                             } else {
-                                echo esc_html($date);
+                                echo esc_html(ktn_translate_digits($date));
                             }
                             ?>
                         </button>
@@ -216,9 +217,9 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
                             <div class="ktn-cinema-card-times">
                                 <?php foreach ($times as $t): ?>
                                 <div class="ktn-premium-chip">
-                                    <span class="ktn-chip-time"><?php echo esc_html($t->show_time); ?></span>
+                                    <span class="ktn-chip-time"><?php echo esc_html(ktn_format_show_time_arabic($t->show_time)); ?></span>
                                     <?php if ($t->experience || $t->price_text): ?>
-                                    <span class="ktn-chip-meta"><?php echo esc_html(trim($t->experience . ' ' . $t->price_text)); ?></span>
+                                    <span class="ktn-chip-meta"><?php echo esc_html(ktn_translate_digits(trim($t->experience . ' ' . $t->price_text))); ?></span>
                                     <?php endif; ?>
                                 </div>
                                 <?php endforeach; ?>

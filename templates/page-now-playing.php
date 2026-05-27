@@ -97,7 +97,8 @@ $now_playing_query = new WP_Query($args);
                                 <?php 
                                 $release_date_ts = strtotime($release_date);
                                 if ($release_date_ts) {
-                                    printf(esc_html__('%1$s %2$d, %3$d', 'kontentainment'), __(date('M', $release_date_ts), 'kontentainment'), date('j', $release_date_ts), date('Y', $release_date_ts));
+                                    $formatted_date = sprintf(esc_html__('%1$s %2$d, %3$d', 'kontentainment'), __(date('M', $release_date_ts), 'kontentainment'), date('j', $release_date_ts), date('Y', $release_date_ts));
+                                    echo esc_html(ktn_translate_digits($formatted_date));
                                 }
                                 ?>
                             </span>

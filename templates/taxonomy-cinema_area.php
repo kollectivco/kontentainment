@@ -76,7 +76,10 @@ $areas = get_terms([
                         <?php if ($playing_count > 0): ?>
                             <span class="ktn-card-meta-item" title="<?php esc_attr_e('Playing Movies', 'kontentainment'); ?>">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                                <?php printf(esc_html(_n('%d Movie Playing', '%d Movies Playing', $playing_count, 'kontentainment')), $playing_count); ?>
+                                <?php 
+                                $playing_str = sprintf(esc_html(_n('%d Movie Playing', '%d Movies Playing', $playing_count, 'kontentainment')), $playing_count);
+                                echo esc_html(ktn_translate_digits($playing_str));
+                                ?>
                             </span>
                         <?php endif; ?>
                     </div>

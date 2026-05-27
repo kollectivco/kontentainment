@@ -144,10 +144,10 @@ $unique_dates = array_keys($grouped_by_date);
                 data-date-target="date-<?php echo esc_attr(md5($date)); ?>">
                 <?php if($timestamp && $day_name): ?>
                     <span class="ktn-date-day-name"><?php echo esc_html($day_name); ?></span>
-                    <span class="ktn-date-day-num"><?php echo esc_html($day_num); ?></span>
+                    <span class="ktn-date-day-num"><?php echo esc_html(ktn_translate_digits($day_num)); ?></span>
                     <span class="ktn-date-month"><?php echo esc_html($month_name); ?></span>
                 <?php else: ?>
-                    <span class="ktn-date-full"><?php echo esc_html($date); ?></span>
+                    <span class="ktn-date-full"><?php echo esc_html(ktn_translate_digits($date)); ?></span>
                 <?php endif; ?>
             </button>
             <?php $is_first = false; endforeach; ?>
@@ -247,10 +247,10 @@ $unique_dates = array_keys($grouped_by_date);
                             <div class="ktn-card-showtimes">
                                 <?php foreach ($times as $t): ?>
                                 <div class="ktn-premium-chip">
-                                    <span class="ktn-chip-time"><?php echo esc_html($t->show_time); ?></span>
+                                    <span class="ktn-chip-time"><?php echo esc_html(ktn_format_show_time_arabic($t->show_time)); ?></span>
                                     <?php if ($t->experience || $t->price_text): ?>
                                     <span class="ktn-chip-meta">
-                                        <?php echo esc_html(trim($t->experience . ' ' . $t->price_text)); ?>
+                                        <?php echo esc_html(ktn_translate_digits(trim($t->experience . ' ' . $t->price_text))); ?>
                                     </span>
                                     <?php endif; ?>
                                 </div>

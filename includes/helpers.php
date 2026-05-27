@@ -364,3 +364,57 @@ function ktn_get_translated_cinema_notes($post_id)
     
     return $notes;
 }
+
+/**
+ * Translate standard English digits to Eastern Arabic digits on the frontend.
+ */
+function ktn_translate_digits($text)
+{
+    if (empty($text)) {
+        return '';
+    }
+    if (is_admin()) {
+        return $text;
+    }
+    $en_digits = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
+    $ar_digits = array('٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩');
+    return str_replace($en_digits, $ar_digits, $text);
+}
+
+/**
+ * Format standard showtimes into Arabic format with Eastern Arabic digits and correct AM/PM localization.
+ */
+function ktn_format_show_time_arabic($time_str)
+{
+    if (empty($time_str)) {
+        return '';
+    }
+    if (is_admin()) {
+        return $time_str;
+    }
+    
+    // Normalize time string
+    $normalized = strtoupper(trim($time_str));
+    
+    // Detect AM/PM
+    $is_pm = (strpos($normalized, 'PM') !== false);
+    $is_am = (strpos($normalized, 'AM') !== false);
+    
+    // Remove AM/PM modifiers
+    $clean_time = trim(str_replace(array('AM', 'PM'), '', $normalized));
+    
+    if (empty($clean_time)) {
+        return ktn_translate_digits($time_str);
+    }
+    
+    // Translate digits of the time (e.g. 11:00 to ١١:٠٠)
+    $arabic_digits = ktn_translate_digits($clean_time);
+    
+    if ($is_pm) {
+        return $arabic_digits . ' مساءً';
+    } elseif ($is_am) {
+        return $arabic_digits . ' صباحاً';
+    }
+    
+    return $arabic_digits;
+}

@@ -219,7 +219,7 @@ endif; ?>
             <div style="margin-bottom: 20px;">
                 <strong style="display:block; font-size: 1em;"><?php esc_html_e('Known Credits', 'kontentainment'); ?></strong>
                 <span style="font-size: 0.95em; color: #444;">
-                    <?php echo esc_html($known_credits_count); ?>
+                    <?php echo esc_html(ktn_translate_digits($known_credits_count)); ?>
                 </span>
             </div>
             <div style="margin-bottom: 20px;">
@@ -231,8 +231,8 @@ endif; ?>
             <div style="margin-bottom: 20px;">
                 <strong style="display:block; font-size: 1em;"><?php esc_html_e('Birthday', 'kontentainment'); ?></strong>
                 <span style="font-size: 0.95em; color: #444;">
-                    <?php echo esc_html($birthday); ?>
-                    <?php echo esc_html($age_text); ?>
+                    <?php echo esc_html(ktn_translate_digits($birthday)); ?>
+                    <?php echo esc_html(ktn_translate_digits($age_text)); ?>
                 </span>
             </div>
             <div style="margin-bottom: 20px;">
@@ -315,7 +315,7 @@ endif; ?>
                     <div
                         style="display: flex; padding: 15px 20px; border-bottom: 1px solid #f0f0f0; align-items: flex-start;">
                         <div style="flex: 0 0 50px; color: #000; font-size: 1em; margin-top: 1px;">
-                            <?php echo esc_html($year); ?>
+                            <?php echo esc_html(ktn_translate_digits($year)); ?>
                         </div>
                         <div style="flex: 0 0 30px; display: flex; justify-content: center; align-items: center;">
                             <span
@@ -334,7 +334,10 @@ endif; ?>
         endif; ?>
                             <?php if (isset($credit['episode_count']) && $credit['episode_count'] > 0): ?>
                             <span style="color: #999; font-size: 0.85em; display: inline-block; margin-top: 2px;">
-                                <?php printf(esc_html(_n('%d episode', '%d episodes', $credit['episode_count'], 'kontentainment')), $credit['episode_count']); ?>
+                                <?php 
+                                $episode_str = sprintf(esc_html(_n('%d episode', '%d episodes', $credit['episode_count'], 'kontentainment')), $credit['episode_count']);
+                                echo esc_html(ktn_translate_digits($episode_str)); 
+                                ?>
                             </span>
                             <?php
         endif; ?>
