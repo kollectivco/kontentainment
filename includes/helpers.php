@@ -418,3 +418,42 @@ function ktn_format_show_time_arabic($time_str)
     
     return $arabic_digits;
 }
+
+/**
+ * Dynamically translate the cast term titles on the frontend.
+ */
+add_filter('single_term_title', 'ktn_translate_cast_term_title');
+function ktn_translate_cast_term_title($title)
+{
+    if (is_admin()) {
+        return $title;
+    }
+    if (is_tax('ktn_cast')) {
+        $term = get_queried_object();
+        if ($term && is_a($term, 'WP_Term')) {
+            $arabic_name = get_term_meta($term->term_id, '_ktn_cast_arabic_name', true);
+            if (!empty($arabic_name)) {
+                return $arabic_name;
+            }
+        }
+    }
+    return $title;
+}
+
+add_filter('get_the_archive_title', 'ktn_translate_cast_archive_title');
+function ktn_translate_cast_archive_title($title)
+{
+    if (is_admin()) {
+        return $title;
+    }
+    if (is_tax('ktn_cast')) {
+        $term = get_queried_object();
+        if ($term && is_a($term, 'WP_Term')) {
+            $arabic_name = get_term_meta($term->term_id, '_ktn_cast_arabic_name', true);
+            if (!empty($arabic_name)) {
+                return $arabic_name;
+            }
+        }
+    }
+    return $title;
+}

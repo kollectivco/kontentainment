@@ -6,6 +6,33 @@ get_header();
 
 $term = get_queried_object();
 $actor_name = $term->name;
+
+// Determine if this is an Arabic movie artist
+$is_arabic_artist = false;
+if ($term && is_a($term, 'WP_Term')) {
+    $local_posts = get_posts(array(
+        'post_type' => array('movie', 'tv_show'),
+        'tax_query' => array(
+            array(
+                'taxonomy' => 'ktn_cast',
+                'field' => 'term_id',
+                'terms' => $term->term_id,
+            )
+        ),
+        'posts_per_page' => -1,
+        'fields' => 'ids'
+    ));
+    if (!empty($local_posts)) {
+        foreach ($local_posts as $p_id) {
+            $lang = get_post_meta($p_id, '_movie_original_language', true);
+            if ($lang === 'ar') {
+                $is_arabic_artist = true;
+                break;
+            }
+        }
+    }
+}
+
 $actor_img = "https://via.placeholder.com/300x450?text=No+Photo";
 $bio = '';
 $known_for_department = '';
@@ -124,6 +151,45 @@ else {
                 }
             }
         }
+    }
+}
+
+// Translate cast profile fields if this is an Arabic artist
+if ($is_arabic_artist && !is_admin()) {
+    // Translate name
+    $arabic_name = get_term_meta($term->term_id, '_ktn_cast_arabic_name', true);
+    if (empty($arabic_name)) {
+        $arabic_name = ktn_translate_text_free($actor_name);
+        if (!empty($arabic_name)) {
+            update_term_meta($term->term_id, '_ktn_cast_arabic_name', $arabic_name);
+        }
+    }
+    if (!empty($arabic_name)) {
+        $actor_name = $arabic_name;
+    }
+
+    // Translate bio
+    $arabic_bio = get_term_meta($term->term_id, '_ktn_cast_arabic_bio', true);
+    if (empty($arabic_bio) && !empty($bio)) {
+        $arabic_bio = ktn_translate_text_free($bio);
+        if (!empty($arabic_bio)) {
+            update_term_meta($term->term_id, '_ktn_cast_arabic_bio', $arabic_bio);
+        }
+    }
+    if (!empty($arabic_bio)) {
+        $bio = $arabic_bio;
+    }
+
+    // Translate place of birth
+    $arabic_place_of_birth = get_term_meta($term->term_id, '_ktn_cast_arabic_place_of_birth', true);
+    if (empty($arabic_place_of_birth) && !empty($place_of_birth)) {
+        $arabic_place_of_birth = ktn_translate_text_free($place_of_birth);
+        if (!empty($arabic_place_of_birth)) {
+            update_term_meta($term->term_id, '_ktn_cast_arabic_place_of_birth', $arabic_place_of_birth);
+        }
+    }
+    if (!empty($arabic_place_of_birth)) {
+        $place_of_birth = $arabic_place_of_birth;
     }
 }
 
