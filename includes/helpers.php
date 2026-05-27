@@ -215,12 +215,25 @@ function ktn_get_translated_movie_cast($post_id)
     
     $cast = json_decode($cast_json, true);
     if (is_array($cast)) {
+        $lines = array();
+        foreach ($cast as $actor) {
+            $lines[] = isset($actor['name']) ? trim($actor['name']) : '';
+            $lines[] = isset($actor['character']) ? trim($actor['character']) : '';
+        }
+        
+        $bulk_text = implode("\n", $lines);
+        $translated_bulk = ktn_translate_text_free($bulk_text);
+        $translated_lines = preg_split('/\r\n|\r|\n/', $translated_bulk);
+        
+        $idx = 0;
         foreach ($cast as $key => $actor) {
             if (isset($actor['name'])) {
-                $cast[$key]['name'] = ktn_translate_text_free($actor['name']);
+                $cast[$key]['name'] = (!empty($translated_lines[$idx])) ? trim($translated_lines[$idx]) : $actor['name'];
+                $idx++;
             }
             if (isset($actor['character'])) {
-                $cast[$key]['character'] = ktn_translate_text_free($actor['character']);
+                $cast[$key]['character'] = (!empty($translated_lines[$idx])) ? trim($translated_lines[$idx]) : $actor['character'];
+                $idx++;
             }
         }
         $translated_json = wp_json_encode($cast);
@@ -282,9 +295,13 @@ function ktn_get_translated_movie_writers($post_id)
         return $writers;
     }
     
+    $bulk_text = implode("\n", $writers);
+    $translated_bulk = ktn_translate_text_free($bulk_text);
+    $translated_lines = preg_split('/\r\n|\r|\n/', $translated_bulk);
+    
     $translated_writers = array();
-    foreach ($writers as $writer) {
-        $translated_writers[] = ktn_translate_text_free($writer);
+    foreach ($writers as $idx => $writer) {
+        $translated_writers[] = (!empty($translated_lines[$idx])) ? trim($translated_lines[$idx]) : $writer;
     }
     
     update_post_meta($post_id, '_movie_writers_arabic', wp_json_encode($translated_writers));
