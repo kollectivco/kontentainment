@@ -98,12 +98,13 @@ class KTN_Movie_Single_Widget extends KTN_Elementor_Base_Widget {
             
         } elseif ($block === 'overview') {
             $tagline = get_post_meta($post_id, '_movie_tagline', true);
-            $overview = get_post_meta($post_id, '_movie_overview', true);
+            $overview = ktn_get_translated_movie_overview($post_id);
             if ($tagline) echo '<h3 class="ktn-tagline">' . esc_html($tagline) . '</h3>';
             if ($overview) echo '<p class="ktn-overview-text">' . esc_html($overview) . '</p>';
             
         } elseif ($block === 'cast') {
-            $cast = get_post_meta($post_id, '_movie_cast', true);
+            $cast_json = ktn_get_translated_movie_cast($post_id);
+            $cast = !empty($cast_json) ? json_decode($cast_json, true) : array();
             if (!empty($cast) && is_array($cast)) {
                 echo '<div class="ktn-cast-grid">';
                 $count = 0;

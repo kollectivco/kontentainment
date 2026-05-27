@@ -107,7 +107,8 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
             <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 25px;"><?php esc_html_e('Cast', 'kontentainment'); ?></h2>
             <div style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 25px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
                 <?php foreach ($cast as $actor):
-                    $term_link = get_term_link($actor['name'], 'ktn_cast');
+                    $cast_term_name = !empty($actor['english_name']) ? $actor['english_name'] : $actor['name'];
+                    $term_link = get_term_link($cast_term_name, 'ktn_cast');
                     $actor_url = is_wp_error($term_link) ? '#' : esc_url($term_link);
                     $actor_img = $actor['profile_path'] ? "https://image.tmdb.org/t/p/w185" . $actor['profile_path'] : "https://via.placeholder.com/185x278?text=" . urlencode(__('No Photo', 'kontentainment'));
                 ?>

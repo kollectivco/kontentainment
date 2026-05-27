@@ -205,7 +205,7 @@ function ktn_get_translated_movie_cast($post_id)
     }
     
     $translated_json = get_post_meta($post_id, '_movie_cast_arabic', true);
-    if (!empty($translated_json) && strpos($translated_json, '"u06') === false) {
+    if (!empty($translated_json) && strpos($translated_json, '"u06') === false && strpos($translated_json, '"english_name"') !== false) {
         return $translated_json;
     }
     
@@ -228,6 +228,7 @@ function ktn_get_translated_movie_cast($post_id)
         $idx = 0;
         foreach ($cast as $key => $actor) {
             if (isset($actor['name'])) {
+                $cast[$key]['english_name'] = $actor['name'];
                 $cast[$key]['name'] = (!empty($translated_lines[$idx])) ? trim($translated_lines[$idx]) : $actor['name'];
                 $idx++;
             }
