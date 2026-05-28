@@ -1,5 +1,5 @@
 .ktn-modern-showtimes, .ktn-cinema-page {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: inherit;
     color: #1a1a1a;
     background-color: #fafbfc;
     padding: 30px;
@@ -152,7 +152,7 @@
 .ktn-cinema-page-wrapper {
     max-width: 1080px;
     margin: 40px auto;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: inherit;
     color: #1a1a1a;
     background-color: transparent;
     padding: 0;
@@ -682,7 +682,7 @@
 
 .ktn-media-showtimes-section {
     max-width: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: inherit;
     color: #1a1a1a;
     background-color: transparent;
     padding: 0;

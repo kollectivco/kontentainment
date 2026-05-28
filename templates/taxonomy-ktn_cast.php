@@ -239,7 +239,7 @@ $tw_icon = '<svg fill="currentColor" width="24" height="24" viewBox="0 0 24 24">
 ?>
 
 <div class="ktn-cast-container"
-    style="max-width: 1200px; margin: 40px auto; padding: 20px; color: #000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+    style="max-width: 1200px; margin: 40px auto; padding: 20px; color: #000;">
 
     <div style="display: flex; flex-wrap: wrap; gap: 40px;">
         <!-- Left Sidebar: Photo & Personal Info -->
