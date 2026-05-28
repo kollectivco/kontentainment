@@ -15,11 +15,11 @@ msgstr ""
 #: templates/archive-cinema.php:17
 #: templates/taxonomy-cinema_area.php:18
 msgid "All Cinemas"
-msgstr "كل السينمات"
+msgstr "جميع السينمات"
 
 #: templates/archive-cinema.php:18
 msgid "Discover the best cinemas across different areas."
-msgstr "اكتشف أحسن السينمات في مختلف المناطق."
+msgstr "اكتشف أفضل السينمات في مختلف المناطق"
 
 #: templates/archive-cinema.php:22
 #: templates/taxonomy-cinema_area.php:27
@@ -36,71 +36,71 @@ msgstr "العنوان"
 #: templates/archive-cinema.php:77
 #: templates/taxonomy-cinema_area.php:77
 msgid "Playing Movies"
-msgstr "الأفلام المعروضة"
+msgstr "أفلام شغالة حالياً"
 
 #: templates/archive-cinema.php:79
 #: templates/taxonomy-cinema_area.php:79
 #, php-format
 msgid "%d Movie Playing"
 msgid_plural "%d Movies Playing"
-msgstr[0] "لا توجد أفلام معروضة"
-msgstr[1] "فيلم معروض واحد"
-msgstr[2] "فيلمان معروضان"
-msgstr[3] "%d أفلام معروضة"
-msgstr[4] "%d فيلمًا معروضًا"
-msgstr[5] "%d فيلم معروض"
+msgstr[0] "مفيش أفلام شغالة"
+msgstr[1] "%d فيلم شغال"
+msgstr[2] "%d فيلم شغال"
+msgstr[3] "%d أفلام شغالة"
+msgstr[4] "%d فيلم شغال"
+msgstr[5] "%d فيلم شغال"
 
 #: templates/archive-cinema.php:84
 #: templates/taxonomy-cinema_area.php:85
 msgid "View Showtimes"
-msgstr "عرض مواعيد العرض"
+msgstr "شوف مواعيد العروض"
 
 #: templates/archive-cinema.php:93
 #: templates/page-coming-soon.php:139
 #: templates/page-now-playing.php:124
 #: templates/taxonomy-cinema_area.php:93
 msgid "&laquo; Previous"
-msgstr "&laquo; السابق"
+msgstr "اللي فات"
 
 #: templates/archive-cinema.php:94
 #: templates/page-coming-soon.php:140
 #: templates/page-now-playing.php:125
 #: templates/taxonomy-cinema_area.php:94
 msgid "Next &raquo;"
-msgstr "التالي &raquo;"
+msgstr "الجاي"
 
 #: templates/archive-cinema.php:98
 msgid "No cinemas found."
-msgstr "ملقناش أي سينمات."
+msgstr "مفيش سينمات موجودة"
 
 #: templates/taxonomy-cinema_area.php:99
 msgid "No cinemas found in this area."
-msgstr "ملقناش أي سينمات في المنطقة دي."
+msgstr "مفيش سينمات في المنطقة دي"
 
 #: templates/page-coming-soon.php:50
 msgid "Coming Soon"
-msgstr "قريبًا في السينما"
+msgstr "قريبًا"
 
 #: templates/page-coming-soon.php:51
 msgid "Discover movies releasing soon."
-msgstr "اكتشف الأفلام اللي هتنزل قريب."
+msgstr "اكتشف الأفلام اللي هتنزل قريب"
 
 #: templates/page-coming-soon.php:94
 #: templates/single-cinema.php:209
 #: templates/single-cinema.php:212
 #: templates/single-media.php:275
 msgid "No Poster"
-msgstr "لا يوجد بوستر"
+msgstr "مفيش بوستر"
 
 #: templates/page-coming-soon.php:113
 msgid "Watch Trailer"
-msgstr "شاهد التريلر"
+msgstr "شوف التريلر"
 
 #: templates/page-coming-soon.php:124
 #: templates/single-cinema.php:256
 #: includes/card-system.php:100
 msgid "View Details"
-msgstr "عرض التفاصيل"
+msgstr "شوف التفاصيل"
 
 #: templates/page-coming-soon.php:146
 msgid "No movies are in the coming soon list."
@@ -108,24 +108,24 @@ msgstr "مفيش أفلام في قائمة المعروض قريبًا."
 
 #: templates/page-now-playing.php:37
 msgid "Now Playing"
-msgstr "يعرض حاليًا"
+msgstr "يُعرض الآن"
 
 #: templates/page-now-playing.php:38
 msgid "Movies currently showing in cinemas."
-msgstr "الأفلام اللي شغالة في السينمات دلوقتي."
+msgstr "الأفلام المعروضة حاليًا في السينمات"
 
 #: templates/page-now-playing.php:109
 msgid "View Movie"
-msgstr "عرض الفيلم"
+msgstr "شوف الفيلم"
 
-#: templates/page-now-playing.php:131
+#: templates/page-now-playing.php:121
 msgid "No movies are currently playing."
-msgstr "مفيش أفلام معروضة دلوقتي."
+msgstr "مفيش أفلام معروضة حاليًا"
 
 #: templates/single-cinema.php:104
 #: elementor/widgets/cinema-single-widget.php:93
 msgid "Get Directions"
-msgstr "اعرف السكة"
+msgstr "استخدم اللوكيشن"
 
 #: templates/single-cinema.php:114
 msgid "Cinema Notes"
@@ -133,15 +133,15 @@ msgstr "ملاحظات السينما"
 
 #: templates/single-cinema.php:126
 msgid "No showtimes currently available"
-msgstr "مفيش مواعيد عرض متاحة دلوقتي"
+msgstr "مفيش مواعيد عرض متاحة حاليًا"
 
 #: templates/single-cinema.php:127
 msgid "There are no movies playing at this cinema right now. Please check back later."
-msgstr "مفيش أفلام معروضة في السينما دي دلوقتي. ياريت تشيك تاني بعدين."
+msgstr "مفيش أفلام شغالة في السينما دي دلوقتي. جرّب تاني بعدين"
 
 #: templates/single-media.php:59
 msgid "TV Show"
-msgstr "برنامج تلفزيوني"
+msgstr "عرض تلفزيوني"
 
 #: templates/single-media.php:59
 msgid "Movie"
@@ -149,7 +149,7 @@ msgstr "فيلم"
 
 #: templates/single-media.php:80
 msgid "Overview:"
-msgstr "قصة الفيلم:"
+msgstr "نبذة:"
 
 #: templates/single-media.php:88
 #: elementor/widgets/movie-single-widget.php:150
@@ -162,7 +162,7 @@ msgstr "الكتاب:"
 
 #: templates/single-media.php:107
 msgid "Cast"
-msgstr "طاقم العمل"
+msgstr "الكاست"
 
 #: templates/single-media.php:112
 #: templates/taxonomy-ktn_cast.php:9
@@ -171,35 +171,35 @@ msgstr "مفيش صورة"
 
 #: templates/single-media.php:157
 msgid "Theater Showtimes"
-msgstr "حفلات ومواعيد العرض"
+msgstr "مواعيد عرض"
 
 #: templates/single-media.php:203
 #: includes/card-system.php:195
 msgid "View Cinema"
-msgstr "عرض السينما"
+msgstr "شوف السينما"
 
 #: templates/single-media.php:223
 #, php-format
 msgid "+%d More Cinema"
 msgid_plural "+%d More Cinemas"
-msgstr[0] "لا توجد سينمات أخرى"
-msgstr[1] "+سينما واحدة تانية"
-msgstr[2] "+سينمتين تانين"
-msgstr[3] "+%d سينمات تانية"
-msgstr[4] "+%d سينما تانية"
-msgstr[5] "+%d سينما تانية"
+msgstr[0] "مفيش سينمات إضافية"
+msgstr[1] "+%d سينما إضافية"
+msgstr[2] "+%d سينما إضافية"
+msgstr[3] "+%d سينمات إضافية"
+msgstr[4] "+%d سينما إضافية"
+msgstr[5] "+%d سينما إضافية"
 
 #: templates/single-media.php:245
 msgid "Watch Trailer on YouTube"
-msgstr "اتفرج على التريلر على يوتيوب"
+msgstr "شوف التريلر علي يوتيوب"
 
 #: templates/single-media.php:266
 msgid "Related TV Shows"
-msgstr "برامج تلفزيونية مشابهة"
+msgstr "مسلسلات تهمك"
 
 #: templates/single-media.php:266
 msgid "Related Movies"
-msgstr "أفلام مشابهة"
+msgstr "أفلام تهمك"
 
 #: templates/taxonomy-ktn_cast.php:210
 msgid "Personal Info"
@@ -207,15 +207,15 @@ msgstr "معلومات شخصية"
 
 #: templates/taxonomy-ktn_cast.php:213
 msgid "Known For"
-msgstr "مشهور بـ"
+msgstr "معروف بـ"
 
 #: templates/taxonomy-ktn_cast.php:216
 msgid "Acting"
-msgstr "التمثيل"
+msgstr "تمثيل"
 
 #: templates/taxonomy-ktn_cast.php:219
 msgid "Known Credits"
-msgstr "الأعمال المعروفة"
+msgstr "الأعمال المعروف بيها"
 
 #: templates/taxonomy-ktn_cast.php:225
 msgid "Gender"
@@ -231,11 +231,11 @@ msgstr "مكان الميلاد"
 
 #: templates/taxonomy-ktn_cast.php:246
 msgid "Also Known As"
-msgstr "مشهور برضه بـ"
+msgstr "معروف أيضاً بـ"
 
 #: templates/taxonomy-ktn_cast.php:266
 msgid "Biography"
-msgstr "السيرة الذاتية"
+msgstr "بيوجرافي (أو نبذة عن حياته)"
 
 #: templates/taxonomy-ktn_cast.php:328
 msgid "as"
@@ -321,12 +321,12 @@ msgstr "اللغة الأصلية:"
 #: includes/card-system.php:195
 #, php-format
 msgid "View Details &rarr;"
-msgstr "عرض التفاصيل &larr;"
+msgstr "شوف التفاصيل &larr;"
 
 #: templates/single-media.php:203
 #, php-format
 msgid "View Cinema &rarr;"
-msgstr "عرض السينما &larr;"
+msgstr "شوف السينما &larr;"
 
 #: templates/taxonomy-ktn_cast.php:133
 msgid "Female"
@@ -338,7 +338,7 @@ msgstr "ذكر"
 
 #: templates/taxonomy-ktn_cast.php:137
 msgid "Non-binary"
-msgstr "غير ثنائي"
+msgstr "غير محدد الهوية الجنسية"
 
 #: templates/taxonomy-ktn_cast.php:146
 #, php-format
@@ -471,35 +471,35 @@ msgstr "سينمات %s"
 
 #, php-format
 msgid "Cinemas located in %s."
-msgstr "السينمات اللي موجودة في %s."
+msgstr "سينمات موجودة في %s"
 
 # --- Cinema Guides Page Translations ---
 msgid "Cinema Guides"
 msgstr "دليل السينما"
 
 msgid "Explore the latest movies and top-rated cinemas near you."
-msgstr "اكتشف أحدث الأفلام والسينمات الأعلى تقييمًا القريبة منك."
+msgstr "اكتشف أحدث الأفلام وأفضل السينمات القريبة منك"
 
 msgid "Movies"
 msgstr "الأفلام"
 
 msgid "Cinemas"
-msgstr "السينمات"
+msgstr "سينمات"
 
 msgid "All Movies"
 msgstr "كل الأفلام"
 
 msgid "English Movies"
-msgstr "الأفلام الأجنبية"
+msgstr "أفلام أجنبية"
 
 msgid "Arabic Movies"
-msgstr "الأفلام العربية"
+msgstr "أفلام عربي"
 
 msgid "Type Your Movie Name"
 msgstr "اكتب اسم الفيلم"
 
 msgid "All Genres"
-msgstr "كل التصنيفات"
+msgstr "كل الفئات"
 
 msgid "Type Your Cinema Name"
 msgstr "اكتب اسم السينما"
@@ -508,7 +508,7 @@ msgid "All Governorates"
 msgstr "كل المحافظات"
 
 msgid "Select Area"
-msgstr "اختر المنطقة"
+msgstr "اختار المنطقة"
 
 msgid "No movies found matching your criteria."
 msgstr "ملقناش أفلام مطابقة للبحث بتاعك."
