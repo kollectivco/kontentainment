@@ -99,8 +99,92 @@ function ktn_settings_page_html() {
 			</table>
 			<?php submit_button(); ?>
 		</form>
+
+		<hr style="margin: 40px 0 20px 0; border: 0; border-top: 1px solid #ccc;" />
+
+		<h2><?php esc_html_e( 'Box Office Sync', 'kontentainment' ); ?></h2>
+		<p><?php esc_html_e( 'Manage and manually update the movies sales and revenue data scraped from cinema-track.com.', 'kontentainment' ); ?></p>
+		
+		<table class="form-table">
+			<tr valign="top">
+				<th scope="row"><?php esc_html_e( 'Last Synced', 'kontentainment' ); ?></th>
+				<td>
+					<strong>
+						<?php 
+						$last_synced = get_option('ktn_box_office_last_synced');
+						echo esc_html($last_synced ? $last_synced : __('Never', 'kontentainment')); 
+						?>
+					</strong>
+				</td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><?php esc_html_e( 'Manual Update', 'kontentainment' ); ?></th>
+				<td>
+					<button type="button" id="ktn-sync-box-office-btn" class="button button-secondary">
+						<span class="dashicons dashicons-update" style="vertical-align: middle; margin-right: 4px;"></span>
+						<?php esc_html_e( 'Force Sync Now', 'kontentainment' ); ?>
+					</button>
+					<span id="ktn-sync-box-office-status" style="margin-left: 10px; font-weight: 600; vertical-align: middle;"></span>
+				</td>
+			</tr>
+		</table>
 	</div>
+
+	<script>
+	jQuery(document).ready(function($) {
+		$('#ktn-sync-box-office-btn').on('click', function(e) {
+			e.preventDefault();
+			var btn = $(this);
+			var status = $('#ktn-sync-box-office-status');
+			
+			if (btn.hasClass('disabled')) return;
+			
+			btn.addClass('disabled').attr('disabled', 'disabled');
+			status.css('color', '#f59e0b').text('<?php esc_html_e( 'Syncing...', 'kontentainment' ); ?>');
+			
+			$.ajax({
+				url: ajaxurl,
+				type: 'POST',
+				data: {
+					action: 'ktn_force_sync_box_office',
+					security: '<?php echo wp_create_nonce("ktn_settings_nonce"); ?>'
+				},
+				success: function(response) {
+					btn.removeClass('disabled').removeAttr('disabled');
+					if (response.success) {
+						status.css('color', 'green').text('<?php esc_html_e( 'Success! Data updated.', 'kontentainment' ); ?>');
+						location.reload();
+					} else {
+						status.css('color', 'red').text('<?php esc_html_e( 'Error: ', 'kontentainment' ); ?>' + response.data);
+					}
+				},
+				error: function() {
+					btn.removeClass('disabled').removeAttr('disabled');
+					status.css('color', 'red').text('<?php esc_html_e( 'Request failed.', 'kontentainment' ); ?>');
+				}
+			});
+		});
+	});
+	</script>
 	<?php
+}
+
+/**
+ * AJAX handler to force sync box office data
+ */
+add_action('wp_ajax_ktn_force_sync_box_office', 'wp_ajax_ktn_force_sync_box_office_handler');
+function wp_ajax_ktn_force_sync_box_office_handler() {
+    check_ajax_referer('ktn_settings_nonce', 'security');
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('Unauthorized');
+    }
+
+    $result = Ktn_Box_Office_Scraper::scrape_remote_data();
+    if (is_wp_error($result)) {
+        wp_send_json_error($result->get_error_message());
+    }
+
+    wp_send_json_success();
 }
 
 

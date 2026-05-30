@@ -47,6 +47,7 @@ final class KTN_Elementor_Manager {
         require_once KTN_PLUGIN_DIR . 'elementor/widgets/movie-single-widget.php';
         require_once KTN_PLUGIN_DIR . 'elementor/widgets/cinema-single-widget.php';
         require_once KTN_PLUGIN_DIR . 'elementor/widgets/movies-mobile-widget.php';
+        require_once KTN_PLUGIN_DIR . 'elementor/widgets/box-office-widget.php';
 
         $widgets_manager->register(new \KTN_Movies_Widget());
         $widgets_manager->register(new \KTN_Cinemas_Widget());
@@ -55,6 +56,7 @@ final class KTN_Elementor_Manager {
         $widgets_manager->register(new \KTN_Movie_Single_Widget());
         $widgets_manager->register(new \KTN_Cinema_Single_Widget());
         $widgets_manager->register(new \KTN_Movies_Mobile_Widget());
+        $widgets_manager->register(new \KTN_Box_Office_Widget());
     }
 }
 

@@ -100,6 +100,7 @@ function ktn_register_post_types()
     // Custom rewrite rules for movies statuses
     add_rewrite_rule('^movies/now-playing/?$', 'index.php?post_type=movie&movies_status=now-playing', 'top');
     add_rewrite_rule('^movies/coming-soon/?$', 'index.php?post_type=movie&movies_status=coming-soon', 'top');
+    add_rewrite_rule('^box-office/?$', 'index.php?movies_status=box-office', 'top');
 }
 
 add_filter('query_vars', 'ktn_add_query_vars');

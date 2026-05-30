@@ -63,6 +63,13 @@ function ktn_load_custom_templates($template)
         }
     }
 
+    if (get_query_var('movies_status') === 'box-office') {
+        $custom_template = KTN_PLUGIN_DIR . 'templates/page-box-office.php';
+        if (file_exists($custom_template)) {
+            return $custom_template;
+        }
+    }
+
     return $template;
 }
 
@@ -456,4 +463,17 @@ function ktn_translate_cast_archive_title($title)
         }
     }
     return $title;
+}
+
+/**
+ * Shortcode for Box Office page
+ */
+add_shortcode('ktn_box_office', 'ktn_box_office_shortcode_handler');
+function ktn_box_office_shortcode_handler() {
+    ob_start();
+    $custom_template = KTN_PLUGIN_DIR . 'templates/page-box-office.php';
+    if (file_exists($custom_template)) {
+        include $custom_template;
+    }
+    return ob_get_clean();
 }
