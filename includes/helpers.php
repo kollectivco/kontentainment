@@ -528,3 +528,90 @@ function ktn_get_movie_link_by_title($title) {
 
     return '#'; // Fallback
 }
+
+/**
+ * Get display title for scraped movie title, using local database lookups or dynamic translation with transient caching
+ */
+function ktn_get_movie_display_title($scraped_title) {
+    if (empty($scraped_title)) {
+        return '';
+    }
+
+    $scraped_title = trim($scraped_title);
+
+    // Check transient cache first
+    $cache_key = 'ktn_title_ar_' . md5($scraped_title);
+    $cached = get_transient($cache_key);
+    if ($cached !== false) {
+        return $cached;
+    }
+
+    $arabic_title = '';
+
+    // 1. Exact match on database post title
+    $query = new WP_Query(array(
+        'post_type'      => 'movie',
+        'title'          => $scraped_title,
+        'posts_per_page' => 1,
+        'post_status'    => 'publish',
+        'no_found_rows'  => true,
+    ));
+
+    if ($query->have_posts()) {
+        $arabic_title = $query->posts[0]->post_title;
+    }
+    wp_reset_postdata();
+
+    // 2. Exact match on meta value (_movie_original_title)
+    if (empty($arabic_title)) {
+        global $wpdb;
+        $post_id = $wpdb->get_var($wpdb->prepare(
+            "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_movie_original_title' AND meta_value = %s LIMIT 1",
+            $scraped_title
+        ));
+
+        if ($post_id) {
+            $post = get_post($post_id);
+            if ($post) {
+                $arabic_title = $post->post_title;
+            }
+        }
+    }
+
+    // 3. Partial Title Match
+    if (empty($arabic_title)) {
+        global $wpdb;
+        $like_title = '%' . $wpdb->esc_like($scraped_title) . '%';
+        $post_id = $wpdb->get_var($wpdb->prepare(
+            "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title LIKE %s LIMIT 1",
+            $like_title
+        ));
+
+        if ($post_id) {
+            $post = get_post($post_id);
+            if ($post) {
+                $arabic_title = $post->post_title;
+            }
+        }
+    }
+
+    // 4. Fallback: Dynamic Google Translation API
+    if (empty($arabic_title)) {
+        if (function_exists('ktn_translate_text_free')) {
+            $translated = ktn_translate_text_free($scraped_title);
+            if (!empty($translated) && $translated !== $scraped_title) {
+                $arabic_title = $translated;
+            }
+        }
+    }
+
+    // If still empty or translation failed, use scraped title and translate its digits
+    if (empty($arabic_title)) {
+        $arabic_title = ktn_translate_digits($scraped_title);
+    }
+
+    // Cache the resolved Arabic title for 30 days
+    set_transient($cache_key, $arabic_title, 30 * DAY_IN_SECONDS);
+
+    return $arabic_title;
+}

@@ -28,6 +28,18 @@ function ktn_bo_format_egp($str) {
 }
 
 function ktn_bo_translate($str) {
+    if (empty($str)) return '';
+    $months = array(
+        'January' => 'يناير', 'February' => 'فبراير', 'March' => 'مارس', 'April' => 'أبريل',
+        'May' => 'مايو', 'June' => 'يونيو', 'July' => 'يوليو', 'August' => 'أغسطس',
+        'September' => 'سبتمبر', 'October' => 'أكتوبر', 'November' => 'نوفمبر', 'December' => 'ديسمبر',
+        'Jan' => 'يناير', 'Feb' => 'فبراير', 'Mar' => 'مارس', 'Apr' => 'أبريل',
+        'Jun' => 'يونيو', 'Jul' => 'يوليو', 'Aug' => 'أغسطس',
+        'Sep' => 'سبتمبر', 'Oct' => 'أكتوبر', 'Nov' => 'نوفمبر', 'Dec' => 'ديسمبر'
+    );
+    foreach ($months as $en => $ar) {
+        $str = str_ireplace($en, $ar, $str);
+    }
     return ktn_translate_digits($str);
 }
 ?>
@@ -50,7 +62,7 @@ function ktn_bo_translate($str) {
         <div class="ktn-bo-header-container">
             <div class="ktn-bo-header-left">
                 <h1 class="ktn-bo-title">
-                    <span class="gold-text"><?php esc_html_e('شباك التذاكر العربي – ', 'kontentainment'); ?></span>
+                    <span class="gold-text"><?php esc_html_e('شباك التذاكر – ', 'kontentainment'); ?></span>
                     <span class="date-text"><?php echo esc_html(ktn_bo_translate($date_display)); ?></span>
                 </h1>
             </div>
@@ -93,8 +105,9 @@ function ktn_bo_translate($str) {
                                 if ($item['trend_class'] === 'up') $trend_arrow = '▲';
                                 if ($item['trend_class'] === 'down') $trend_arrow = '▼';
                                 
-                                // Fetch local movie link
+                                // Fetch local movie link & Arabic display title
                                 $movie_link = ktn_get_movie_link_by_title($item['title']);
+                                $display_title = ktn_get_movie_display_title($item['title']);
                             ?>
                                 <tr>
                                     <td class="col-rank rank-<?php echo esc_attr($item['rank']); ?>"><?php echo esc_html(ktn_bo_translate($item['rank'])); ?></td>
@@ -103,7 +116,7 @@ function ktn_bo_translate($str) {
                                             <a href="<?php echo esc_url($movie_link); ?>" class="bo-movie-click-wrap">
                                         <?php endif; ?>
                                         <?php if (!empty($item['poster'])): ?>
-                                            <img src="<?php echo esc_url($item['poster']); ?>" alt="<?php echo esc_attr($item['title']); ?> Poster" class="bo-thumb">
+                                            <img src="<?php echo esc_url($item['poster']); ?>" alt="<?php echo esc_attr($display_title); ?> Poster" class="bo-thumb">
                                         <?php else: ?>
                                             <div class="bo-no-thumb"><span class="dashicons dashicons-format-image"></span></div>
                                         <?php endif; ?>
@@ -115,7 +128,7 @@ function ktn_bo_translate($str) {
                                         <?php if ($movie_link !== '#'): ?>
                                             <a href="<?php echo esc_url($movie_link); ?>" class="movie-name-link">
                                         <?php endif; ?>
-                                        <div class="movie-name"><?php echo esc_html($item['title']); ?></div>
+                                        <div class="movie-name"><?php echo esc_html($display_title); ?></div>
                                         <?php if ($movie_link !== '#'): ?>
                                             </a>
                                         <?php endif; ?>
@@ -142,6 +155,7 @@ function ktn_bo_translate($str) {
                         if ($item['trend_class'] === 'down') $trend_arrow = '▼';
                         
                         $movie_link = ktn_get_movie_link_by_title($item['title']);
+                        $display_title = ktn_get_movie_display_title($item['title']);
                     ?>
                         <div class="ktn-bo-mob-card">
                             <div class="mob-card-header">
@@ -150,9 +164,9 @@ function ktn_bo_translate($str) {
                                     <a href="<?php echo esc_url($movie_link); ?>" class="mob-movie-click-wrap" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
                                 <?php endif; ?>
                                 <?php if (!empty($item['poster'])): ?>
-                                    <img src="<?php echo esc_url($item['poster']); ?>" alt="<?php echo esc_attr($item['title']); ?>" class="mob-thumb">
+                                    <img src="<?php echo esc_url($item['poster']); ?>" alt="<?php echo esc_attr($display_title); ?>" class="mob-thumb">
                                 <?php endif; ?>
-                                <div class="mob-title"><?php echo esc_html($item['title']); ?></div>
+                                <div class="mob-title"><?php echo esc_html($display_title); ?></div>
                                 <?php if ($movie_link !== '#'): ?>
                                     </a>
                                 <?php endif; ?>
@@ -197,6 +211,7 @@ function ktn_bo_translate($str) {
             <?php else: ?>
                 <?php foreach ($weekly as $item): 
                     $movie_link = ktn_get_movie_link_by_title($item['title']);
+                    $display_title = ktn_get_movie_display_title($item['title']);
                 ?>
                     <div class="ktn-bo-weekly-card">
                         <div class="card-rank"><?php echo esc_html(ktn_bo_translate($item['rank'])); ?></div>
@@ -207,13 +222,13 @@ function ktn_bo_translate($str) {
                         
                         <div class="card-media">
                             <?php if (!empty($item['poster'])): ?>
-                                <img src="<?php echo esc_url($item['poster']); ?>" alt="<?php echo esc_attr($item['title']); ?> Poster">
+                                <img src="<?php echo esc_url($item['poster']); ?>" alt="<?php echo esc_attr($display_title); ?> Poster">
                             <?php else: ?>
                                 <div class="no-poster-wrap"><span class="dashicons dashicons-video-alt3" style="font-size: 60px; width: 60px; height: 60px;"></span></div>
                             <?php endif; ?>
                         </div>
                         <div class="card-info">
-                            <h3 class="movie-title"><?php echo esc_html($item['title']); ?></h3>
+                            <h3 class="movie-title"><?php echo esc_html($display_title); ?></h3>
                             
                         <?php if ($movie_link !== '#'): ?>
                             </a>
@@ -288,8 +303,53 @@ function ktn_bo_translate($str) {
                     return value;
                 }
 
-                // Data values passed from PHP Scraper
-                const barLabels = <?php echo json_encode($charts['top_labels'] ?? array()); ?>;
+                // JS helper to translate standard digits to Arabic Eastern numerals
+                function ktnBoTranslateDigits(str) {
+                    if (str === undefined || str === null) return '';
+                    str = str.toString();
+                    const en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                    const ar = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+                    for (let i = 0; i < 10; i++) {
+                        str = str.replaceAll(en[i], ar[i]);
+                    }
+                    return str;
+                }
+
+                // JS helper to translate months and digits in labels
+                function ktnBoTranslateFullText(str) {
+                    if (!str) return '';
+                    str = str.toString();
+                    const months = {
+                        'January': 'يناير', 'February': 'فبراير', 'March': 'مارس', 'April': 'أبريل',
+                        'May': 'مايو', 'June': 'يونيو', 'July': 'يوليو', 'August': 'أغسطس',
+                        'September': 'سبتمبر', 'October': 'أكتوبر', 'November': 'نوفمبر', 'December': 'ديسمبر',
+                        'Jan': 'يناير', 'Feb': 'فبراير', 'Mar': 'مارس', 'Apr': 'أبريل',
+                        'Jun': 'يونيو', 'Jul': 'يوليو', 'Aug': 'أغسطس',
+                        'Sep': 'سبتمبر', 'Oct': 'أكتوبر', 'Nov': 'نوفمبر', 'Dec': 'ديسمبر'
+                    };
+                    for (let [enM, arM] of Object.entries(months)) {
+                        str = str.replace(new RegExp(enM, 'ig'), arM);
+                    }
+                    return ktnBoTranslateDigits(str);
+                }
+
+                // Fetch & Translate labels in PHP
+                <?php
+                $bar_labels = array();
+                if (!empty($charts['top_labels'])) {
+                    foreach ($charts['top_labels'] as $lbl) {
+                        $bar_labels[] = ktn_get_movie_display_title($lbl);
+                    }
+                }
+                $trend_labels = array();
+                if (!empty($charts['trend_labels'])) {
+                    foreach ($charts['trend_labels'] as $lbl) {
+                        $trend_labels[] = ktn_bo_translate($lbl);
+                    }
+                }
+                ?>
+
+                const barLabels = <?php echo json_encode($bar_labels); ?>;
                 const barData = <?php echo json_encode($charts['top_vals'] ?? array()); ?>;
 
                 if (barLabels.length > 0) {
@@ -314,8 +374,11 @@ function ktn_bo_translate($str) {
                                 legend: { display: false },
                                 tooltip: {
                                     callbacks: {
+                                        title: function(context) {
+                                            return ktnBoTranslateFullText(context[0].label);
+                                        },
                                         label: function(context) {
-                                            return ' ' + Number(context.parsed.y).toLocaleString() + ' ج.م';
+                                            return ' ' + ktnBoTranslateFullText(Number(context.parsed.y).toLocaleString()) + ' ج.م';
                                         }
                                     }
                                 }
@@ -323,18 +386,31 @@ function ktn_bo_translate($str) {
                             scales: {
                                 x: {
                                     grid: { color: gridColor },
-                                    ticks: { color: textColor, font: tickFont }
+                                    ticks: { 
+                                        color: textColor, 
+                                        font: tickFont,
+                                        callback: function(val, index) {
+                                            const label = this.getLabelForValue(val);
+                                            return ktnBoTranslateFullText(label);
+                                        }
+                                    }
                                 },
                                 y: {
                                     grid: { color: gridColor },
-                                    ticks: { color: textColor, font: tickFont, callback: formatY }
+                                    ticks: { 
+                                        color: textColor, 
+                                        font: tickFont, 
+                                        callback: function(value) {
+                                            return ktnBoTranslateDigits(formatY(value));
+                                        }
+                                    }
                                 }
                             }
                         }
                     });
                 }
 
-                const lineLabels = <?php echo json_encode($charts['trend_labels'] ?? array()); ?>;
+                const lineLabels = <?php echo json_encode($trend_labels); ?>;
                 const lineData = <?php echo json_encode($charts['trend_vals'] ?? array()); ?>;
 
                 if (lineLabels.length > 0) {
@@ -362,8 +438,11 @@ function ktn_bo_translate($str) {
                                 legend: { display: false },
                                 tooltip: {
                                     callbacks: {
+                                        title: function(context) {
+                                            return ktnBoTranslateFullText(context[0].label);
+                                        },
                                         label: function(context) {
-                                            return ' ' + Number(context.parsed.y).toLocaleString() + ' ج.م';
+                                            return ' ' + ktnBoTranslateFullText(Number(context.parsed.y).toLocaleString()) + ' ج.م';
                                         }
                                     }
                                 }
@@ -371,11 +450,24 @@ function ktn_bo_translate($str) {
                             scales: {
                                 x: {
                                     grid: { color: gridColor },
-                                    ticks: { color: textColor, font: tickFont }
+                                    ticks: { 
+                                        color: textColor, 
+                                        font: tickFont,
+                                        callback: function(val, index) {
+                                            const label = this.getLabelForValue(val);
+                                            return ktnBoTranslateFullText(label);
+                                        }
+                                    }
                                 },
                                 y: {
                                     grid: { color: gridColor },
-                                    ticks: { color: textColor, font: tickFont, callback: formatY }
+                                    ticks: { 
+                                        color: textColor, 
+                                        font: tickFont, 
+                                        callback: function(value) {
+                                            return ktnBoTranslateDigits(formatY(value));
+                                        }
+                                    }
                                 }
                             }
                         }
