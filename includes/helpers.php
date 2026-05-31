@@ -106,6 +106,78 @@ function ktn_sideload_image($url, $post_id, $set_as_thumbnail = false)
 }
 
 /**
+ * Resolve the correct Arabic title for an Arabic movie on the frontend.
+ */
+function ktn_get_arabic_movie_title($post_id, $default_title) {
+    $arabic_title = get_post_meta($post_id, '_movie_title_arabic', true);
+    if (!empty($arabic_title)) {
+        return $arabic_title;
+    }
+
+    // Try hardcoded common Egyptian translations map first
+    $map = array(
+        'asad' => 'أسد',
+        'ezma' => 'أزمة',
+        'bershama' => 'برشامة',
+        'el kalam ala eh?!' => 'الكلام على إيه',
+        'el kalam ala eh' => 'الكلام على إيه',
+        'el kalam !?ala eh' => 'الكلام على إيه',
+        '7 dogs' => 'ولاد رزق ٣',
+        'dogs 7' => 'ولاد رزق ٣',
+        'dogs' => 'ولاد رزق ٣',
+        'welad rizk 3' => 'ولاد رزق ٣',
+        'welad rizk' => 'ولاد رزق ٣'
+    );
+    
+    $clean_title = strtolower(trim($default_title));
+    if (isset($map[$clean_title])) {
+        $arabic_title = $map[$clean_title];
+        update_post_meta($post_id, '_movie_title_arabic', $arabic_title);
+        return $arabic_title;
+    }
+
+    // Also look up map in values
+    foreach ($map as $eng => $ar) {
+        if (trim(strtolower($ar)) === $clean_title) {
+            $arabic_title = $ar;
+            update_post_meta($post_id, '_movie_title_arabic', $arabic_title);
+            return $arabic_title;
+        }
+    }
+
+    // Query TMDB in Arabic dynamically if there is a TMDB ID
+    $tmdb_id = get_post_meta($post_id, '_movie_tmdb_id', true);
+    $token = get_option('ktn_tmdb_bearer_token');
+    if ($tmdb_id && $token) {
+        $post = get_post($post_id);
+        $type = ($post && $post->post_type === 'tv_show') ? 'tv' : 'movie';
+        if (function_exists('ktn_get_tmdb_media_details')) {
+            $details = ktn_get_tmdb_media_details($tmdb_id, $type, $token, 'ar');
+            if (!is_wp_error($details)) {
+                $resolved = ($type === 'tv') ? ($details['name'] ?? '') : ($details['title'] ?? '');
+                if (!empty($resolved)) {
+                    $arabic_title = $resolved;
+                    update_post_meta($post_id, '_movie_title_arabic', $arabic_title);
+                    return $arabic_title;
+                }
+            }
+        }
+    }
+
+    // Dynamic Google Translate API fallback
+    if (function_exists('ktn_translate_text_free')) {
+        $translated = ktn_translate_text_free($default_title);
+        if (!empty($translated) && $translated !== $default_title) {
+            $arabic_title = $translated;
+            update_post_meta($post_id, '_movie_title_arabic', $arabic_title);
+            return $arabic_title;
+        }
+    }
+
+    return $default_title;
+}
+
+/**
  * Dynamically replace the title of cinemas with their Arabic names on the frontend.
  */
 add_filter('the_title', 'ktn_translate_frontend_post_titles', 10, 2);
@@ -130,7 +202,7 @@ function ktn_translate_frontend_post_titles($title, $post_id = 0)
     if ($post->post_type === 'movie' || $post->post_type === 'tv_show') {
         $original_lang = get_post_meta($post_id, '_movie_original_language', true);
         if ($original_lang === 'ar') {
-            return $title;
+            return ktn_get_arabic_movie_title($post_id, $title);
         }
         $original_title = get_post_meta($post_id, '_movie_original_title', true);
         if (!empty($original_title)) {

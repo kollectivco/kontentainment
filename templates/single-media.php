@@ -138,6 +138,43 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
         $today
     ));
 
+    // Self-healing: if no showtimes found, attempt to match unmatched scraped showtimes
+    if (empty($showtimes) && class_exists('Ktn_Cinema_Importer')) {
+        $m_title = get_the_title($post_id);
+        $m_orig = get_post_meta($post_id, '_movie_original_title', true);
+        
+        $unmatched_records = $wpdb->get_results($wpdb->prepare(
+            "SELECT DISTINCT movie_title_scraped FROM $table_showtimes 
+             WHERE matched_movie_id IS NULL 
+             AND (movie_title_scraped = %s OR movie_title_scraped = %s)",
+            $m_title,
+            $m_orig
+        ));
+        
+        if (!empty($unmatched_records)) {
+            $healed = false;
+            foreach ($unmatched_records as $rec) {
+                $matched_id = Ktn_Cinema_Importer::matchMovieTitle($rec->movie_title_scraped);
+                if ($matched_id == $post_id) {
+                    $wpdb->update($table_showtimes, array('matched_movie_id' => $post_id), array('movie_title_scraped' => $rec->movie_title_scraped));
+                    $healed = true;
+                }
+            }
+            
+            if ($healed) {
+                // Re-query showtimes
+                $showtimes = $wpdb->get_results($wpdb->prepare(
+                    "SELECT * FROM $table_showtimes 
+                     WHERE matched_movie_id = %d 
+                     AND (show_date >= %s OR show_date = 'Today')
+                     ORDER BY show_date ASC, cinema_name ASC, show_time ASC",
+                    $post_id,
+                    $today
+                ));
+            }
+        }
+    }
+
     if (!empty($showtimes)):
         wp_enqueue_style('ktn-showtimes-css', KTN_PLUGIN_URL . 'assets/css/kontentainment-showtimes.css', array(), KTN_PLUGIN_VERSION);
         wp_enqueue_script('ktn-showtimes-js', KTN_PLUGIN_URL . 'assets/js/kontentainment-showtimes.js', array('jquery'), KTN_PLUGIN_VERSION, true);

@@ -38,7 +38,7 @@ class Ktn_Cinema_Importer
             }
         }
 
-        // 0b. Hardcoded transliteration map dictionary
+        // 0b. Hardcoded transliteration map dictionary (supports both English keys and Arabic values lookup)
         $map = array(
             'asad' => 'أسد',
             'ezma' => 'أزمة',
@@ -46,20 +46,43 @@ class Ktn_Cinema_Importer
             'el kalam ala eh?!' => 'الكلام على إيه',
             'el kalam ala eh' => 'الكلام على إيه',
             'el kalam !?ala eh' => 'الكلام على إيه',
-            '7 dogs' => 'كلاب 7',
-            'dogs 7' => 'كلاب 7',
-            'dogs' => 'كلاب'
+            '7 dogs' => 'ولاد رزق ٣',
+            'dogs 7' => 'ولاد رزق ٣',
+            'dogs' => 'ولاد رزق ٣',
+            'welad rizk 3' => 'ولاد رزق ٣',
+            'welad rizk' => 'ولاد رزق ٣'
         );
+        
         $clean_title = strtolower(trim($scraped_title));
-        if (isset($map[$clean_title])) {
-            $mapped_title = $map[$clean_title];
-            $mapped_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title = %s LIMIT 1", $mapped_title));
-            if ($mapped_id) return intval($mapped_id);
+        $norm_clean = self::normalizeTitle($clean_title);
 
-            // Try LIKE
-            $like_mapped = '%' . $wpdb->esc_like($mapped_title) . '%';
-            $mapped_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title LIKE %s LIMIT 1", $like_mapped));
-            if ($mapped_id) return intval($mapped_id);
+        // Search both keys and values
+        foreach ($map as $eng => $ar) {
+            if (trim(strtolower($eng)) === $clean_title || 
+                trim(strtolower($ar)) === $clean_title ||
+                self::normalizeTitle($eng) === $norm_clean || 
+                self::normalizeTitle($ar) === $norm_clean) {
+                
+                // We found a match! Let's search the database for a post matching either the English key or the Arabic value.
+                $mapped_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND (post_title = %s OR post_title = %s) LIMIT 1", $eng, $ar));
+                if ($mapped_id) {
+                    return intval($mapped_id);
+                }
+
+                // Try fuzzy/LIKE match for both English key and Arabic value
+                $like_eng = '%' . $wpdb->esc_like($eng) . '%';
+                $like_ar = '%' . $wpdb->esc_like($ar) . '%';
+                $mapped_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND (post_title LIKE %s OR post_title LIKE %s OR post_name LIKE %s) LIMIT 1", $like_ar, $like_eng, $like_eng));
+                if ($mapped_id) {
+                    return intval($mapped_id);
+                }
+                
+                // Try original title metadata lookup
+                $meta_id = $wpdb->get_var($wpdb->prepare("SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_movie_original_title' AND (meta_value = %s OR meta_value = %s) LIMIT 1", $eng, $ar));
+                if ($meta_id) {
+                    return intval($meta_id);
+                }
+            }
         }
 
         // 0c. Check if there is an existing match in the database showtimes table
