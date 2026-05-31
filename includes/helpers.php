@@ -477,3 +477,54 @@ function ktn_box_office_shortcode_handler() {
     }
     return ob_get_clean();
 }
+
+/**
+ * Get local movie post link by scraped title
+ */
+function ktn_get_movie_link_by_title($title) {
+    if (empty($title)) {
+        return '#';
+    }
+
+    $title = trim($title);
+
+    // 1. Exact match on post title
+    $query = new WP_Query(array(
+        'post_type'      => 'movie',
+        'title'          => $title,
+        'posts_per_page' => 1,
+        'post_status'    => 'publish',
+        'no_found_rows'  => true,
+    ));
+
+    if ($query->have_posts()) {
+        $link = get_permalink($query->posts[0]->ID);
+        wp_reset_postdata();
+        return $link;
+    }
+    wp_reset_postdata();
+
+    // 2. Exact match on meta value (_movie_original_title)
+    global $wpdb;
+    $post_id = $wpdb->get_var($wpdb->prepare(
+        "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_movie_original_title' AND meta_value = %s LIMIT 1",
+        $title
+    ));
+
+    if ($post_id) {
+        return get_permalink($post_id);
+    }
+
+    // 3. Partial Title Match
+    $like_title = '%' . $wpdb->esc_like($title) . '%';
+    $post_id = $wpdb->get_var($wpdb->prepare(
+        "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title LIKE %s LIMIT 1",
+        $like_title
+    ));
+
+    if ($post_id) {
+        return get_permalink($post_id);
+    }
+
+    return '#'; // Fallback
+}
