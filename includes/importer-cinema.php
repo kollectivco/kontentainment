@@ -46,9 +46,6 @@ class Ktn_Cinema_Importer
             'el kalam ala eh?!' => 'الكلام على إيه',
             'el kalam ala eh' => 'الكلام على إيه',
             'el kalam !?ala eh' => 'الكلام على إيه',
-            '7 dogs' => 'ولاد رزق ٣',
-            'dogs 7' => 'ولاد رزق ٣',
-            'dogs' => 'ولاد رزق ٣',
             'welad rizk 3' => 'ولاد رزق ٣',
             'welad rizk' => 'ولاد رزق ٣'
         );

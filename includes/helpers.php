@@ -114,7 +114,6 @@ function ktn_get_arabic_movie_title($post_id, $default_title) {
         return $arabic_title;
     }
 
-    // Try hardcoded common Egyptian translations map first
     $map = array(
         'asad' => 'أسد',
         'ezma' => 'أزمة',
@@ -122,9 +121,6 @@ function ktn_get_arabic_movie_title($post_id, $default_title) {
         'el kalam ala eh?!' => 'الكلام على إيه',
         'el kalam ala eh' => 'الكلام على إيه',
         'el kalam !?ala eh' => 'الكلام على إيه',
-        '7 dogs' => 'ولاد رزق ٣',
-        'dogs 7' => 'ولاد رزق ٣',
-        'dogs' => 'ولاد رزق ٣',
         'welad rizk 3' => 'ولاد رزق ٣',
         'welad rizk' => 'ولاد رزق ٣'
     );
@@ -790,4 +786,21 @@ function ktn_disable_sidebar_on_guides($is_active) {
         return false;
     }
     return $is_active;
+}
+
+/**
+ * Self-healing cleanup hook to automatically remove incorrect cached title for 7 Dogs
+ */
+add_action('init', 'ktn_cleanup_incorrect_movie_meta');
+function ktn_cleanup_incorrect_movie_meta() {
+    global $wpdb;
+    $results = $wpdb->get_results("SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_movie_title_arabic' AND meta_value = 'ولاد رزق ٣'");
+    if (!empty($results)) {
+        foreach ($results as $row) {
+            $orig = get_post_meta($row->post_id, '_movie_original_title', true);
+            if (stripos($orig, 'dogs') !== false || stripos($orig, '7') !== false) {
+                delete_post_meta($row->post_id, '_movie_title_arabic');
+            }
+        }
+    }
 }
