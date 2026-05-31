@@ -3,12 +3,12 @@
  */
 
 .ktn-guides-container {
-    max-width: 1650px;
+    max-width: 1650px !important;
     margin: 40px auto;
     font-family: inherit;
     color: #333;
     padding: 0 20px;
-    width: 100%;
+    width: 100% !important;
 }
 
 .ktn-guides-header {
@@ -338,7 +338,14 @@ body.ktn-full-width-page .entry-content,
 body.ktn-full-width-page .grid-container,
 body.ktn-full-width-page .ast-container,
 body.ktn-full-width-page .site-inner,
-body.ktn-full-width-page .main-container {
+body.ktn-full-width-page .main-container,
+body.ktn-full-width-page .elementor-container,
+body.ktn-full-width-page .elementor-section,
+body.ktn-full-width-page .elementor-section.elementor-section-boxed > .elementor-container,
+body.ktn-full-width-page .wp-block-post-content,
+body.ktn-full-width-page .wp-site-blocks,
+body.ktn-full-width-page article,
+body.ktn-full-width-page .page {
     width: 100% !important;
     max-width: 1650px !important;
     margin-left: auto !important;
