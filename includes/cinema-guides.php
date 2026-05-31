@@ -101,6 +101,24 @@ class Ktn_Cinema_Guides
                                 ?>
                             </select>
                         </div>
+
+                        <div class="ktn-dropdown-wrapper">
+                            <select id="movie-city" class="ktn-select">
+                                <option value=""><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'كل المحافظات' : __('All Governorates', 'kontentainment'); ?></option>
+                                <?php
+                                $cities = get_terms(array('taxonomy' => 'cinema_location', 'parent' => 0, 'hide_empty' => true));
+                                foreach ($cities as $city) {
+                                    echo '<option value="' . esc_attr($city->slug) . '">' . esc_html($city->name) . '</option>';
+                                }
+                                ?>
+                            </select>
+                        </div>
+
+                        <div class="ktn-dropdown-wrapper">
+                            <select id="movie-area" class="ktn-select" disabled>
+                                <option value=""><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'اختر المنطقة' : __('Select Area', 'kontentainment'); ?></option>
+                            </select>
+                        </div>
                     </div>
 
                     <div id="movie-results" class="ktn-results-grid">
@@ -118,7 +136,7 @@ class Ktn_Cinema_Guides
 
                         <div class="ktn-dropdown-wrapper">
                             <select id="cinema-city" class="ktn-select">
-                                <option value=""><?php _e('All Governorates', 'kontentainment'); ?></option>
+                                <option value=""><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'كل المحافظات' : __('All Governorates', 'kontentainment'); ?></option>
                                 <?php
                                 $cities = get_terms(array('taxonomy' => 'cinema_location', 'parent' => 0, 'hide_empty' => true));
                                 foreach ($cities as $city) {
@@ -130,7 +148,7 @@ class Ktn_Cinema_Guides
 
                         <div class="ktn-dropdown-wrapper">
                             <select id="cinema-area" class="ktn-select" disabled>
-                                <option value=""><?php _e('Select Area', 'kontentainment'); ?></option>
+                                <option value=""><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'اختر المنطقة' : __('Select Area', 'kontentainment'); ?></option>
                             </select>
                         </div>
                     </div>
@@ -184,6 +202,47 @@ class Ktn_Cinema_Guides
                 'field'    => 'slug',
                 'terms'    => $filters['genre']
             );
+        }
+
+        if (!empty($filters['area']) || !empty($filters['city'])) {
+            global $wpdb;
+            $location_slug = !empty($filters['area']) ? $filters['area'] : $filters['city'];
+            
+            // 1. Get all cinemas in this location
+            $cinema_ids = get_posts(array(
+                'post_type' => 'ktn_cinema',
+                'posts_per_page' => -1,
+                'fields' => 'ids',
+                'tax_query' => array(
+                    array(
+                        'taxonomy' => 'cinema_location',
+                        'field' => 'slug',
+                        'terms' => $location_slug
+                    )
+                )
+            ));
+            
+            if (!empty($cinema_ids)) {
+                $cinema_ids_str = implode(',', array_map('intval', $cinema_ids));
+                $today = date('Y-m-d');
+                
+                // 2. Query showtimes table for movies playing in these cinemas
+                $movie_ids = $wpdb->get_col($wpdb->prepare(
+                    "SELECT DISTINCT matched_movie_id FROM {$wpdb->prefix}ktn_showtimes 
+                     WHERE matched_movie_id IS NOT NULL 
+                     AND cinema_id IN ($cinema_ids_str) 
+                     AND (show_date >= %s OR show_date = 'Today')",
+                    $today
+                ));
+                
+                if (!empty($movie_ids)) {
+                    $args['post__in'] = array_map('intval', $movie_ids);
+                } else {
+                    $args['post__in'] = array(0); // Force empty results
+                }
+            } else {
+                $args['post__in'] = array(0); // Force empty results
+            }
         }
 
         $query = new WP_Query($args);
@@ -294,6 +353,8 @@ class Ktn_Cinema_Guides
             $filters['search'] = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
             $filters['lang']   = isset($_POST['lang']) ? sanitize_text_field($_POST['lang']) : 'all';
             $filters['genre']  = isset($_POST['genre']) ? sanitize_text_field($_POST['genre']) : '';
+            $filters['city']   = isset($_POST['city']) ? sanitize_text_field($_POST['city']) : '';
+            $filters['area']   = isset($_POST['area']) ? sanitize_text_field($_POST['area']) : '';
             $resp = $this->get_movies_html($filters);
         } else {
             $filters['search'] = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';

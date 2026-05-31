@@ -31,8 +31,11 @@
         });
 
         $('.ktn-select').on('change', function() {
-            if ($(this).attr('id') === 'cinema-city') {
-                updateAreas($(this).val());
+            const id = $(this).attr('id');
+            if (id === 'cinema-city') {
+                updateAreas($(this).val(), '#cinema-area');
+            } else if (id === 'movie-city') {
+                updateAreas($(this).val(), '#movie-area');
             } else {
                 applyFilters();
             }
@@ -44,10 +47,13 @@
             searchTimer = setTimeout(applyFilters, 300);
         });
 
-        function updateAreas(citySlug) {
-            const areaSelect = $('#cinema-area');
+        function updateAreas(citySlug, targetAreaSelectId) {
+            const areaSelect = $(targetAreaSelectId);
+            const isRtl = ($('html').attr('dir') === 'rtl' || $('html').attr('lang') === 'ar');
+            
             if (!citySlug) {
-                areaSelect.html('<option value="">Select Area</option>').prop('disabled', true);
+                const selectAreaText = isRtl ? 'اختر المنطقة' : 'Select Area';
+                areaSelect.html('<option value="">' + selectAreaText + '</option>').prop('disabled', true);
                 applyFilters();
                 return;
             }
@@ -62,7 +68,8 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        let html = '<option value="">All Areas</option>';
+                        const allAreasText = isRtl ? 'كل المناطق' : 'All Areas';
+                        let html = '<option value="">' + allAreasText + '</option>';
                         $.each(response.data, function(i, area) {
                             html += '<option value="' + area.slug + '">' + area.name + '</option>';
                         });
@@ -98,6 +105,8 @@
                 data.lang = $('.ktn-sub-tab.active').data('lang');
                 data.search = $('#movie-search').val();
                 data.genre = $('#movie-genre').val();
+                data.city = $('#movie-city').val();
+                data.area = $('#movie-area').val();
             } else {
                 data.search = $('#cinema-search').val();
                 data.city = $('#cinema-city').val();
