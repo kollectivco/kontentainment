@@ -18,7 +18,9 @@
             $('#tab-' + tab).addClass('active');
 
             currentTab = tab;
-            applyFilters();
+            if (tab !== 'box-office') {
+                applyFilters();
+            }
         });
 
         // Filter Handlers
