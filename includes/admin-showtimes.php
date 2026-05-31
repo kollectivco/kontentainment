@@ -25,12 +25,16 @@ function ktn_showtimes_page_html()
     if (isset($_POST['ktn_match_action']) && $_POST['ktn_match_action'] == 'match_showtime' && isset($_POST['_wpnonce']) && wp_verify_nonce($_POST['_wpnonce'], 'ktn_match_showtime_nonce')) {
         $showtime_id = intval($_POST['showtime_id']);
         $post_id = intval($_POST['matched_movie_id']);
-        // If "Apply to all" is checked, find all unmatched rows with same scraped title and update them
         $apply_all = isset($_POST['apply_to_all']) ? intval($_POST['apply_to_all']) : 0;
+        $scraped_title = isset($_POST['scraped_title']) ? stripslashes($_POST['scraped_title']) : '';
 
-        if ($showtime_id && $post_id) {
+        if ($showtime_id && $post_id && !empty($scraped_title)) {
+            // Save to persistent manual match options list
+            $manual_matches = get_option('ktn_manual_movie_matches', array());
+            $manual_matches[$scraped_title] = $post_id;
+            update_option('ktn_manual_movie_matches', $manual_matches);
+
             if ($apply_all) {
-                $scraped_title = stripslashes($_POST['scraped_title']);
                 $wpdb->update($table, array('matched_movie_id' => $post_id), array('movie_title_scraped' => $scraped_title));
                 echo '<div class="notice notice-success is-dismissible"><p>All matching showtimes (' . esc_html($scraped_title) . ') mapped to Movie ID ' . $post_id . '</p></div>';
             }

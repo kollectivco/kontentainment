@@ -19,23 +19,96 @@ class Ktn_Cinema_Importer
     public static function matchMovieTitle($scraped_title) {
         global $wpdb;
 
+        if (empty($scraped_title)) return null;
+        $scraped_title = trim($scraped_title);
+
+        // 0a. Check persistent manual matches option first
+        $manual_matches = get_option('ktn_manual_movie_matches', array());
+        if (isset($manual_matches[$scraped_title])) {
+            return intval($manual_matches[$scraped_title]);
+        }
+
+        // Try normalized match from manual option
         $norm_scraped = self::normalizeTitle($scraped_title);
         if (empty($norm_scraped)) return null;
 
-        // Try exact match on post title
+        foreach ($manual_matches as $scraped_k => $matched_id) {
+            if (self::normalizeTitle($scraped_k) === $norm_scraped) {
+                return intval($matched_id);
+            }
+        }
+
+        // 0b. Hardcoded transliteration map dictionary
+        $map = array(
+            'asad' => 'أسد',
+            'ezma' => 'أزمة',
+            'bershama' => 'برشامة',
+            'el kalam ala eh?!' => 'الكلام على إيه',
+            'el kalam ala eh' => 'الكلام على إيه',
+            'el kalam !?ala eh' => 'الكلام على إيه',
+            '7 dogs' => 'كلاب 7',
+            'dogs 7' => 'كلاب 7',
+            'dogs' => 'كلاب'
+        );
+        $clean_title = strtolower(trim($scraped_title));
+        if (isset($map[$clean_title])) {
+            $mapped_title = $map[$clean_title];
+            $mapped_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title = %s LIMIT 1", $mapped_title));
+            if ($mapped_id) return intval($mapped_id);
+
+            // Try LIKE
+            $like_mapped = '%' . $wpdb->esc_like($mapped_title) . '%';
+            $mapped_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title LIKE %s LIMIT 1", $like_mapped));
+            if ($mapped_id) return intval($mapped_id);
+        }
+
+        // 0c. Check if there is an existing match in the database showtimes table
+        $db_match = $wpdb->get_var($wpdb->prepare(
+            "SELECT matched_movie_id FROM {$wpdb->prefix}ktn_showtimes WHERE movie_title_scraped = %s AND matched_movie_id IS NOT NULL LIMIT 1",
+            $scraped_title
+        ));
+        if ($db_match) {
+            // Save for future option persistent storage
+            $manual_matches[$scraped_title] = intval($db_match);
+            update_option('ktn_manual_movie_matches', $manual_matches);
+            return intval($db_match);
+        }
+
+        // 1. Try exact match on post title
         $exact = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title = %s LIMIT 1", $scraped_title));
         if ($exact) return $exact;
 
-        // Try exact match on original title meta
+        // 2. Try exact match on original title meta
         $meta_exact = $wpdb->get_var($wpdb->prepare("SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_movie_original_title' AND meta_value = %s LIMIT 1", $scraped_title));
         if ($meta_exact) return $meta_exact;
 
-        // Try normalized title comparison
+        // 3. Try normalized title comparison
         $all_movies = $wpdb->get_results("SELECT ID, post_title FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish'");
         foreach ($all_movies as $movie) {
             if (self::normalizeTitle($movie->post_title) === $norm_scraped) return $movie->ID;
             $orig = get_post_meta($movie->ID, '_movie_original_title', true);
             if ($orig && self::normalizeTitle($orig) === $norm_scraped) return $movie->ID;
+        }
+
+        // 4. Try dynamic Google Translation API match
+        if (function_exists('ktn_translate_text_free')) {
+            $translated_title = ktn_translate_text_free($scraped_title);
+            if (!empty($translated_title) && $translated_title !== $scraped_title) {
+                // Exact match on translated title
+                $translated_id = $wpdb->get_var($wpdb->prepare(
+                    "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title = %s LIMIT 1",
+                    $translated_title
+                ));
+                if ($translated_id) return intval($translated_id);
+
+                // Fuzzy match on translated title
+                $like_translated = '%' . $wpdb->esc_like($translated_title) . '%';
+                $translated_id = $wpdb->get_var($wpdb->prepare(
+                    "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title LIKE %s LIMIT 1",
+                    $like_translated
+                ));
+                if ($translated_id) return intval($translated_id);
+            }
         }
 
         return null;

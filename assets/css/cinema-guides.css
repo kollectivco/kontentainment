@@ -301,3 +301,32 @@
     }
 }
 
+/* Force full-width layout on Cinema Guides by hiding theme sidebars and expanding content container */
+body.ktn-full-width-page .sidebar,
+body.ktn-full-width-page #sidebar,
+body.ktn-full-width-page .widget-area,
+body.ktn-full-width-page #secondary,
+body.ktn-full-width-page aside {
+    display: none !important;
+    width: 0 !important;
+    max-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+}
+
+body.ktn-full-width-page .content-area,
+body.ktn-full-width-page #primary,
+body.ktn-full-width-page #main,
+body.ktn-full-width-page .main-content,
+body.ktn-full-width-page .site-main {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+    float: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+

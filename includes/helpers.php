@@ -488,6 +488,36 @@ function ktn_get_movie_link_by_title($title) {
 
     $title = trim($title);
 
+    // 0a. Check persistent manual matches option first
+    $manual_matches = get_option('ktn_manual_movie_matches', array());
+    if (isset($manual_matches[$title])) {
+        return get_permalink(intval($manual_matches[$title]));
+    }
+
+    // 0b. Check transliteration map dictionary
+    global $wpdb;
+    $map = array(
+        'asad' => 'أسد',
+        'ezma' => 'أزمة',
+        'bershama' => 'برشامة',
+        'el kalam ala eh?!' => 'الكلام على إيه',
+        'el kalam ala eh' => 'الكلام على إيه',
+        'el kalam !?ala eh' => 'الكلام على إيه',
+        '7 dogs' => 'كلاب 7',
+        'dogs 7' => 'كلاب 7',
+        'dogs' => 'كلاب'
+    );
+    $clean_title = strtolower(trim($title));
+    if (isset($map[$clean_title])) {
+        $mapped_title = $map[$clean_title];
+        $mapped_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title = %s LIMIT 1", $mapped_title));
+        if ($mapped_id) return get_permalink($mapped_id);
+
+        $like_mapped = '%' . $wpdb->esc_like($mapped_title) . '%';
+        $mapped_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title LIKE %s LIMIT 1", $like_mapped));
+        if ($mapped_id) return get_permalink($mapped_id);
+    }
+
     // 1. Exact match on post title
     $query = new WP_Query(array(
         'post_type'      => 'movie',
@@ -505,7 +535,6 @@ function ktn_get_movie_link_by_title($title) {
     wp_reset_postdata();
 
     // 2. Exact match on meta value (_movie_original_title)
-    global $wpdb;
     $post_id = $wpdb->get_var($wpdb->prepare(
         "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_movie_original_title' AND meta_value = %s LIMIT 1",
         $title
@@ -548,19 +577,71 @@ function ktn_get_movie_display_title($scraped_title) {
 
     $arabic_title = '';
 
-    // 1. Exact match on database post title
-    $query = new WP_Query(array(
-        'post_type'      => 'movie',
-        'title'          => $scraped_title,
-        'posts_per_page' => 1,
-        'post_status'    => 'publish',
-        'no_found_rows'  => true,
-    ));
-
-    if ($query->have_posts()) {
-        $arabic_title = $query->posts[0]->post_title;
+    // 0a. Check persistent manual matches option first
+    $manual_matches = get_option('ktn_manual_movie_matches', array());
+    if (isset($manual_matches[$scraped_title])) {
+        $post_id = intval($manual_matches[$scraped_title]);
+        $post = get_post($post_id);
+        if ($post) {
+            $arabic_title = $post->post_title;
+        }
     }
-    wp_reset_postdata();
+
+    // 0b. Hardcoded Egyptian/Arabic movie dictionary map
+    if (empty($arabic_title)) {
+        global $wpdb;
+        $map = array(
+            'asad' => 'أسد',
+            'ezma' => 'أزمة',
+            'bershama' => 'برشامة',
+            'el kalam ala eh?!' => 'الكلام على إيه',
+            'el kalam ala eh' => 'الكلام على إيه',
+            'el kalam !?ala eh' => 'الكلام على إيه',
+            '7 dogs' => 'كلاب 7',
+            'dogs 7' => 'كلاب 7',
+            'dogs' => 'كلاب'
+        );
+        $clean_title = strtolower(trim($scraped_title));
+        if (isset($map[$clean_title])) {
+            $mapped_title = $map[$clean_title];
+            $mapped_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title = %s LIMIT 1", $mapped_title));
+            if ($mapped_id) {
+                $post = get_post($mapped_id);
+                if ($post) {
+                    $arabic_title = $post->post_title;
+                }
+            } else {
+                // Fuzzy/LIKE matching for mapped title
+                $like_mapped = '%' . $wpdb->esc_like($mapped_title) . '%';
+                $mapped_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title LIKE %s LIMIT 1", $like_mapped));
+                if ($mapped_id) {
+                    $post = get_post($mapped_id);
+                    if ($post) {
+                        $arabic_title = $post->post_title;
+                    }
+                } else {
+                    // Fallback to dictionary term itself
+                    $arabic_title = $mapped_title;
+                }
+            }
+        }
+    }
+
+    // 1. Exact match on database post title
+    if (empty($arabic_title)) {
+        $query = new WP_Query(array(
+            'post_type'      => 'movie',
+            'title'          => $scraped_title,
+            'posts_per_page' => 1,
+            'post_status'    => 'publish',
+            'no_found_rows'  => true,
+        ));
+
+        if ($query->have_posts()) {
+            $arabic_title = $query->posts[0]->post_title;
+        }
+        wp_reset_postdata();
+    }
 
     // 2. Exact match on meta value (_movie_original_title)
     if (empty($arabic_title)) {
@@ -614,4 +695,23 @@ function ktn_get_movie_display_title($scraped_title) {
     set_transient($cache_key, $arabic_title, 30 * DAY_IN_SECONDS);
 
     return $arabic_title;
+}
+
+/**
+ * Force full-width layout by adding body class and disabling active sidebars on Cinema Guides pages
+ */
+add_filter('body_class', 'ktn_add_body_class_for_guides');
+function ktn_add_body_class_for_guides($classes) {
+    if (is_page('cinema-guides') || is_page('دليل السينما') || get_query_var('movies_status') === 'box-office') {
+        $classes[] = 'ktn-full-width-page';
+    }
+    return $classes;
+}
+
+add_filter('is_active_sidebar', 'ktn_disable_sidebar_on_guides', 999, 1);
+function ktn_disable_sidebar_on_guides($is_active) {
+    if (is_page('cinema-guides') || is_page('دليل السينما') || get_query_var('movies_status') === 'box-office') {
+        return false;
+    }
+    return $is_active;
 }
