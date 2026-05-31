@@ -3,11 +3,12 @@
  */
 
 .ktn-guides-container {
-    max-width: 1200px;
+    max-width: 1650px;
     margin: 40px auto;
     font-family: inherit;
     color: #333;
     padding: 0 20px;
+    width: 100%;
 }
 
 .ktn-guides-header {
@@ -328,5 +329,21 @@ body.ktn-full-width-page .site-main {
     margin: 0 auto !important;
     border: none !important;
     box-shadow: none !important;
+}
+
+body.ktn-full-width-page .container,
+body.ktn-full-width-page .wrap,
+body.ktn-full-width-page .site-content,
+body.ktn-full-width-page .entry-content,
+body.ktn-full-width-page .grid-container,
+body.ktn-full-width-page .ast-container,
+body.ktn-full-width-page .site-inner,
+body.ktn-full-width-page .main-container {
+    width: 100% !important;
+    max-width: 1650px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
 }
 

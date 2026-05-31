@@ -128,6 +128,10 @@ function ktn_translate_frontend_post_titles($title, $post_id = 0)
         }
     }
     if ($post->post_type === 'movie' || $post->post_type === 'tv_show') {
+        $original_lang = get_post_meta($post_id, '_movie_original_language', true);
+        if ($original_lang === 'ar') {
+            return $title;
+        }
         $original_title = get_post_meta($post_id, '_movie_original_title', true);
         if (!empty($original_title)) {
             return $original_title;
