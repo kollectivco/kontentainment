@@ -38,7 +38,6 @@ class Ktn_Cinema_Importer
             }
         }
 
-        // 0b. Hardcoded transliteration map dictionary (supports both English keys and Arabic values lookup)
         $map = array(
             'asad' => 'أسد',
             'ezma' => 'أزمة',
@@ -47,7 +46,9 @@ class Ktn_Cinema_Importer
             'el kalam ala eh' => 'الكلام على إيه',
             'el kalam !?ala eh' => 'الكلام على إيه',
             'welad rizk 3' => 'ولاد رزق ٣',
-            'welad rizk' => 'ولاد رزق ٣'
+            'welad rizk' => 'ولاد رزق ٣',
+            '7 dogs' => 'الكلاب السبعة',
+            'dogs 7' => 'الكلاب السبعة'
         );
         
         $clean_title = strtolower(trim($scraped_title));

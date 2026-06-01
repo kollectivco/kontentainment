@@ -122,7 +122,9 @@ function ktn_get_arabic_movie_title($post_id, $default_title) {
         'el kalam ala eh' => 'الكلام على إيه',
         'el kalam !?ala eh' => 'الكلام على إيه',
         'welad rizk 3' => 'ولاد رزق ٣',
-        'welad rizk' => 'ولاد رزق ٣'
+        'welad rizk' => 'ولاد رزق ٣',
+        '7 dogs' => 'الكلاب السبعة',
+        'dogs 7' => 'الكلاب السبعة'
     );
     
     $clean_title = strtolower(trim($default_title));
@@ -575,9 +577,9 @@ function ktn_get_movie_link_by_title($title) {
         'el kalam ala eh?!' => 'الكلام على إيه',
         'el kalam ala eh' => 'الكلام على إيه',
         'el kalam !?ala eh' => 'الكلام على إيه',
-        '7 dogs' => 'كلاب 7',
-        'dogs 7' => 'كلاب 7',
-        'dogs' => 'كلاب'
+        '7 dogs' => 'الكلاب السبعة',
+        'dogs 7' => 'الكلاب السبعة',
+        'dogs' => 'الكلاب السبعة'
     );
     $clean_title = strtolower(trim($title));
     if (isset($map[$clean_title])) {
@@ -669,9 +671,9 @@ function ktn_get_movie_display_title($scraped_title) {
             'el kalam ala eh?!' => 'الكلام على إيه',
             'el kalam ala eh' => 'الكلام على إيه',
             'el kalam !?ala eh' => 'الكلام على إيه',
-            '7 dogs' => 'كلاب 7',
-            'dogs 7' => 'كلاب 7',
-            'dogs' => 'كلاب'
+            '7 dogs' => 'الكلاب السبعة',
+            'dogs 7' => 'الكلاب السبعة',
+            'dogs' => 'الكلاب السبعة'
         );
         $clean_title = strtolower(trim($scraped_title));
         if (isset($map[$clean_title])) {
@@ -825,12 +827,53 @@ function ktn_disable_sidebar_on_guides($is_active) {
 add_action('init', 'ktn_cleanup_incorrect_movie_meta');
 function ktn_cleanup_incorrect_movie_meta() {
     global $wpdb;
-    $results = $wpdb->get_results("SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_movie_title_arabic' AND meta_value = 'ولاد رزق ٣'");
+    
+    // 1. Search for any movie post where post_title is 'ولاد رزق ٣'
+    // but the original title contains 'dogs' or '7'
+    $results = $wpdb->get_results("
+        SELECT p.ID 
+        FROM {$wpdb->posts} p
+        INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+        WHERE p.post_type = 'movie' 
+          AND p.post_title = 'ولاد رزق ٣'
+          AND pm.meta_key = '_movie_original_title'
+          AND (pm.meta_value LIKE '%dogs%' OR pm.meta_value LIKE '%7%')
+    ");
+    
     if (!empty($results)) {
         foreach ($results as $row) {
+            $post_id = intval($row->ID);
+            
+            // Correct the post title to '7 Dogs' and post_name slug to '7-dogs' in wp_posts table
+            $wpdb->update(
+                $wpdb->posts,
+                array(
+                    'post_title' => '7 Dogs',
+                    'post_name'  => '7-dogs'
+                ),
+                array('ID' => $post_id)
+            );
+            
+            // Correct the post meta
+            update_post_meta($post_id, '_movie_title_arabic', 'الكلاب السبعة');
+            delete_post_meta($post_id, '_movie_title_arabic_cached');
+            clean_post_cache($post_id);
+        }
+    }
+    
+    // 2. Also search for any post meta with _movie_title_arabic = 'ولاد رزق ٣' for a dogs movie, and correct it
+    $meta_results = $wpdb->get_results("
+        SELECT post_id 
+        FROM {$wpdb->postmeta} 
+        WHERE meta_key = '_movie_title_arabic' 
+          AND meta_value = 'ولاد رزق ٣'
+    ");
+    
+    if (!empty($meta_results)) {
+        foreach ($meta_results as $row) {
             $orig = get_post_meta($row->post_id, '_movie_original_title', true);
             if (stripos($orig, 'dogs') !== false || stripos($orig, '7') !== false) {
-                delete_post_meta($row->post_id, '_movie_title_arabic');
+                update_post_meta($row->post_id, '_movie_title_arabic', 'الكلاب السبعة');
             }
         }
     }
