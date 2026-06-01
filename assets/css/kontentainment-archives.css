@@ -25,33 +25,34 @@
 }
 .ktn-archive-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 30px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
 }
 .ktn-archive-card {
-    background: #fff;
-    border-radius: 12px;
+    background: #ffffff;
+    border-radius: 20px;
     overflow: hidden;
     position: relative;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(226, 232, 240, 0.8);
     display: flex;
     flex-direction: column;
 }
 .ktn-archive-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px -10px rgba(15, 23, 42, 0.08);
+    border-color: rgba(37, 99, 235, 0.3);
 }
 .ktn-card-image-wrap {
     width: 100%;
     height: 180px;
     position: relative;
-    background: #fdfdfd;
+    background: #f8fafc;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-bottom: 1px solid rgba(0,0,0,0.03);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
     overflow: hidden;
 }
 .ktn-card-image-wrap img {
@@ -60,6 +61,10 @@
     object-fit: cover;
     width: 100%;
     height: 100%;
+    transition: transform 0.4s ease;
+}
+.ktn-archive-card:hover .ktn-card-image-wrap img {
+    transform: scale(1.05);
 }
 .ktn-cinema-card .ktn-card-image-wrap img {
     object-fit: contain;
@@ -160,9 +165,16 @@
 .ktn-card-action a:hover::after {
     transform: translateX(3px);
 }
+@media (max-width: 1024px) {
+    .ktn-archive-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+}
 @media (max-width: 768px) {
     .ktn-archive-grid {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
     }
 }
 .ktn-movie-card .ktn-card-title {
