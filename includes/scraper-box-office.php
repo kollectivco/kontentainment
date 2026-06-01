@@ -24,32 +24,83 @@ class Ktn_Box_Office_Scraper
             'headers' => array(
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
             ),
-            'timeout' => 45,
+            'timeout' => 30,
             'sslverify' => false
         );
 
-        $response = wp_remote_get(self::$SOURCE_URL, $args);
-        if (is_wp_error($response)) {
-            return $response;
+        // 1. Fetch Daily Arabic Movies
+        $daily_ar = array();
+        $res_ar = wp_remote_get('https://cinema-track.com/daily/daily-arabic/', $args);
+        if (!is_wp_error($res_ar) && wp_remote_retrieve_response_code($res_ar) === 200) {
+            $html_ar = wp_remote_retrieve_body($res_ar);
+            if (!empty($html_ar)) {
+                $daily_ar = self::parse_daily_box_office($html_ar);
+            }
         }
 
-        $code = wp_remote_retrieve_response_code($response);
-        if ($code !== 200) {
-            return new WP_Error('http_error', 'HTTP ' . $code);
+        // 2. Fetch Daily Foreign Movies
+        $daily_fore = array();
+        $res_fore = wp_remote_get('https://cinema-track.com/daily/daily-foreign/', $args);
+        if (!is_wp_error($res_fore) && wp_remote_retrieve_response_code($res_fore) === 200) {
+            $html_fore = wp_remote_retrieve_body($res_fore);
+            if (!empty($html_fore)) {
+                $daily_fore = self::parse_daily_box_office($html_fore);
+            }
         }
 
-        $html = wp_remote_retrieve_body($response);
-        if (empty($html)) {
-            return new WP_Error('empty_body', 'Empty body received from source.');
+        // Combine daily movies consecutively
+        $daily = array_merge($daily_ar, $daily_fore);
+
+        // 3. Fetch Weekly Box Office
+        $weekly = array();
+        $res_weekly = wp_remote_get('https://cinema-track.com/weekly/', $args);
+        if (!is_wp_error($res_weekly) && wp_remote_retrieve_response_code($res_weekly) === 200) {
+            $html_weekly = wp_remote_retrieve_body($res_weekly);
+            if (!empty($html_weekly)) {
+                $weekly = self::parse_weekly_box_office($html_weekly);
+                if (empty($weekly)) {
+                    // Try parsing table inside /weekly/ in case it's a table
+                    $weekly_table = self::parse_daily_box_office($html_weekly);
+                    if (!empty($weekly_table)) {
+                        foreach ($weekly_table as $row) {
+                            $weekly[] = array(
+                                'rank' => $row['rank'],
+                                'poster' => $row['poster'],
+                                'title' => $row['title'],
+                                'weekly_gross' => $row['revenue'],
+                                'total_revenue' => $row['revenue'],
+                                'admissions' => $row['tickets']
+                            );
+                        }
+                    }
+                }
+            }
         }
 
-        // Parse sections
-        $date = self::parse_box_office_date($html);
-        $daily = self::parse_daily_box_office($html);
-        $weekly = self::parse_weekly_box_office($html);
-        $charts = self::parse_market_insights($html);
-        $all_time = self::parse_all_time_box_office($html);
-        $news = self::parse_box_office_news($html);
+        // 4. Fetch homepage for date, charts, all-time, news
+        $date = date('j M Y');
+        $charts = array();
+        $all_time = array();
+        $news = array();
+
+        $res_home = wp_remote_get(self::$SOURCE_URL, $args);
+        if (!is_wp_error($res_home) && wp_remote_retrieve_response_code($res_home) === 200) {
+            $html_home = wp_remote_retrieve_body($res_home);
+            if (!empty($html_home)) {
+                $date = self::parse_box_office_date($html_home);
+                $charts = self::parse_market_insights($html_home);
+                $all_time = self::parse_all_time_box_office($html_home);
+                $news = self::parse_box_office_news($html_home);
+                
+                // Fallbacks if subpages failed
+                if (empty($daily)) {
+                    $daily = self::parse_daily_box_office($html_home);
+                }
+                if (empty($weekly)) {
+                    $weekly = self::parse_weekly_box_office($html_home);
+                }
+            }
+        }
 
         $data = array(
             'date' => $date,
@@ -79,11 +130,20 @@ class Ktn_Box_Office_Scraper
     private static function parse_daily_box_office($html)
     {
         $daily = array();
-        // Extract the table body
+        // Extract the table body (resilient to different table selectors on subpages)
+        $tbody = '';
         if (preg_match('/<table[^>]*analytics-today-table[^>]*>.*?<tbody>(.*?)<\/tbody>/is', $html, $tableMatch)) {
             $tbody = $tableMatch[1];
-            // Match each row
-            preg_match_all('/<tr>(.*?)<\/tr>/is', $tbody, $rowMatches);
+        } elseif (preg_match('/<table[^>]*>.*?<tbody>(.*?)<\/tbody>/is', $html, $tableMatch)) {
+            $tbody = $tableMatch[1];
+        }
+
+        if (empty($tbody)) {
+            return $daily;
+        }
+
+        // Match each row
+        preg_match_all('/<tr>(.*?)<\/tr>/is', $tbody, $rowMatches);
 
             if (!empty($rowMatches[1])) {
                 foreach ($rowMatches[1] as $rowHtml) {
