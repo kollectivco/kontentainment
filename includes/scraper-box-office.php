@@ -34,7 +34,7 @@ class Ktn_Box_Office_Scraper
         if (!is_wp_error($res_ar) && wp_remote_retrieve_response_code($res_ar) === 200) {
             $html_ar = wp_remote_retrieve_body($res_ar);
             if (!empty($html_ar)) {
-                $daily_ar = self::parse_daily_box_office($html_ar);
+                $daily_ar = self::parse_daily_box_office($html_ar, 'arabic');
             }
         }
 
@@ -44,11 +44,11 @@ class Ktn_Box_Office_Scraper
         if (!is_wp_error($res_fore) && wp_remote_retrieve_response_code($res_fore) === 200) {
             $html_fore = wp_remote_retrieve_body($res_fore);
             if (!empty($html_fore)) {
-                $daily_fore = self::parse_daily_box_office($html_fore);
+                $daily_fore = self::parse_daily_box_office($html_fore, 'foreign');
             }
         }
 
-        // Combine daily movies consecutively
+        // Combine daily movies consecutively (backward compat)
         $daily = array_merge($daily_ar, $daily_fore);
 
         // 3. Fetch Weekly Box Office
@@ -103,13 +103,15 @@ class Ktn_Box_Office_Scraper
         }
 
         $data = array(
-            'date' => $date,
-            'daily' => $daily,
-            'weekly' => $weekly,
-            'charts' => $charts,
-            'all_time' => $all_time,
-            'news' => $news,
-            'scraped_at' => current_time('mysql')
+            'date'         => $date,
+            'daily'        => $daily,
+            'daily_arabic'  => $daily_ar,
+            'daily_foreign' => $daily_fore,
+            'weekly'       => $weekly,
+            'charts'       => $charts,
+            'all_time'     => $all_time,
+            'news'         => $news,
+            'scraped_at'   => current_time('mysql')
         );
 
         // Cache for 12 hours
@@ -130,7 +132,7 @@ class Ktn_Box_Office_Scraper
         return date('j M Y'); // Fallback
     }
 
-    private static function parse_daily_box_office($html)
+    private static function parse_daily_box_office($html, $type = 'arabic')
     {
         $daily = array();
         // Extract the table body (resilient to different table selectors on subpages)
@@ -235,15 +237,16 @@ class Ktn_Box_Office_Scraper
 
                     if (!empty($title)) {
                         $daily[] = array(
-                            'rank' => $rank,
-                            'poster' => $poster,
-                            'title' => $title,
-                            'revenue' => $revenue,
-                            'tickets' => $tickets,
-                            'cinemas' => $cinemas,
+                            'rank'        => $rank,
+                            'poster'      => $poster,
+                            'title'       => $title,
+                            'revenue'     => $revenue,
+                            'tickets'     => $tickets,
+                            'cinemas'     => $cinemas,
                             'trend_class' => $trend_class,
-                            'trend_text' => $trend_text,
-                            'movie_url' => $movie_url
+                            'trend_text'  => $trend_text,
+                            'movie_url'   => $movie_url,
+                            'type'        => $type
                         );
                     }
                 }

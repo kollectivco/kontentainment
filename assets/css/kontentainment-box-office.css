@@ -68,7 +68,73 @@
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Period Tabs: Weekly / Daily ── */
+.ktn-bo-period-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    background: #f4f4f5;
+    padding: 5px;
+    border-radius: 14px;
+    width: fit-content;
+}
+
+.ktn-bo-period-tab {
+    border: none;
+    background: transparent;
+    padding: 10px 32px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+    font-family: 'Cairo', 'Inter', sans-serif;
+}
+
+.ktn-bo-period-tab.active {
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.09);
+}
+
+.ktn-bo-period-tab:hover:not(.active) {
+    color: #1e293b;
+}
+
+/* ── Language Sub-Tabs: Arabic / Foreign ── */
+.ktn-bo-lang-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.ktn-bo-lang-tab {
+    border: 1.5px solid #e2e8f0;
+    background: #ffffff;
+    padding: 8px 24px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s ease;
+    font-family: 'Cairo', 'Inter', sans-serif;
+}
+
+.ktn-bo-lang-tab.active {
+    background: #0f172a;
+    color: #ffffff;
+    border-color: #0f172a;
+}
+
+.ktn-bo-lang-tab:hover:not(.active) {
+    border-color: #94a3b8;
+    color: #1e293b;
 }
 
 /* Header Section */
