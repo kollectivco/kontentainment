@@ -216,6 +216,7 @@ wp_enqueue_style('ktn-box-office', KTN_PLUGIN_URL . 'assets/css/kontentainment-b
 })();
 </script>
 
+<?php
 /**
  * Helper: render daily table for a given movie list (dark cinema-track.com style)
  * For 'foreign' type: display title as-is (no Arabic translation)
