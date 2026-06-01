@@ -58,6 +58,16 @@ function ktn_add_movie_details_metaboxes()
         'normal',
         'low'
     );
+
+    // BOX OFFICE STATS
+    add_meta_box(
+        'ktn_movie_box_office_stats',
+        __('Box Office Stats (Cinema Track)', 'kontentainment'),
+        'ktn_movie_box_office_stats_html',
+        array('movie'),
+        'normal',
+        'default'
+    );
 }
 
 /**
@@ -406,5 +416,31 @@ function ktn_save_movie_details($post_id)
     if (isset($_POST['ktn_keywords'])) {
         $data = array_map('trim', explode(',', $_POST['ktn_keywords']));
         update_post_meta($post_id, '_movie_keywords', array_map('sanitize_text_field', $data));
+    }
+
+    // Box Office Stats saving logic
+    if (isset($_POST['ktn_bo_cinema_track_url'])) {
+        update_post_meta($post_id, '_ktn_bo_cinema_track_url', esc_url_raw($_POST['ktn_bo_cinema_track_url']));
+    }
+    if (isset($_POST['ktn_bo_total_gross'])) {
+        update_post_meta($post_id, '_ktn_bo_total_gross', sanitize_text_field($_POST['ktn_bo_total_gross']));
+    }
+    if (isset($_POST['ktn_bo_today_gross'])) {
+        update_post_meta($post_id, '_ktn_bo_today_gross', sanitize_text_field($_POST['ktn_bo_today_gross']));
+    }
+    if (isset($_POST['ktn_bo_opening_week_gross'])) {
+        update_post_meta($post_id, '_ktn_bo_opening_week_gross', sanitize_text_field($_POST['ktn_bo_opening_week_gross']));
+    }
+    if (isset($_POST['ktn_bo_days_in_theaters'])) {
+        update_post_meta($post_id, '_ktn_bo_days_in_theaters', sanitize_text_field($_POST['ktn_bo_days_in_theaters']));
+    }
+    if (isset($_POST['ktn_bo_admissions_today'])) {
+        update_post_meta($post_id, '_ktn_bo_admissions_today', sanitize_text_field($_POST['ktn_bo_admissions_today']));
+    }
+    if (isset($_POST['ktn_bo_total_admissions'])) {
+        update_post_meta($post_id, '_ktn_bo_total_admissions', sanitize_text_field($_POST['ktn_bo_total_admissions']));
+    }
+    if (isset($_POST['ktn_bo_cinemas'])) {
+        update_post_meta($post_id, '_ktn_bo_cinemas', sanitize_text_field($_POST['ktn_bo_cinemas']));
     }
 }

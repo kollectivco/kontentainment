@@ -116,6 +116,9 @@ class Ktn_Box_Office_Scraper
         set_transient(self::$TRANSIENT_KEY, $data, 12 * HOUR_IN_SECONDS);
         update_option('ktn_box_office_last_synced', current_time('mysql'));
 
+        // Sync local movies box office stats!
+        self::sync_scraped_movies_stats($data);
+
         return $data;
     }
 
@@ -174,7 +177,13 @@ class Ktn_Box_Office_Scraper
                         $poster = $m[1];
                     }
 
-                    if (preg_match('/<a[^>]*class="[^"]*movie-link[^"]*"[^>]*>(.*?)<\/a>/is', $rowHtml, $m)) {
+                    $movie_url = '';
+                    if (preg_match('/(<a[^>]*class="[^"]*movie-link[^"]*"[^>]*>)(.*?)<\/a>/is', $rowHtml, $m)) {
+                        $title = trim(strip_tags($m[2]));
+                        if (preg_match('/href="([^"]+)"/i', $m[1], $hrefM)) {
+                            $movie_url = esc_url_raw($hrefM[1]);
+                        }
+                    } elseif (preg_match('/<a[^>]*class="[^"]*movie-link[^"]*"[^>]*>(.*?)<\/a>/is', $rowHtml, $m)) {
                         $title = trim(strip_tags($m[1]));
                     }
 
@@ -233,7 +242,8 @@ class Ktn_Box_Office_Scraper
                             'tickets' => $tickets,
                             'cinemas' => $cinemas,
                             'trend_class' => $trend_class,
-                            'trend_text' => $trend_text
+                            'trend_text' => $trend_text,
+                            'movie_url' => $movie_url
                         );
                     }
                 }
@@ -244,10 +254,15 @@ class Ktn_Box_Office_Scraper
     private static function parse_weekly_box_office($html)
     {
         $weekly = array();
-        preg_match_all('/<a[^>]*class="[^"]*bo-card[^"]*"[^>]*>(.*?)<\/a>/is', $html, $cardMatches);
+        preg_match_all('/(<a[^>]*class="[^"]*bo-card[^"]*"[^>]*>)(.*?)<\/a>/is', $html, $cardMatches, PREG_SET_ORDER);
 
-        if (!empty($cardMatches[1])) {
-            foreach ($cardMatches[1] as $cardHtml) {
+        if (!empty($cardMatches)) {
+            foreach ($cardMatches as $match) {
+                $movie_url = '';
+                if (preg_match('/href="([^"]+)"/i', $match[1], $hrefM)) {
+                    $movie_url = esc_url_raw($hrefM[1]);
+                }
+                $cardHtml = $match[2];
                 $rank = '';
                 $poster = '';
                 $title = '';
@@ -286,7 +301,8 @@ class Ktn_Box_Office_Scraper
                         'title' => $title,
                         'weekly_gross' => $weekly_gross,
                         'total_revenue' => $total_revenue,
-                        'admissions' => $admissions
+                        'admissions' => $admissions,
+                        'movie_url' => $movie_url
                     );
                 }
             }
@@ -447,5 +463,170 @@ class Ktn_Box_Office_Scraper
             }
         }
         return array_slice($news, 0, 3); // Return top 3 articles
+    }
+
+    public static function parse_single_movie_box_office($html)
+    {
+        $stats = array(
+            'total_gross' => '',
+            'today_gross' => '',
+            'opening_week_gross' => '',
+            'days_in_theaters' => '',
+            'admissions_today' => '',
+            'total_admissions' => '',
+            'cinemas' => ''
+        );
+
+        if (preg_match('/<h4>Total Gross<\/h4>\s*<p>(.*?)<\/p>/is', $html, $m)) {
+            $stats['total_gross'] = trim(strip_tags($m[1]));
+        }
+        if (preg_match('/<h4>Today\'s Gross<\/h4>\s*<p>(.*?)<\/p>/is', $html, $m)) {
+            $stats['today_gross'] = trim(strip_tags($m[1]));
+        }
+        if (preg_match('/<h4>Opening Week Gross<\/h4>\s*<p>(.*?)<\/p>/is', $html, $m)) {
+            $stats['opening_week_gross'] = trim(strip_tags($m[1]));
+        }
+        if (preg_match('/<h4>Days in Theaters<\/h4>\s*<p>(.*?)<\/p>/is', $html, $m)) {
+            $stats['days_in_theaters'] = trim(strip_tags($m[1]));
+        }
+        if (preg_match('/<h4>Admissions Today<\/h4>\s*<p>(.*?)<\/p>/is', $html, $m)) {
+            $stats['admissions_today'] = trim(strip_tags($m[1]));
+        }
+        if (preg_match('/<h4>Total Admissions<\/h4>\s*<p>(.*?)<\/p>/is', $html, $m)) {
+            $stats['total_admissions'] = trim(strip_tags($m[1]));
+        }
+        if (preg_match('/<h4>Cinemas<\/h4>\s*<p>(.*?)<\/p>/is', $html, $m)) {
+            $stats['cinemas'] = trim(strip_tags($m[1]));
+        }
+
+        return $stats;
+    }
+
+    public static function sync_scraped_movies_stats($data)
+    {
+        $all_movies = array();
+
+        // 1. Gather unique scraped movies from daily list
+        if (!empty($data['daily'])) {
+            foreach ($data['daily'] as $m) {
+                $title = $m['title'];
+                if (!isset($all_movies[$title])) {
+                    $all_movies[$title] = array(
+                        'title' => $title,
+                        'movie_url' => $m['movie_url'] ?? '',
+                        'today_gross' => $m['revenue'] ?? '',
+                        'admissions_today' => $m['tickets'] ?? '',
+                        'cinemas' => $m['cinemas'] ?? ''
+                    );
+                } else {
+                    if (!empty($m['movie_url'])) $all_movies[$title]['movie_url'] = $m['movie_url'];
+                    if (!empty($m['revenue'])) $all_movies[$title]['today_gross'] = $m['revenue'];
+                    if (!empty($m['tickets'])) $all_movies[$title]['admissions_today'] = $m['tickets'];
+                    if (!empty($m['cinemas'])) $all_movies[$title]['cinemas'] = $m['cinemas'];
+                }
+            }
+        }
+
+        // 2. Gather unique scraped movies from weekly list
+        if (!empty($data['weekly'])) {
+            foreach ($data['weekly'] as $m) {
+                $title = $m['title'];
+                if (!isset($all_movies[$title])) {
+                    $all_movies[$title] = array(
+                        'title' => $title,
+                        'movie_url' => $m['movie_url'] ?? '',
+                        'total_gross' => $m['total_revenue'] ?? '',
+                    );
+                } else {
+                    if (!empty($m['movie_url'])) $all_movies[$title]['movie_url'] = $m['movie_url'];
+                    if (!empty($m['total_revenue'])) $all_movies[$title]['total_gross'] = $m['total_revenue'];
+                }
+            }
+        }
+
+        // 3. Process each movie to match and sync
+        foreach ($all_movies as $title => $movie_data) {
+            self::sync_single_movie_stats($title, $movie_data);
+        }
+    }
+
+    public static function sync_single_movie_stats($title, $movie_data)
+    {
+        if (empty($title) || !function_exists('ktn_get_movie_id_by_title')) {
+            return;
+        }
+
+        $post_id = ktn_get_movie_id_by_title($title);
+        if (!$post_id) {
+            return; // No local movie CPT post matched
+        }
+
+        // 1. Immediately update CPT metadata from list tables (always available)
+        if (!empty($movie_data['movie_url'])) {
+            update_post_meta($post_id, '_ktn_bo_cinema_track_url', esc_url_raw($movie_data['movie_url']));
+        }
+        if (!empty($movie_data['today_gross'])) {
+            update_post_meta($post_id, '_ktn_bo_today_gross', sanitize_text_field($movie_data['today_gross']));
+        }
+        if (!empty($movie_data['admissions_today'])) {
+            update_post_meta($post_id, '_ktn_bo_admissions_today', sanitize_text_field($movie_data['admissions_today']));
+        }
+        if (!empty($movie_data['cinemas'])) {
+            update_post_meta($post_id, '_ktn_bo_cinemas', sanitize_text_field($movie_data['cinemas']));
+        }
+        if (!empty($movie_data['total_gross'])) {
+            update_post_meta($post_id, '_ktn_bo_total_gross', sanitize_text_field($movie_data['total_gross']));
+        }
+
+        // 2. Fetch specific movie page for Opening Week and Days in Theaters (once every 12 hours)
+        $movie_url = get_post_meta($post_id, '_ktn_bo_cinema_track_url', true);
+        if (empty($movie_url)) {
+            return;
+        }
+
+        $last_scraped = get_post_meta($post_id, '_ktn_bo_last_scraped', true);
+        $time_diff = time() - intval($last_scraped);
+
+        if (empty($last_scraped) || $time_diff > 12 * HOUR_IN_SECONDS) {
+            $args = array(
+                'headers' => array(
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
+                ),
+                'timeout' => 30,
+                'sslverify' => false
+            );
+
+            $res = wp_remote_get($movie_url, $args);
+            if (!is_wp_error($res) && wp_remote_retrieve_response_code($res) === 200) {
+                $html = wp_remote_retrieve_body($res);
+                if (!empty($html)) {
+                    $parsed_stats = self::parse_single_movie_box_office($html);
+                    
+                    if (!empty($parsed_stats['total_gross'])) {
+                        update_post_meta($post_id, '_ktn_bo_total_gross', sanitize_text_field($parsed_stats['total_gross']));
+                    }
+                    if (!empty($parsed_stats['today_gross'])) {
+                        update_post_meta($post_id, '_ktn_bo_today_gross', sanitize_text_field($parsed_stats['today_gross']));
+                    }
+                    if (!empty($parsed_stats['opening_week_gross'])) {
+                        update_post_meta($post_id, '_ktn_bo_opening_week_gross', sanitize_text_field($parsed_stats['opening_week_gross']));
+                    }
+                    if (!empty($parsed_stats['days_in_theaters'])) {
+                        update_post_meta($post_id, '_ktn_bo_days_in_theaters', sanitize_text_field($parsed_stats['days_in_theaters']));
+                    }
+                    if (!empty($parsed_stats['admissions_today'])) {
+                        update_post_meta($post_id, '_ktn_bo_admissions_today', sanitize_text_field($parsed_stats['admissions_today']));
+                    }
+                    if (!empty($parsed_stats['total_admissions'])) {
+                        update_post_meta($post_id, '_ktn_bo_total_admissions', sanitize_text_field($parsed_stats['total_admissions']));
+                    }
+                    if (!empty($parsed_stats['cinemas'])) {
+                        update_post_meta($post_id, '_ktn_bo_cinemas', sanitize_text_field($parsed_stats['cinemas']));
+                    }
+
+                    update_post_meta($post_id, '_ktn_bo_last_scraped', time());
+                }
+            }
+        }
     }
 }

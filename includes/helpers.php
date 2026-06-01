@@ -561,11 +561,11 @@ function ktn_box_office_shortcode_handler() {
 }
 
 /**
- * Get local movie post link by scraped title
+ * Get local movie post ID by scraped title
  */
-function ktn_get_movie_link_by_title($title) {
+function ktn_get_movie_id_by_title($title) {
     if (empty($title)) {
-        return '#';
+        return 0;
     }
 
     $title = trim($title);
@@ -573,7 +573,7 @@ function ktn_get_movie_link_by_title($title) {
     // 0a. Check persistent manual matches option first
     $manual_matches = get_option('ktn_manual_movie_matches', array());
     if (isset($manual_matches[$title])) {
-        return get_permalink(intval($manual_matches[$title]));
+        return intval($manual_matches[$title]);
     }
 
     // 0b. Check transliteration map dictionary
@@ -593,11 +593,11 @@ function ktn_get_movie_link_by_title($title) {
     if (isset($map[$clean_title])) {
         $mapped_title = $map[$clean_title];
         $mapped_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title = %s LIMIT 1", $mapped_title));
-        if ($mapped_id) return get_permalink($mapped_id);
+        if ($mapped_id) return intval($mapped_id);
 
         $like_mapped = '%' . $wpdb->esc_like($mapped_title) . '%';
         $mapped_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_status = 'publish' AND post_title LIKE %s LIMIT 1", $like_mapped));
-        if ($mapped_id) return get_permalink($mapped_id);
+        if ($mapped_id) return intval($mapped_id);
     }
 
     // 1. Exact match on post title
@@ -610,9 +610,9 @@ function ktn_get_movie_link_by_title($title) {
     ));
 
     if ($query->have_posts()) {
-        $link = get_permalink($query->posts[0]->ID);
+        $id = $query->posts[0]->ID;
         wp_reset_postdata();
-        return $link;
+        return $id;
     }
     wp_reset_postdata();
 
@@ -623,7 +623,7 @@ function ktn_get_movie_link_by_title($title) {
     ));
 
     if ($post_id) {
-        return get_permalink($post_id);
+        return intval($post_id);
     }
 
     // 3. Partial Title Match
@@ -634,10 +634,21 @@ function ktn_get_movie_link_by_title($title) {
     ));
 
     if ($post_id) {
-        return get_permalink($post_id);
+        return intval($post_id);
     }
 
-    return '#'; // Fallback
+    return 0;
+}
+
+/**
+ * Get local movie post link by scraped title
+ */
+function ktn_get_movie_link_by_title($title) {
+    $id = ktn_get_movie_id_by_title($title);
+    if ($id) {
+        return get_permalink($id);
+    }
+    return '#';
 }
 
 /**
