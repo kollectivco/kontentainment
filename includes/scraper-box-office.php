@@ -238,7 +238,6 @@ class Ktn_Box_Office_Scraper
                     }
                 }
             }
-        }
         return $daily;
     }
 
