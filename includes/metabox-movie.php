@@ -71,6 +71,73 @@ function ktn_add_movie_details_metaboxes()
 }
 
 /**
+ * Display HTML for Box Office Stats Metabox
+ */
+function ktn_movie_box_office_stats_html($post)
+{
+    $ct_url         = get_post_meta($post->ID, '_ktn_bo_cinema_track_url', true);
+    $total_gross    = get_post_meta($post->ID, '_ktn_bo_total_gross', true);
+    $today_gross    = get_post_meta($post->ID, '_ktn_bo_today_gross', true);
+    $opening_week   = get_post_meta($post->ID, '_ktn_bo_opening_week_gross', true);
+    $days           = get_post_meta($post->ID, '_ktn_bo_days_in_theaters', true);
+    $admissions_today = get_post_meta($post->ID, '_ktn_bo_admissions_today', true);
+    $total_admissions = get_post_meta($post->ID, '_ktn_bo_total_admissions', true);
+    $cinemas        = get_post_meta($post->ID, '_ktn_bo_cinemas', true);
+    $last_sync      = get_post_meta($post->ID, '_ktn_bo_last_sync', true);
+
+    ?>
+    <div class="ktn-admin-form-row">
+        <label><strong><?php esc_html_e('Cinema Track URL:', 'kontentainment'); ?></strong></label>
+        <input type="url" name="ktn_bo_cinema_track_url" value="<?php echo esc_attr($ct_url); ?>" class="widefat" placeholder="https://cinema-track.com/movie/..." />
+    </div>
+
+    <div style="display: flex; gap: 20px; margin-top: 15px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px;">
+            <label><strong><?php esc_html_e('Total Gross (EGP):', 'kontentainment'); ?></strong></label><br>
+            <input type="text" name="ktn_bo_total_gross" value="<?php echo esc_attr($total_gross); ?>" class="widefat" />
+        </div>
+        <div style="flex: 1; min-width: 200px;">
+            <label><strong><?php esc_html_e('Today Gross (EGP):', 'kontentainment'); ?></strong></label><br>
+            <input type="text" name="ktn_bo_today_gross" value="<?php echo esc_attr($today_gross); ?>" class="widefat" />
+        </div>
+        <div style="flex: 1; min-width: 200px;">
+            <label><strong><?php esc_html_e('Opening Week Gross (EGP):', 'kontentainment'); ?></strong></label><br>
+            <input type="text" name="ktn_bo_opening_week_gross" value="<?php echo esc_attr($opening_week); ?>" class="widefat" />
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 20px; margin-top: 15px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 150px;">
+            <label><strong><?php esc_html_e('Days in Theaters:', 'kontentainment'); ?></strong></label><br>
+            <input type="text" name="ktn_bo_days_in_theaters" value="<?php echo esc_attr($days); ?>" class="widefat" />
+        </div>
+        <div style="flex: 1; min-width: 150px;">
+            <label><strong><?php esc_html_e('Admissions Today:', 'kontentainment'); ?></strong></label><br>
+            <input type="text" name="ktn_bo_admissions_today" value="<?php echo esc_attr($admissions_today); ?>" class="widefat" />
+        </div>
+        <div style="flex: 1; min-width: 150px;">
+            <label><strong><?php esc_html_e('Total Admissions:', 'kontentainment'); ?></strong></label><br>
+            <input type="text" name="ktn_bo_total_admissions" value="<?php echo esc_attr($total_admissions); ?>" class="widefat" />
+        </div>
+        <div style="flex: 1; min-width: 150px;">
+            <label><strong><?php esc_html_e('Number of Cinemas:', 'kontentainment'); ?></strong></label><br>
+            <input type="text" name="ktn_bo_cinemas" value="<?php echo esc_attr($cinemas); ?>" class="widefat" />
+        </div>
+    </div>
+
+    <?php if (!empty($last_sync)): ?>
+        <p class="description" style="margin-top: 15px;">
+            <?php printf(esc_html__('Last synced: %s', 'kontentainment'), esc_html($last_sync)); ?>
+        </p>
+    <?php endif; ?>
+
+    <p class="description" style="margin-top: 10px;">
+        <?php esc_html_e('These fields are auto-synced from Cinema Track during box office scraping, or can be manually edited.', 'kontentainment'); ?>
+    </p>
+    <?php
+}
+
+/**
  * Display HTML for Basic Info Metabox
  */
 function ktn_movie_basic_info_html($post)
