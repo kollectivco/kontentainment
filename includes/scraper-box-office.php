@@ -30,7 +30,7 @@ class Ktn_Box_Office_Scraper
 
         // 1. Fetch Daily Arabic Movies
         $daily_ar = array();
-        $res_ar = wp_remote_get('https://cinema-track.com/daily/daily-arabic/', $args);
+        $res_ar = wp_remote_get('https://cinema-track.com/ar/%d9%8a%d9%88%d9%85%d9%8a/%d8%b9%d8%b1%d8%a8%d9%8a-%d9%8a%d9%88%d9%85%d9%8a/', $args);
         if (!is_wp_error($res_ar) && wp_remote_retrieve_response_code($res_ar) === 200) {
             $html_ar = wp_remote_retrieve_body($res_ar);
             if (!empty($html_ar)) {
@@ -40,7 +40,7 @@ class Ktn_Box_Office_Scraper
 
         // 2. Fetch Daily Foreign Movies
         $daily_fore = array();
-        $res_fore = wp_remote_get('https://cinema-track.com/daily/daily-foreign/', $args);
+        $res_fore = wp_remote_get('https://cinema-track.com/ar/%d9%8a%d9%88%d9%85%d9%8a/%d8%a3%d8%ac%d9%86%d8%a8%d9%8a-%d9%8a%d9%88%d9%85%d9%8a/', $args);
         if (!is_wp_error($res_fore) && wp_remote_retrieve_response_code($res_fore) === 200) {
             $html_fore = wp_remote_retrieve_body($res_fore);
             if (!empty($html_fore)) {
@@ -51,31 +51,27 @@ class Ktn_Box_Office_Scraper
         // Combine daily movies consecutively (backward compat)
         $daily = array_merge($daily_ar, $daily_fore);
 
-        // 3. Fetch Weekly Box Office
-        $weekly = array();
-        $res_weekly = wp_remote_get('https://cinema-track.com/weekly/', $args);
-        if (!is_wp_error($res_weekly) && wp_remote_retrieve_response_code($res_weekly) === 200) {
-            $html_weekly = wp_remote_retrieve_body($res_weekly);
-            if (!empty($html_weekly)) {
-                $weekly = self::parse_weekly_box_office($html_weekly);
-                if (empty($weekly)) {
-                    // Try parsing table inside /weekly/ in case it's a table
-                    $weekly_table = self::parse_daily_box_office($html_weekly);
-                    if (!empty($weekly_table)) {
-                        foreach ($weekly_table as $row) {
-                            $weekly[] = array(
-                                'rank' => $row['rank'],
-                                'poster' => $row['poster'],
-                                'title' => $row['title'],
-                                'weekly_gross' => $row['revenue'],
-                                'total_revenue' => $row['revenue'],
-                                'admissions' => $row['tickets']
-                            );
-                        }
-                    }
-                }
+        // 3. Fetch Weekly Box Office (Arabic)
+        $weekly_ar = array();
+        $res_weekly_ar = wp_remote_get('https://cinema-track.com/ar/%d8%a3%d8%b3%d8%a8%d9%88%d8%b9%d9%8a/%d8%b9%d8%b1%d8%a8%d9%8a-%d8%a3%d8%b3%d8%a8%d9%88%d8%b9%d9%8a/', $args);
+        if (!is_wp_error($res_weekly_ar) && wp_remote_retrieve_response_code($res_weekly_ar) === 200) {
+            $html_weekly_ar = wp_remote_retrieve_body($res_weekly_ar);
+            if (!empty($html_weekly_ar)) {
+                $weekly_ar = self::parse_weekly_box_office($html_weekly_ar);
             }
         }
+
+        // 3b. Fetch Weekly Box Office (Foreign)
+        $weekly_fore = array();
+        $res_weekly_fore = wp_remote_get('https://cinema-track.com/ar/%d8%a3%d8%b3%d8%a8%d9%88%d8%b9%d9%8a/%d8%a3%d8%ac%d9%86%d8%a8%d9%8a-%d8%a3%d8%b3%d8%a8%d9%88%d8%b9%d9%8a/', $args);
+        if (!is_wp_error($res_weekly_fore) && wp_remote_retrieve_response_code($res_weekly_fore) === 200) {
+            $html_weekly_fore = wp_remote_retrieve_body($res_weekly_fore);
+            if (!empty($html_weekly_fore)) {
+                $weekly_fore = self::parse_weekly_box_office($html_weekly_fore);
+            }
+        }
+
+        $weekly = array_merge($weekly_ar, $weekly_fore);
 
         // 4. Fetch homepage for date, charts, all-time, news
         $date = date('j M Y');
@@ -108,6 +104,8 @@ class Ktn_Box_Office_Scraper
             'daily_arabic'  => $daily_ar,
             'daily_foreign' => $daily_fore,
             'weekly'       => $weekly,
+            'weekly_arabic' => $weekly_ar,
+            'weekly_foreign'=> $weekly_fore,
             'charts'       => $charts,
             'all_time'     => $all_time,
             'news'         => $news,

@@ -10,6 +10,8 @@ $daily_arabic   = $box_office['daily_arabic'] ?? array();
 $daily_foreign  = $box_office['daily_foreign'] ?? array();
 $daily          = $box_office['daily']         ?? array();
 $weekly         = $box_office['weekly']        ?? array();
+$weekly_arabic  = $box_office['weekly_arabic'] ?? array();
+$weekly_foreign = $box_office['weekly_foreign'] ?? array();
 
 // Fallback: if typed lists empty, split merged list by 'type' key
 if (empty($daily_arabic) && empty($daily_foreign) && !empty($daily)) {
@@ -55,70 +57,56 @@ wp_enqueue_style('ktn-box-office', KTN_PLUGIN_URL . 'assets/css/kontentainment-b
 
     <!-- ===================== WEEKLY PANEL ===================== -->
     <div class="ktn-bo-panel" id="ktn-bo-panel-weekly">
-        <?php if (!empty($weekly)): ?>
-            <section class="ktn-bo-section-header">
-                <h2 class="ktn-section-title">
-                    <span class="gold-text"><?php echo $is_ar ? 'الإيرادات الأسبوعية' : __('Weekly Rankings', 'kontentainment'); ?></span>
-                </h2>
-            </section>
+        
+        <!-- Weekly Language Sub-Tabs -->
+        <div class="ktn-bo-lang-tabs" id="ktn-bo-lang-tabs-weekly">
+            <button class="ktn-bo-lang-tab-weekly active" data-lang="arabic">
+                <?php echo $is_ar ? 'الأفلام العربية' : __('Arabic Films', 'kontentainment'); ?>
+            </button>
+            <button class="ktn-bo-lang-tab-weekly" data-lang="foreign">
+                <?php echo $is_ar ? 'الأفلام الأجنبية' : __('Foreign Films', 'kontentainment'); ?>
+            </button>
+        </div>
 
-            <div class="ktn-bo-grid-weekly">
-                <?php foreach ($weekly as $w):
-                    $movie_link = ktn_get_movie_link_by_title($w['title']);
-                    // Weekly list is mixed; use original title as-is (no forced translation)
-                    $display_title = esc_html($w['title']);
-                ?>
-                <div class="ktn-bo-weekly-card">
-                    <div class="card-rank"><?php echo esc_html($w['rank']); ?></div>
-
-                    <a href="<?php echo esc_url($movie_link); ?>" class="weekly-card-click-wrap">
-                        <div class="card-media">
-                            <?php if (!empty($w['poster'])): ?>
-                                <img src="<?php echo esc_url($w['poster']); ?>" alt="<?php echo esc_attr($w['title']); ?>">
-                            <?php else: ?>
-                                <div class="no-poster-wrap">
-                                    <span class="dashicons dashicons-video-alt3" style="font-size:40px; width:40px; height:40px;"></span>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                        <h3 class="movie-title" title="<?php echo esc_attr($w['title']); ?>"><?php echo $display_title; ?></h3>
-                    </a>
-
-                    <div class="card-info">
-                        <div class="card-metrics">
-                            <div class="card-metric gross">
-                                <span class="icon">💰</span>
-                                <div class="meta">
-                                    <span class="val"><?php echo esc_html(ktn_translate_digits($w['weekly_gross'])); ?></span>
-                                    <span class="lbl"><?php echo $is_ar ? 'إيرادات الأسبوع' : __('Weekly Gross', 'kontentainment'); ?></span>
-                                </div>
-                            </div>
-                            <div class="card-metric total">
-                                <span class="icon">📈</span>
-                                <div class="meta">
-                                    <span class="val"><?php echo esc_html(ktn_translate_digits($w['total_revenue'])); ?></span>
-                                    <span class="lbl"><?php echo $is_ar ? 'إجمالي الإيرادات' : __('Total Gross', 'kontentainment'); ?></span>
-                                </div>
-                            </div>
-                            <?php if (!empty($w['admissions'])): ?>
-                            <div class="card-metric">
-                                <span class="icon">🎟️</span>
-                                <div class="meta">
-                                    <span class="val"><?php echo esc_html(ktn_translate_digits($w['admissions'])); ?></span>
-                                    <span class="lbl"><?php echo $is_ar ? 'عدد التذاكر' : __('Admissions', 'kontentainment'); ?></span>
-                                </div>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
+        <!-- Weekly Arabic Sub-Panel -->
+        <div class="ktn-bo-lang-panel-weekly" id="ktn-bo-lang-weekly-arabic">
+            <?php if (!empty($weekly_arabic)): ?>
+                <section class="ktn-bo-section-header">
+                    <h2 class="ktn-section-title">
+                        <span class="gold-text"><?php echo $is_ar ? 'الإيرادات الأسبوعية — عربي' : __('Weekly Rankings — Arabic', 'kontentainment'); ?></span>
+                    </h2>
+                </section>
+                <?php echo ktn_bo_render_weekly_grid($weekly_arabic, $is_ar, 'arabic'); ?>
+            <?php elseif (!empty($weekly)): // fallback for old cached data ?>
+                <section class="ktn-bo-section-header">
+                    <h2 class="ktn-section-title">
+                        <span class="gold-text"><?php echo $is_ar ? 'الإيرادات الأسبوعية' : __('Weekly Rankings', 'kontentainment'); ?></span>
+                    </h2>
+                </section>
+                <?php echo ktn_bo_render_weekly_grid($weekly, $is_ar, 'arabic'); ?>
+            <?php else: ?>
+                <div class="ktn-bo-error">
+                    <h3><?php echo $is_ar ? 'لا توجد بيانات أسبوعية عربية.' : __('No Arabic weekly data.', 'kontentainment'); ?></h3>
                 </div>
-                <?php endforeach; ?>
-            </div>
-        <?php else: ?>
-            <div class="ktn-bo-error">
-                <h3><?php echo $is_ar ? 'لا توجد بيانات أسبوعية.' : __('No weekly data available.', 'kontentainment'); ?></h3>
-            </div>
-        <?php endif; ?>
+            <?php endif; ?>
+        </div>
+
+        <!-- Weekly Foreign Sub-Panel -->
+        <div class="ktn-bo-lang-panel-weekly" id="ktn-bo-lang-weekly-foreign" style="display:none;">
+            <?php if (!empty($weekly_foreign)): ?>
+                <section class="ktn-bo-section-header">
+                    <h2 class="ktn-section-title">
+                        <span class="gold-text"><?php echo $is_ar ? 'الإيرادات الأسبوعية — أجنبي' : __('Weekly Rankings — Foreign', 'kontentainment'); ?></span>
+                    </h2>
+                </section>
+                <?php echo ktn_bo_render_weekly_grid($weekly_foreign, $is_ar, 'foreign'); ?>
+            <?php else: ?>
+                <div class="ktn-bo-error">
+                    <h3><?php echo $is_ar ? 'لا توجد بيانات أسبوعية أجنبية.' : __('No foreign weekly data.', 'kontentainment'); ?></h3>
+                </div>
+            <?php endif; ?>
+        </div>
+
     </div><!-- /weekly panel -->
 
     <!-- ===================== DAILY PANEL ===================== -->
@@ -196,7 +184,7 @@ wp_enqueue_style('ktn-box-office', KTN_PLUGIN_URL . 'assets/css/kontentainment-b
         });
     });
 
-    // ── Language Sub-Tabs: Arabic / Foreign ──
+    // ── Language Sub-Tabs: Arabic / Foreign (Daily) ──
     var langTabs = document.querySelectorAll('.ktn-bo-lang-tab');
     var langPanels = document.querySelectorAll('.ktn-bo-lang-panel');
 
@@ -210,68 +198,90 @@ wp_enqueue_style('ktn-box-office', KTN_PLUGIN_URL . 'assets/css/kontentainment-b
             });
         });
     });
+
+    // ── Language Sub-Tabs: Arabic / Foreign (Weekly) ──
+    var weeklyLangTabs = document.querySelectorAll('.ktn-bo-lang-tab-weekly');
+    var weeklyLangPanels = document.querySelectorAll('.ktn-bo-lang-panel-weekly');
+
+    weeklyLangTabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            weeklyLangTabs.forEach(function(t) { t.classList.remove('active'); });
+            tab.classList.add('active');
+            var lang = tab.getAttribute('data-lang');
+            weeklyLangPanels.forEach(function(panel) {
+                panel.style.display = (panel.id === 'ktn-bo-lang-weekly-' + lang) ? '' : 'none';
+            });
+        });
+    });
 })();
 </script>
 
-<?php
 /**
- * Helper: render daily table (desktop + mobile) for a given movie list
+ * Helper: render daily table for a given movie list (dark cinema-track.com style)
  * For 'foreign' type: display title as-is (no Arabic translation)
  * For 'arabic' type: use ktn_get_movie_display_title()
  */
 function ktn_bo_render_daily_table($movies, $is_ar, $type = 'arabic') {
+    if (empty($movies)) return '';
     ob_start();
     ?>
-    <div class="ktn-bo-card-panel">
+    <div class="ktn-bo-daily-wrap">
+
+        <!-- Section Header -->
+        <div class="ktn-bo-daily-header">
+            <div class="ktn-bo-daily-trend-legend">
+                <span class="ktn-bo-daily-trend-legend-title"><?php echo $is_ar ? 'الترند' : 'Trend'; ?></span>
+                <span class="ktn-bo-daily-trend-note"><?php echo $is_ar ? '(مقارنة بنفس اليوم من الأسبوع الماضي)' : '(vs same day last week)'; ?></span>
+            </div>
+        </div>
+
         <!-- Desktop Table -->
-        <div class="ktn-bo-table-wrap">
-            <table class="ktn-bo-table">
+        <div class="ktn-bo-daily-table-wrap">
+            <table class="ktn-bo-daily-table">
                 <thead>
                     <tr>
-                        <th class="col-rank"><?php echo $is_ar ? 'الترتيب' : __('Rank', 'kontentainment'); ?></th>
-                        <th class="col-poster"></th>
-                        <th style="text-align:right;"><?php echo $is_ar ? 'الفيلم' : __('Movie', 'kontentainment'); ?></th>
-                        <th><?php echo $is_ar ? 'إيرادات اليوم' : __('Today Revenue', 'kontentainment'); ?></th>
-                        <th><?php echo $is_ar ? 'تذاكر اليوم' : __('Tickets Today', 'kontentainment'); ?></th>
-                        <th><?php echo $is_ar ? 'السينمات' : __('Cinemas', 'kontentainment'); ?></th>
-                        <th class="col-trend"><?php echo $is_ar ? 'المؤشر' : __('Trend', 'kontentainment'); ?></th>
+                        <th class="col-num">#</th>
+                        <th class="col-poster-h"></th>
+                        <th class="col-title-h"><?php echo $is_ar ? 'فيلم' : 'Movie'; ?></th>
+                        <th><?php echo $is_ar ? 'إيرادات اليوم' : 'Today Revenue'; ?></th>
+                        <th><?php echo $is_ar ? 'عدد تذاكر اليوم' : 'Tickets Today'; ?></th>
+                        <th><?php echo $is_ar ? 'عدد السينمات' : 'Cinemas'; ?></th>
+                        <th class="col-trend-h"><?php echo $is_ar ? 'الترند' : 'Trend'; ?></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($movies as $d):
+                    <?php foreach ($movies as $i => $d):
                         $movie_link    = ktn_get_movie_link_by_title($d['title']);
-                        // Foreign: show original title; Arabic: translate/lookup
                         $display_title = ($type === 'foreign')
                             ? $d['title']
                             : ktn_get_movie_display_title($d['title']);
-                        $rank_cls  = ($d['rank'] <= 3) ? 'rank-' . $d['rank'] : '';
-                        $trend_cls = 'trend-' . ($d['trend_class'] ?? 'same');
-                        $trend_icon = ($d['trend_class'] === 'up') ? '▲' : (($d['trend_class'] === 'down') ? '▼' : '—');
+                        $rank       = $d['rank'] ?: ($i + 1);
+                        $trend_cls  = $d['trend_class'] ?? 'same';
+                        $trend_icon = ($trend_cls === 'up') ? '▲' : (($trend_cls === 'down') ? '▼' : '—');
+                        $trend_val  = ktn_translate_digits($d['trend_text'] ?? '—');
                     ?>
-                    <tr>
-                        <td class="col-rank <?php echo $rank_cls; ?>"><?php echo esc_html($d['rank']); ?></td>
-                        <td class="col-poster">
-                            <a href="<?php echo esc_url($movie_link); ?>" class="bo-movie-click-wrap">
+                    <tr class="ktn-bo-daily-row">
+                        <td class="col-num">
+                            <span class="ktn-bo-rank-num"><?php echo esc_html($rank); ?></span>
+                        </td>
+                        <td class="col-poster-td">
+                            <a href="<?php echo esc_url($movie_link); ?>">
                                 <?php if (!empty($d['poster'])): ?>
-                                    <img src="<?php echo esc_url($d['poster']); ?>" alt="<?php echo esc_attr($d['title']); ?>" class="bo-thumb">
+                                    <img src="<?php echo esc_url($d['poster']); ?>" alt="<?php echo esc_attr($display_title); ?>" class="ktn-bo-poster-thumb">
                                 <?php else: ?>
-                                    <div class="bo-no-thumb"><span class="dashicons dashicons-video-alt3"></span></div>
+                                    <div class="ktn-bo-no-poster"></div>
                                 <?php endif; ?>
                             </a>
                         </td>
-                        <td class="col-movie">
-                            <a href="<?php echo esc_url($movie_link); ?>" class="movie-name-link">
-                                <span class="movie-name"><?php echo esc_html($display_title); ?></span>
-                            </a>
+                        <td class="col-title-td">
+                            <a href="<?php echo esc_url($movie_link); ?>" class="ktn-bo-movie-name"><?php echo esc_html($display_title); ?></a>
                         </td>
-                        <td class="revenue-cell"><?php echo esc_html(ktn_translate_digits($d['revenue'])); ?></td>
-                        <td class="font-gold"><?php echo esc_html(ktn_translate_digits($d['tickets'])); ?></td>
-                        <td><?php echo esc_html(ktn_translate_digits($d['cinemas'])); ?></td>
-                        <td class="col-trend <?php echo $trend_cls; ?>">
-                            <span class="trend-percent">
-                                <span class="trend-arrow"><?php echo $trend_icon; ?></span>
-                                <?php echo esc_html(ktn_translate_digits($d['trend_text'])); ?>
-                            </span>
+                        <td class="col-revenue"><?php echo esc_html(ktn_translate_digits($d['revenue'])); ?></td>
+                        <td class="col-tickets"><?php echo esc_html(ktn_translate_digits($d['tickets'])); ?></td>
+                        <td class="col-cinemas"><?php echo esc_html(ktn_translate_digits($d['cinemas'])); ?></td>
+                        <td class="col-trend col-trend-<?php echo esc_attr($trend_cls); ?>">
+                            <span class="ktn-trend-arrow"><?php echo $trend_icon; ?></span>
+                            <?php echo esc_html($trend_val); ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -280,50 +290,107 @@ function ktn_bo_render_daily_table($movies, $is_ar, $type = 'arabic') {
         </div>
 
         <!-- Mobile Cards -->
-        <div class="ktn-bo-mobile-cards">
-            <?php foreach ($movies as $d):
+        <div class="ktn-bo-daily-mob-list">
+            <?php foreach ($movies as $i => $d):
                 $movie_link    = ktn_get_movie_link_by_title($d['title']);
                 $display_title = ($type === 'foreign')
                     ? $d['title']
                     : ktn_get_movie_display_title($d['title']);
-                $trend_cls  = 'trend-' . ($d['trend_class'] ?? 'same');
-                $trend_icon = ($d['trend_class'] === 'up') ? '▲' : (($d['trend_class'] === 'down') ? '▼' : '—');
+                $rank       = $d['rank'] ?: ($i + 1);
+                $trend_cls  = $d['trend_class'] ?? 'same';
+                $trend_icon = ($trend_cls === 'up') ? '▲' : (($trend_cls === 'down') ? '▼' : '—');
+                $trend_val  = ktn_translate_digits($d['trend_text'] ?? '');
             ?>
-            <div class="ktn-bo-mob-card">
-                <div class="mob-card-header">
-                    <span class="mob-rank"><?php echo esc_html($d['rank']); ?></span>
-                    <a href="<?php echo esc_url($movie_link); ?>" class="mob-movie-click-wrap">
-                        <?php if (!empty($d['poster'])): ?>
-                            <img src="<?php echo esc_url($d['poster']); ?>" alt="<?php echo esc_attr($d['title']); ?>" class="mob-thumb">
-                        <?php endif; ?>
-                    </a>
-                    <a href="<?php echo esc_url($movie_link); ?>" class="mob-movie-click-wrap">
-                        <span class="mob-title"><?php echo esc_html($display_title); ?></span>
-                    </a>
-                </div>
-                <div class="mob-metrics">
-                    <div class="mob-metric">
-                        <span class="lbl"><?php echo $is_ar ? 'إيرادات اليوم' : __('Today Revenue', 'kontentainment'); ?></span>
-                        <span class="val revenue"><?php echo esc_html(ktn_translate_digits($d['revenue'])); ?></span>
-                    </div>
-                    <div class="mob-metric">
-                        <span class="lbl"><?php echo $is_ar ? 'تذاكر اليوم' : __('Tickets Today', 'kontentainment'); ?></span>
-                        <span class="val font-gold"><?php echo esc_html(ktn_translate_digits($d['tickets'])); ?></span>
-                    </div>
-                    <div class="mob-metric">
-                        <span class="lbl"><?php echo $is_ar ? 'السينمات' : __('Cinemas', 'kontentainment'); ?></span>
-                        <span class="val"><?php echo esc_html(ktn_translate_digits($d['cinemas'])); ?></span>
-                    </div>
-                    <div class="mob-metric">
-                        <span class="lbl"><?php echo $is_ar ? 'المؤشر' : __('Trend', 'kontentainment'); ?></span>
-                        <span class="val <?php echo $trend_cls; ?>"><?php echo $trend_icon; ?> <?php echo esc_html(ktn_translate_digits($d['trend_text'])); ?></span>
+            <div class="ktn-bo-daily-mob-row">
+                <span class="ktn-bo-mob-rank"><?php echo esc_html($rank); ?></span>
+                <a href="<?php echo esc_url($movie_link); ?>">
+                    <?php if (!empty($d['poster'])): ?>
+                        <img src="<?php echo esc_url($d['poster']); ?>" alt="<?php echo esc_attr($display_title); ?>" class="ktn-bo-mob-poster">
+                    <?php endif; ?>
+                </a>
+                <div class="ktn-bo-mob-info">
+                    <a href="<?php echo esc_url($movie_link); ?>" class="ktn-bo-mob-name"><?php echo esc_html($display_title); ?></a>
+                    <div class="ktn-bo-mob-stats">
+                        <span class="ktn-bo-mob-revenue"><?php echo esc_html(ktn_translate_digits($d['revenue'])); ?></span>
+                        <span class="ktn-bo-mob-tickets"><?php echo esc_html(ktn_translate_digits($d['tickets'])); ?> <?php echo $is_ar ? 'تذكرة' : 'tickets'; ?></span>
+                        <span class="ktn-bo-mob-cinemas ktn-orange"><?php echo esc_html(ktn_translate_digits($d['cinemas'])); ?> <?php echo $is_ar ? 'سينما' : 'cinemas'; ?></span>
                     </div>
                 </div>
+                <span class="ktn-bo-mob-trend ktn-trend-<?php echo esc_attr($trend_cls); ?>">
+                    <?php echo $trend_icon; ?> <?php echo esc_html($trend_val); ?>
+                </span>
             </div>
             <?php endforeach; ?>
         </div>
+
     </div>
     <?php
     return ob_get_clean();
 }
 
+/**
+ * Helper: render weekly grid for a given movie list
+ */
+function ktn_bo_render_weekly_grid($movies, $is_ar, $type = 'arabic') {
+    if (empty($movies)) return '';
+    ob_start();
+    ?>
+    <div class="ktn-bo-grid-weekly">
+        <?php foreach ($movies as $w):
+            $movie_link = ktn_get_movie_link_by_title($w['title']);
+            $display_title = ($type === 'foreign') 
+                ? $w['title'] 
+                : ktn_get_movie_display_title($w['title']);
+        ?>
+        <div class="ktn-bo-weekly-card">
+            <div class="card-rank"><?php echo esc_html($w['rank']); ?></div>
+            <div class="ktn-bo-weekly-inner">
+                <div class="weekly-info">
+                    <a href="<?php echo esc_url($movie_link); ?>" class="weekly-card-click-wrap">
+                        <h3 class="movie-title" title="<?php echo esc_attr($w['title']); ?>"><?php echo esc_html($display_title); ?></h3>
+                    </a>
+                    <div class="card-metrics">
+                        <div class="card-metric gross">
+                            <div class="meta">
+                                <span class="val"><?php echo esc_html(ktn_translate_digits($w['weekly_gross'])); ?> EGP</span>
+                                <span class="lbl"><?php echo $is_ar ? 'الإيرادات الأسبوعية' : __('Weekly Gross', 'kontentainment'); ?></span>
+                            </div>
+                            <span class="icon">💰</span>
+                        </div>
+                        <div class="card-metric total">
+                            <div class="meta">
+                                <span class="val"><?php echo esc_html(ktn_translate_digits($w['total_revenue'])); ?> EGP</span>
+                                <span class="lbl"><?php echo $is_ar ? 'إجمالي الإيرادات' : __('Total Gross', 'kontentainment'); ?></span>
+                            </div>
+                            <span class="icon">🎬</span>
+                        </div>
+                        <?php if (!empty($w['admissions'])): ?>
+                        <div class="card-metric tickets">
+                            <div class="meta">
+                                <span class="val"><?php echo esc_html(ktn_translate_digits($w['admissions'])); ?></span>
+                                <span class="lbl"><?php echo $is_ar ? 'عدد التذاكر الأسبوعية' : __('Weekly Admissions', 'kontentainment'); ?></span>
+                            </div>
+                            <span class="icon">🎟️</span>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div class="weekly-media">
+                    <a href="<?php echo esc_url($movie_link); ?>" class="weekly-card-click-wrap">
+                        <?php if (!empty($w['poster'])): ?>
+                            <img src="<?php echo esc_url($w['poster']); ?>" alt="<?php echo esc_attr($w['title']); ?>">
+                        <?php else: ?>
+                            <div class="no-poster-wrap">
+                                <span class="dashicons dashicons-video-alt3"></span>
+                            </div>
+                        <?php endif; ?>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php
+    return ob_get_clean();
+}
