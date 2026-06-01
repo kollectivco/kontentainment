@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment
  * Plugin URI:  https://kollectiv.net
  * Description: A premium movie and cinema discovery platform.
- * Version:     1.9.21
+ * Version:     1.9.22
  * Author:      Kollectiv
  * Author URI:  https://kollectiv.net
  * License:     GPL2

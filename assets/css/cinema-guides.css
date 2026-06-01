@@ -6,8 +6,11 @@
     width: 90vw !important;
     max-width: 1400px !important;
     position: relative !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     box-sizing: border-box !important;
     margin-top: 40px !important;
     margin-bottom: 40px !important;
@@ -316,7 +319,7 @@ body.ktn-full-width-page .sidebar,
 body.ktn-full-width-page #sidebar,
 body.ktn-full-width-page .widget-area,
 body.ktn-full-width-page #secondary,
-body.ktn-full-width-page aside {
+body.ktn-full-width-page aside:not(.ktn-guides-container):not([class*="ktn-"]) {
     display: none !important;
     width: 0 !important;
     max-width: 0 !important;
@@ -356,14 +359,14 @@ body.ktn-full-width-page .wp-site-blocks,
 body.ktn-full-width-page article,
 body.ktn-full-width-page .page {
     width: 100% !important;
-    max-width: 1650px !important;
+    max-width: 100% !important;
     margin-left: auto !important;
     margin-right: auto !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
+    box-sizing: border-box !important;
 }
 
 body.ktn-full-width-page {
     overflow-x: hidden !important;
 }
-
