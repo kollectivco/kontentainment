@@ -3,30 +3,18 @@
  */
 
 .ktn-guides-container {
-    width: 100vw !important;
+    width: 90vw !important;
+    max-width: 1400px !important;
     position: relative !important;
     left: 50% !important;
-    right: 50% !important;
-    margin-left: -50vw !important;
-    margin-right: -50vw !important;
-    max-width: 100vw !important;
+    transform: translateX(-50%) !important;
     box-sizing: border-box !important;
     margin-top: 40px !important;
     margin-bottom: 40px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
     font-family: inherit;
     color: #333;
-}
-@media (min-width: 1690px) {
-    .ktn-guides-container {
-        padding-left: calc((100vw - 1650px) / 2 + 20px) !important;
-        padding-right: calc((100vw - 1650px) / 2 + 20px) !important;
-    }
-}
-@media (max-width: 1689px) {
-    .ktn-guides-container {
-        padding-left: 20px !important;
-        padding-right: 20px !important;
-    }
 }
 
 .ktn-guides-header {
@@ -289,6 +277,7 @@
 
 @media (max-width: 600px) {
     .ktn-guides-container {
+        width: 95vw !important;
         padding-left: 15px !important;
         padding-right: 15px !important;
         margin-top: 20px !important;
