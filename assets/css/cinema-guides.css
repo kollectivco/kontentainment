@@ -76,7 +76,7 @@
     flex-wrap: wrap;
     gap: 20px;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     margin-bottom: 40px;
     background: #ffffff;
     padding: 30px;
@@ -111,7 +111,7 @@
 .ktn-search-box {
     position: relative;
     flex: 1.5;
-    min-width: 320px;
+    min-width: 250px;
 }
 
 .ktn-search-box input {
@@ -143,7 +143,7 @@
 
 .ktn-dropdown-wrapper {
     flex: 1;
-    min-width: 220px;
+    min-width: 170px;
 }
 
 .ktn-select {

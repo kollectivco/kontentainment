@@ -109,73 +109,56 @@ wp_enqueue_style('ktn-single-movie', KTN_PLUGIN_URL . 'assets/css/kontentainment
     $bo_total_admissions   = get_post_meta($post_id, '_ktn_bo_total_admissions', true);
     $bo_cinemas            = get_post_meta($post_id, '_ktn_bo_cinemas', true);
 
-    $has_bo_data = (!empty($bo_total_gross) || !empty($bo_today_gross) || !empty($bo_opening_week_gross) || !empty($bo_days_in_theaters) || !empty($bo_total_admissions));
+    $has_bo_data = !empty($bo_total_gross) || !empty($bo_today_gross) || !empty($bo_opening_week_gross) || !empty($bo_days_in_theaters);
 
     if ($has_bo_data):
-        $is_rtl = (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0);
+        $format_currency = function($val) {
+            if (empty($val)) return '—';
+            $clean = preg_replace('/[^\d,]/', '', $val);
+            if (!empty($clean)) {
+                return 'EGP ' . $clean;
+            }
+            return $val;
+        };
     ?>
-    <section class="ktn-media-box-office-section" style="margin-top: 50px;">
-        <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-            <?php echo $is_rtl ? 'إحصائيات شباك التذاكر' : esc_html__('Box Office Stats', 'kontentainment'); ?>
+    <section class="ktn-bo-stats-section">
+        <h2 class="ktn-bo-stats-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            <?php esc_html_e('Box Office', 'kontentainment'); ?>
         </h2>
         
-        <div class="ktn-bo-stats-grid">
-            <?php if (!empty($bo_total_gross)): ?>
-            <div class="ktn-bo-stat-card total-gross">
-                <span class="ktn-bo-card-icon">💰</span>
-                <span class="ktn-bo-card-val"><?php echo esc_html(ktn_translate_digits($bo_total_gross)); ?></span>
-                <span class="ktn-bo-card-lbl"><?php echo $is_rtl ? 'إجمالي الإيرادات' : esc_html__('Total Gross', 'kontentainment'); ?></span>
+        <div class="ktn-bo-grid-row-1">
+            <div class="ktn-bo-stat-card">
+                <span class="ktn-bo-stat-label"><?php esc_html_e('Total Gross', 'kontentainment'); ?></span>
+                <span class="ktn-bo-stat-value"><?php echo esc_html($format_currency($bo_total_gross)); ?></span>
             </div>
-            <?php endif; ?>
+            <div class="ktn-bo-stat-card">
+                <span class="ktn-bo-stat-label"><?php esc_html_e('Today\'s Gross', 'kontentainment'); ?></span>
+                <span class="ktn-bo-stat-value"><?php echo esc_html($format_currency($bo_today_gross)); ?></span>
+            </div>
+            <div class="ktn-bo-stat-card">
+                <span class="ktn-bo-stat-label"><?php esc_html_e('Opening Week Gross', 'kontentainment'); ?></span>
+                <span class="ktn-bo-stat-value"><?php echo esc_html($format_currency($bo_opening_week_gross)); ?></span>
+            </div>
+            <div class="ktn-bo-stat-card">
+                <span class="ktn-bo-stat-label"><?php esc_html_e('Days in Theaters', 'kontentainment'); ?></span>
+                <span class="ktn-bo-stat-value"><?php echo esc_html(!empty($bo_days_in_theaters) ? $bo_days_in_theaters : '—'); ?></span>
+            </div>
+        </div>
 
-            <?php if (!empty($bo_today_gross)): ?>
-            <div class="ktn-bo-stat-card today-gross">
-                <span class="ktn-bo-card-icon">🔥</span>
-                <span class="ktn-bo-card-val"><?php echo esc_html(ktn_translate_digits($bo_today_gross)); ?></span>
-                <span class="ktn-bo-card-lbl"><?php echo $is_rtl ? 'إيرادات اليوم' : esc_html__('Today\'s Gross', 'kontentainment'); ?></span>
+        <div class="ktn-bo-grid-row-2">
+            <div class="ktn-bo-stat-card">
+                <span class="ktn-bo-stat-label"><?php esc_html_e('Admissions Today', 'kontentainment'); ?></span>
+                <span class="ktn-bo-stat-value"><?php echo esc_html(!empty($bo_admissions_today) ? $bo_admissions_today : '—'); ?></span>
             </div>
-            <?php endif; ?>
-
-            <?php if (!empty($bo_opening_week_gross)): ?>
-            <div class="ktn-bo-stat-card opening-week">
-                <span class="ktn-bo-card-icon">🚀</span>
-                <span class="ktn-bo-card-val"><?php echo esc_html(ktn_translate_digits($bo_opening_week_gross)); ?></span>
-                <span class="ktn-bo-card-lbl"><?php echo $is_rtl ? 'أسبوع الافتتاح' : esc_html__('Opening Week Gross', 'kontentainment'); ?></span>
+            <div class="ktn-bo-stat-card">
+                <span class="ktn-bo-stat-label"><?php esc_html_e('Total Admissions', 'kontentainment'); ?></span>
+                <span class="ktn-bo-stat-value"><?php echo esc_html(!empty($bo_total_admissions) ? $bo_total_admissions : '—'); ?></span>
             </div>
-            <?php endif; ?>
-
-            <?php if (!empty($bo_days_in_theaters)): ?>
-            <div class="ktn-bo-stat-card days-in">
-                <span class="ktn-bo-card-icon">📅</span>
-                <span class="ktn-bo-card-val"><?php echo esc_html(ktn_translate_digits($bo_days_in_theaters)); ?></span>
-                <span class="ktn-bo-card-lbl"><?php echo $is_rtl ? 'عدد أيام العرض' : esc_html__('Days of Screening', 'kontentainment'); ?></span>
+            <div class="ktn-bo-stat-card">
+                <span class="ktn-bo-stat-label"><?php esc_html_e('Cinemas', 'kontentainment'); ?></span>
+                <span class="ktn-bo-stat-value"><?php echo esc_html(!empty($bo_cinemas) ? $bo_cinemas : '—'); ?></span>
             </div>
-            <?php endif; ?>
-
-            <?php if (!empty($bo_admissions_today)): ?>
-            <div class="ktn-bo-stat-card admissions-today">
-                <span class="ktn-bo-card-icon">🎟️</span>
-                <span class="ktn-bo-card-val"><?php echo esc_html(ktn_translate_digits($bo_admissions_today)); ?></span>
-                <span class="ktn-bo-card-lbl"><?php echo $is_rtl ? 'تذاكر اليوم' : esc_html__('Admissions Today', 'kontentainment'); ?></span>
-            </div>
-            <?php endif; ?>
-
-            <?php if (!empty($bo_total_admissions)): ?>
-            <div class="ktn-bo-stat-card admissions-total">
-                <span class="ktn-bo-card-icon">📊</span>
-                <span class="ktn-bo-card-val"><?php echo esc_html(ktn_translate_digits($bo_total_admissions)); ?></span>
-                <span class="ktn-bo-card-lbl"><?php echo $is_rtl ? 'إجمالي عدد التذاكر' : esc_html__('Total Admissions', 'kontentainment'); ?></span>
-            </div>
-            <?php endif; ?>
-
-            <?php if (!empty($bo_cinemas)): ?>
-            <div class="ktn-bo-stat-card cinemas-count">
-                <span class="ktn-bo-card-icon">🎬</span>
-                <span class="ktn-bo-card-val"><?php echo esc_html(ktn_translate_digits($bo_cinemas)); ?></span>
-                <span class="ktn-bo-card-lbl"><?php echo $is_rtl ? 'عدد السينمات' : esc_html__('Cinemas', 'kontentainment'); ?></span>
-            </div>
-            <?php endif; ?>
         </div>
     </section>
     <?php endif; ?>

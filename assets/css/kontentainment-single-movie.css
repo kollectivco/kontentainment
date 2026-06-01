@@ -294,94 +294,140 @@
     }
 }
 
-/* Premium Box Office Stats styling for Single Movie */
-.ktn-media-box-office-section {
-    position: relative;
-    padding: 25px 0;
+/* Box Office Statistics Grid - Premium HSL Sleek Styling */
+.ktn-bo-stats-section {
+    margin-top: 50px;
+    padding: 0 20px;
 }
 
-.ktn-bo-stats-grid {
+.ktn-bo-stats-title {
+    margin-bottom: 25px;
+    font-size: 2.25rem;
+    font-weight: 900;
+    color: #0f172a;
+    font-family: 'Cairo', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ktn-bo-stats-title svg {
+    color: #f5c518;
+}
+
+/* Grid Layouts */
+.ktn-bo-grid-row-1, .ktn-bo-grid-row-2 {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
-    margin-top: 15px;
+    margin-bottom: 20px;
+    font-family: 'Cairo', sans-serif;
 }
 
+.ktn-bo-grid-row-1 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.ktn-bo-grid-row-2 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Sleek Dark Card Design with Tailored HSL Colors */
 .ktn-bo-stat-card {
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    background: linear-gradient(135deg, #110e11 0%, #171318 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 16px;
-    padding: 20px;
+    padding: 24px 20px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
 }
 
-.ktn-bo-stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
-}
-
+/* Backdrop glow */
 .ktn-bo-stat-card::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 4px;
-    background: #e2e8f0;
+    height: 100%;
+    background: radial-gradient(circle at top right, rgba(245, 197, 24, 0.05), transparent 60%);
+    pointer-events: none;
+    transition: all 0.3s ease;
 }
 
-/* Card highlights colors */
-.ktn-bo-stat-card.total-gross::before { background: linear-gradient(90deg, #ca8a04, #fbbf24); }
-.ktn-bo-stat-card.today-gross::before { background: linear-gradient(90deg, #059669, #34d399); }
-.ktn-bo-stat-card.opening-week::before { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
-.ktn-bo-stat-card.days-in::before { background: linear-gradient(90deg, #2563eb, #60a5fa); }
-.ktn-bo-stat-card.admissions-today::before { background: linear-gradient(90deg, #ca8a04, #f59e0b); }
-.ktn-bo-stat-card.admissions-total::before { background: linear-gradient(90deg, #0d9488, #2dd4bf); }
-.ktn-bo-stat-card.cinemas-count::before { background: linear-gradient(90deg, #475569, #94a3b8); }
-
-.ktn-bo-stat-card.total-gross:hover { border-color: rgba(202, 138, 4, 0.3); }
-.ktn-bo-stat-card.today-gross:hover { border-color: rgba(5, 150, 105, 0.3); }
-.ktn-bo-stat-card.opening-week:hover { border-color: rgba(124, 58, 237, 0.3); }
-
-.ktn-bo-card-icon {
-    font-size: 24px;
-    margin-bottom: 8px;
+.ktn-bo-stat-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    border-color: rgba(245, 197, 24, 0.25);
+    box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.5), 0 0 15px rgba(245, 197, 24, 0.1);
 }
 
-.ktn-bo-card-val {
-    font-size: 1.45rem;
-    font-weight: 900;
-    color: #0f172a;
-    line-height: 1.2;
-    margin-bottom: 4px;
-    letter-spacing: -0.01em;
+.ktn-bo-stat-card:hover::before {
+    background: radial-gradient(circle at top right, rgba(245, 197, 24, 0.1), transparent 60%);
 }
 
-.ktn-bo-stat-card.total-gross .ktn-bo-card-val { color: #854d0e; }
-.ktn-bo-stat-card.today-gross .ktn-bo-card-val { color: #065f46; }
-.ktn-bo-stat-card.opening-week .ktn-bo-card-val { color: #5b21b6; }
-
-.ktn-bo-card-lbl {
-    font-size: 0.8rem;
-    text-transform: uppercase;
+/* Card typography matching Arabic screenshot */
+.ktn-bo-stat-label {
+    font-size: 0.95rem;
     font-weight: 700;
-    color: #64748b;
-    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 12px;
+    text-transform: capitalize;
+    letter-spacing: 0.02em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* RTL layout adjustments */
-body.rtl .ktn-bo-card-lbl,
-body[dir="rtl"] .ktn-bo-card-lbl,
-.rtl .ktn-bo-card-lbl {
-    font-size: 0.9rem;
-    letter-spacing: 0;
+.ktn-bo-stat-value {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.2;
+    text-align: right;
+    margin-top: auto;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Clean Micro-Animations for Numbers */
+@keyframes countUpGlow {
+    from { text-shadow: 0 0 0px transparent; }
+    to { text-shadow: 0 0 8px rgba(255, 255, 255, 0.4); }
+}
+
+.ktn-bo-stat-card:hover .ktn-bo-stat-value {
+    animation: countUpGlow 0.5s ease-out forwards;
+}
+
+/* RESPONSIVE LAYOUTS FOR TABLETS AND MOBILE */
+@media (max-width: 1024px) {
+    .ktn-bo-grid-row-1 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .ktn-bo-grid-row-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .ktn-bo-stat-value {
+        font-size: 1.45rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .ktn-bo-stats-section {
+        padding: 0 10px;
+    }
+    .ktn-bo-grid-row-1, .ktn-bo-grid-row-2 {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    .ktn-bo-stat-card {
+        padding: 20px 16px;
+    }
+    .ktn-bo-stat-value {
+        font-size: 1.35rem;
+    }
+    .ktn-bo-stats-title {
+        font-size: 1.75rem;
+    }
 }
