@@ -198,6 +198,14 @@ function ktn_translate_frontend_post_titles($title, $post_id = 0)
         }
     }
     if ($post->post_type === 'movie' || $post->post_type === 'tv_show') {
+        // If the website is viewed in Arabic and a custom/scraped Arabic title exists, use it!
+        if (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) {
+            $arabic_title = get_post_meta($post_id, '_movie_title_arabic', true);
+            if (!empty($arabic_title)) {
+                return $arabic_title;
+            }
+        }
+
         $original_lang = get_post_meta($post_id, '_movie_original_language', true);
         if ($original_lang === 'ar') {
             return ktn_get_arabic_movie_title($post_id, $title);
@@ -828,40 +836,51 @@ add_action('init', 'ktn_cleanup_incorrect_movie_meta');
 function ktn_cleanup_incorrect_movie_meta() {
     global $wpdb;
     
-    // 1. Search for any movie post where post_title is 'ولاد رزق ٣'
-    // but the original title contains 'dogs' or '7'
-    $results = $wpdb->get_results("
-        SELECT p.ID 
-        FROM {$wpdb->posts} p
-        INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
-        WHERE p.post_type = 'movie' 
-          AND p.post_title = 'ولاد رزق ٣'
-          AND pm.meta_key = '_movie_original_title'
-          AND (pm.meta_value LIKE '%dogs%' OR pm.meta_value LIKE '%7%')
-    ");
+    // Find post ID of 7 Dogs by post ID, TMDB ID, original title, or title
+    $dogs_post_id = 0;
     
-    if (!empty($results)) {
-        foreach ($results as $row) {
-            $post_id = intval($row->ID);
-            
-            // Correct the post title to '7 Dogs' and post_name slug to '7-dogs' in wp_posts table
-            $wpdb->update(
-                $wpdb->posts,
-                array(
-                    'post_title' => '7 Dogs',
-                    'post_name'  => '7-dogs'
-                ),
-                array('ID' => $post_id)
-            );
-            
-            // Correct the post meta
-            update_post_meta($post_id, '_movie_title_arabic', 'الكلاب السبعة');
-            delete_post_meta($post_id, '_movie_title_arabic_cached');
-            clean_post_cache($post_id);
-        }
+    // Check by post ID first
+    $post_check = get_post(243944);
+    if ($post_check && $post_check->post_type === 'movie') {
+        $dogs_post_id = 243944;
+    } else {
+        // Fallback: search by TMDB ID
+        $dogs_post_id = $wpdb->get_var("SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_movie_tmdb_id' AND meta_value = '1316427' LIMIT 1");
     }
     
-    // 2. Also search for any post meta with _movie_title_arabic = 'ولاد رزق ٣' for a dogs movie, and correct it
+    if (!$dogs_post_id) {
+        // Fallback: search by original title meta containing 'الكلاب السبعة'
+        $dogs_post_id = $wpdb->get_var("SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_movie_original_title' AND (meta_value = 'الكلاب السبعة' OR meta_value = '7 Dogs') LIMIT 1");
+    }
+    
+    if (!$dogs_post_id) {
+        // Fallback: search by post title
+        $dogs_post_id = $wpdb->get_var("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'movie' AND post_title = '7 Dogs' LIMIT 1");
+    }
+    
+    if ($dogs_post_id) {
+        $dogs_post_id = intval($dogs_post_id);
+        
+        // 1. Force the correct title and slug in wp_posts
+        $wpdb->update(
+            $wpdb->posts,
+            array(
+                'post_title' => '7 Dogs',
+                'post_name'  => '7-dogs'
+            ),
+            array('ID' => $dogs_post_id)
+        );
+        
+        // 2. Force the correct metadata
+        update_post_meta($dogs_post_id, '_movie_title_arabic', 'الكلاب السبعة');
+        update_post_meta($dogs_post_id, '_movie_original_title', '7 Dogs');
+        update_post_meta($dogs_post_id, '_movie_original_language', 'en');
+        delete_post_meta($dogs_post_id, '_movie_title_arabic_cached');
+        clean_post_cache($dogs_post_id);
+    }
+    
+    // 3. Search for any other post meta where _movie_title_arabic = 'ولاد رزق ٣'
+    // but the original title contains 'dogs', '7', or is 'الكلاب السبعة' or '7 Dogs'
     $meta_results = $wpdb->get_results("
         SELECT post_id 
         FROM {$wpdb->postmeta} 
@@ -872,8 +891,13 @@ function ktn_cleanup_incorrect_movie_meta() {
     if (!empty($meta_results)) {
         foreach ($meta_results as $row) {
             $orig = get_post_meta($row->post_id, '_movie_original_title', true);
-            if (stripos($orig, 'dogs') !== false || stripos($orig, '7') !== false) {
+            if (stripos($orig, 'dogs') !== false || 
+                stripos($orig, '7') !== false || 
+                $orig === 'الكلاب السبعة' || 
+                $orig === '7 Dogs') {
                 update_post_meta($row->post_id, '_movie_title_arabic', 'الكلاب السبعة');
+                update_post_meta($row->post_id, '_movie_original_title', '7 Dogs');
+                update_post_meta($row->post_id, '_movie_original_language', 'en');
             }
         }
     }
