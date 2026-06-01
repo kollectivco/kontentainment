@@ -47,8 +47,7 @@ class Ktn_Cinema_Guides
 
     public function enqueue_assets()
     {
-        global $post;
-        if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'ktn_cinema_guides')) {
+        if (function_exists('ktn_is_cinema_guides_page') && ktn_is_cinema_guides_page()) {
             wp_enqueue_style('ktn-cinema-guides', KTN_PLUGIN_URL . 'assets/css/cinema-guides.css', array(), KTN_PLUGIN_VERSION);
             wp_enqueue_script('ktn-cinema-guides', KTN_PLUGIN_URL . 'assets/js/cinema-guides.js', array('jquery'), KTN_PLUGIN_VERSION, true);
             
@@ -61,6 +60,14 @@ class Ktn_Cinema_Guides
 
     public function render_shortcode()
     {
+        // Foolproof fallback: Enqueue styles and scripts directly in case wp_enqueue_scripts was bypassed
+        wp_enqueue_style('ktn-cinema-guides', KTN_PLUGIN_URL . 'assets/css/cinema-guides.css', array(), KTN_PLUGIN_VERSION);
+        wp_enqueue_script('ktn-cinema-guides', KTN_PLUGIN_URL . 'assets/js/cinema-guides.js', array('jquery'), KTN_PLUGIN_VERSION, true);
+        wp_localize_script('ktn-cinema-guides', 'ktn_guides', array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce'    => wp_create_nonce('ktn_guides_nonce')
+        ));
+
         ob_start();
         ?>
         <div id="ktn-guides-root" class="ktn-guides-container">

@@ -770,11 +770,42 @@ function ktn_get_movie_display_title($scraped_title) {
 }
 
 /**
+ * Check if the current page contains the Cinema Guides or Box Office shortcodes or matching slugs
+ */
+function ktn_is_cinema_guides_page() {
+    if (is_page('cinema-guides') || is_page('دليل السينما') || get_query_var('movies_status') === 'box-office') {
+        return true;
+    }
+    
+    global $post;
+    if (is_a($post, 'WP_Post')) {
+        // Standard post content check
+        if (has_shortcode($post->post_content, 'ktn_cinema_guides') || 
+            has_shortcode($post->post_content, 'ktn_box_office') ||
+            stripos($post->post_content, 'ktn_cinema_guides') !== false ||
+            stripos($post->post_content, 'ktn_box_office') !== false) {
+            return true;
+        }
+        
+        // Elementor page builder storage check
+        $elementor_data = get_post_meta($post->ID, '_elementor_data', true);
+        if (!empty($elementor_data)) {
+            if (stripos($elementor_data, 'ktn_cinema_guides') !== false || 
+                stripos($elementor_data, 'ktn_box_office') !== false) {
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
+/**
  * Force full-width layout by adding body class and disabling active sidebars on Cinema Guides pages
  */
 add_filter('body_class', 'ktn_add_body_class_for_guides');
 function ktn_add_body_class_for_guides($classes) {
-    if (is_page('cinema-guides') || is_page('دليل السينما') || get_query_var('movies_status') === 'box-office') {
+    if (ktn_is_cinema_guides_page()) {
         $classes[] = 'ktn-full-width-page';
     }
     return $classes;
@@ -782,7 +813,7 @@ function ktn_add_body_class_for_guides($classes) {
 
 add_filter('is_active_sidebar', 'ktn_disable_sidebar_on_guides', 999, 1);
 function ktn_disable_sidebar_on_guides($is_active) {
-    if (is_page('cinema-guides') || is_page('دليل السينما') || get_query_var('movies_status') === 'box-office') {
+    if (ktn_is_cinema_guides_page()) {
         return false;
     }
     return $is_active;
