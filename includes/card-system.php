@@ -122,7 +122,9 @@ class Ktn_Card_System
         $post_id = $post->ID;
         $title = get_the_title($post_id);
         $permalink = get_permalink($post_id);
+        $is_ar = (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0);
 
+        // Cover image hierarchy
         $cover_url = get_post_meta($post_id, '_ktn_cinema_cover_image', true);
         if (!$cover_url) {
             $cover_url = has_post_thumbnail($post_id) ? get_the_post_thumbnail_url($post_id, 'large') : '';
@@ -130,14 +132,16 @@ class Ktn_Card_System
         if (!$cover_url) {
             $cover_url = get_post_meta($post_id, '_ktn_cinema_logo', true);
         }
-        $media_url = $cover_url ? $cover_url : KTN_PLUGIN_URL . 'assets/img/no-logo.png';
-        
-        $city = get_post_meta($post_id, '_ktn_cinema_city', true);
-        $area = get_post_meta($post_id, '_ktn_cinema_area', true);
-        $rating = get_post_meta($post_id, '_ktn_cinema_rating', true);
-        $address = get_post_meta($post_id, '_ktn_cinema_address', true);
+        $media_url = $cover_url ?: KTN_PLUGIN_URL . 'assets/img/no-logo.png';
 
-        // Merge default settings
+        $city    = get_post_meta($post_id, '_ktn_cinema_city', true);
+        $area    = get_post_meta($post_id, '_ktn_cinema_area', true);
+        $rating  = get_post_meta($post_id, '_ktn_cinema_rating', true);
+        $location_str = trim(($area ? $area . '، ' : '') . ($city ?: ''), '،  ');
+        if (!$location_str) {
+            $location_str = get_post_meta($post_id, '_ktn_cinema_address', true);
+        }
+
         $defaults = array(
             'show_rating'   => true,
             'show_location' => true,
@@ -151,54 +155,41 @@ class Ktn_Card_System
         ob_start();
         ?>
         <div class="ktn-premium-cinema-card" data-cinema-id="<?php echo esc_attr($post_id); ?>">
-            <div class="ktn-card-inner">
-                <div class="ktn-card-media-box">
-                    <a href="<?php echo esc_url($permalink); ?>">
-                        <img src="<?php echo esc_url($media_url); ?>" alt="<?php echo esc_attr($title); ?>" class="ktn-cinema-logo" loading="lazy">
-                    </a>
-                </div>
-                
-                <div class="ktn-card-body">
-                    <div class="ktn-card-header-row">
-                        <h3 class="ktn-card-title">
-                            <a href="<?php echo esc_url($permalink); ?>"><?php echo esc_html($title); ?></a>
-                        </h3>
-                        <?php if ($settings['show_rating'] && $rating): ?>
-                            <div class="ktn-card-stars">
-                                <span class="dashicons dashicons-star-filled"></span>
-                                <span><?php echo esc_html($rating); ?></span>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+            <a href="<?php echo esc_url($permalink); ?>" class="ktn-cinema-card-link">
 
-                    <?php if ($settings['show_location'] && ($area || $city)): ?>
-                        <div class="ktn-card-location">
-                            <span class="dashicons dashicons-location"></span>
-                            <span><?php echo esc_html(trim($area . ', ' . $city, ', ')); ?></span>
+                <!-- Image with overlay -->
+                <div class="ktn-cinema-img-wrap">
+                    <img src="<?php echo esc_url($media_url); ?>" alt="<?php echo esc_attr($title); ?>" class="ktn-cinema-img" loading="lazy">
+                    <div class="ktn-cinema-img-overlay"></div>
+
+                    <?php if ($settings['show_rating'] && $rating): ?>
+                        <div class="ktn-cinema-rating-badge">
+                            <span class="dashicons dashicons-star-filled"></span>
+                            <?php echo esc_html(number_format((float)$rating, 1)); ?>
                         </div>
                     <?php endif; ?>
+                </div>
 
-                    <?php if ($settings['show_address'] && $address): ?>
-                        <p class="ktn-card-address-snippet"><?php echo wp_trim_words(esc_html($address), 8); ?></p>
-                    <?php endif; ?>
+                <!-- Card Body -->
+                <div class="ktn-cinema-body">
+                    <h3 class="ktn-cinema-name"><?php echo esc_html($title); ?></h3>
 
-                    <?php if ($settings['show_count'] && $settings['movie_count'] > 0): ?>
-                        <div class="ktn-card-movie-count">
-                            <span class="dashicons dashicons-video-alt3"></span>
-                            <span><?php printf(_n('%d Movie Playing', '%d Movies Playing', $settings['movie_count'], 'kontentainment'), $settings['movie_count']); ?></span>
+                    <?php if ($settings['show_location'] && $location_str): ?>
+                        <div class="ktn-cinema-location">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span><?php echo esc_html($location_str); ?></span>
                         </div>
                     <?php endif; ?>
 
                     <?php if ($settings['show_cta']): ?>
-                        <div class="ktn-card-footer">
-                            <a href="<?php echo esc_url($permalink); ?>" class="ktn-card-cta">
-                                <?php _e('View Cinema', 'kontentainment'); ?>
-                                <span class="dashicons dashicons-arrow-right-alt2"></span>
-                            </a>
+                        <div class="ktn-cinema-cta">
+                            <span><?php echo $is_ar ? 'عرض السينما' : __('View Cinema', 'kontentainment'); ?></span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                         </div>
                     <?php endif; ?>
                 </div>
-            </div>
+
+            </a>
         </div>
         <?php
         return ob_get_clean();

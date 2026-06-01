@@ -72,13 +72,13 @@ class Ktn_Cinema_Guides
         ?>
         <div id="ktn-guides-root" class="ktn-guides-container">
             <header class="ktn-guides-header">
-                <h1><?php _e('Cinema Guides', 'kontentainment'); ?></h1>
-                <p class="ktn-subtitle"><?php _e('Explore the latest movies and top-rated cinemas near you.', 'kontentainment'); ?></p>
+                <h1><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'دليل السينما' : __('Cinema Guides', 'kontentainment'); ?></h1>
+                <p class="ktn-subtitle"><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'اكتشف أحدث الأفلام وأفضل السينمات القريبة منك' : __('Explore the latest movies and top-rated cinemas near you.', 'kontentainment'); ?></p>
             </header>
 
             <nav class="ktn-guides-tabs">
-                <button class="ktn-tab-btn active" data-tab="movies"><?php _e('Movies', 'kontentainment'); ?></button>
-                <button class="ktn-tab-btn" data-tab="cinemas"><?php _e('Cinemas', 'kontentainment'); ?></button>
+                <button class="ktn-tab-btn active" data-tab="movies"><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'الأفلام' : __('Movies', 'kontentainment'); ?></button>
+                <button class="ktn-tab-btn" data-tab="cinemas"><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'سينمات' : __('Cinemas', 'kontentainment'); ?></button>
                 <button class="ktn-tab-btn" data-tab="box-office"><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'بوكس أوفيس' : __('Box Office', 'kontentainment'); ?></button>
             </nav>
 
@@ -87,9 +87,9 @@ class Ktn_Cinema_Guides
                 <div id="tab-movies" class="ktn-tab-panel active">
                     <div class="ktn-filter-row">
                         <div class="ktn-sub-tabs" id="movie-lang-filters">
-                            <button class="ktn-sub-tab active" data-lang="all"><?php _e('All Movies', 'kontentainment'); ?></button>
-                            <button class="ktn-sub-tab" data-lang="en"><?php _e('English Movies', 'kontentainment'); ?></button>
-                            <button class="ktn-sub-tab" data-lang="ar"><?php _e('Arabic Movies', 'kontentainment'); ?></button>
+                            <button class="ktn-sub-tab active" data-lang="all"><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'كل الأفلام' : __('All Movies', 'kontentainment'); ?></button>
+                            <button class="ktn-sub-tab" data-lang="en"><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'الأفلام الأجنبية' : __('English Movies', 'kontentainment'); ?></button>
+                            <button class="ktn-sub-tab" data-lang="ar"><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'الأفلام العربية' : __('Arabic Movies', 'kontentainment'); ?></button>
                         </div>
                         
                         <div class="ktn-search-box">
@@ -137,7 +137,7 @@ class Ktn_Cinema_Guides
                 <div id="tab-cinemas" class="ktn-tab-panel">
                     <div class="ktn-filter-row">
                         <div class="ktn-search-box">
-                            <input type="text" id="cinema-search" placeholder="<?php _e('Type Your Cinema Name', 'kontentainment'); ?>">
+                            <input type="text" id="cinema-search" placeholder="<?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'اكتب اسم السينما' : __('Type Your Cinema Name', 'kontentainment'); ?>">
                             <span class="dashicons dashicons-search"></span>
                         </div>
 
@@ -160,7 +160,7 @@ class Ktn_Cinema_Guides
                         </div>
                     </div>
 
-                    <div id="cinema-results" class="ktn-results-grid">
+                    <div id="cinema-results" class="ktn-results-grid ktn-cinema-grid">
                         <?php echo $this->get_cinemas_html(); ?>
                     </div>
                 </div>

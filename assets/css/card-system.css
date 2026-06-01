@@ -135,134 +135,168 @@
     gap: 10px;
 }
 
-/* CINEMA CARD: Premium Venue Card */
+/* CINEMA CARD: Premium Modern Redesign */
 .ktn-premium-cinema-card {
     background: #fff;
-    border-radius: var(--ktn-radius-lg);
-    box-shadow: var(--ktn-shadow-light);
-    border: 1px solid #F3F4F6;
+    border-radius: 18px;
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: transform 0.32s cubic-bezier(0.175,0.885,0.32,1.275), box-shadow 0.32s ease;
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
 .ktn-premium-cinema-card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--ktn-shadow-md);
-    border-color: #E5E7EB;
+    transform: translateY(-7px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.13);
 }
 
-.ktn-premium-cinema-card .ktn-card-media-box {
-    position: relative;
-    height: 180px;
-    background: #F1F5F9;
+.ktn-cinema-card-link {
+    text-decoration: none !important;
+    color: inherit;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* ── Image Section ── */
+.ktn-cinema-img-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
     overflow: hidden;
     flex-shrink: 0;
+    background: #111;
 }
 
-.ktn-premium-cinema-card .ktn-cinema-logo {
+.ktn-cinema-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-    filter: brightness(0.95);
+    display: block;
+    transition: transform 0.55s cubic-bezier(0.165,0.84,0.44,1), filter 0.35s ease;
+    filter: brightness(0.92);
 }
 
-.ktn-premium-cinema-card:hover .ktn-cinema-logo {
-    transform: scale(1.1);
+.ktn-premium-cinema-card:hover .ktn-cinema-img {
+    transform: scale(1.07);
+    filter: brightness(0.82);
 }
 
-.ktn-premium-cinema-card .ktn-card-body {
-    padding: 15px;
+.ktn-cinema-img-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.18) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+/* Rating Badge */
+.ktn-cinema-rating-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(0,0,0,0.72);
+    backdrop-filter: blur(8px);
+    color: #FFD700;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 2;
+}
+
+.ktn-cinema-rating-badge .dashicons {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+}
+
+/* ── Card Body ── */
+.ktn-cinema-body {
+    padding: 16px 18px 18px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    gap: 10px;
 }
 
-.ktn-premium-cinema-card .ktn-card-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-.ktn-premium-cinema-card .ktn-card-title {
+.ktn-cinema-name {
     margin: 0 !important;
-    font-size: 1rem;
-    font-weight: 700;
-    line-height: 1.3;
-    color: var(--ktn-text-primary);
-    flex: 1;
+    font-size: 1.05rem;
+    font-weight: 800;
+    line-height: 1.35;
+    color: #0f172a;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
-.ktn-premium-cinema-card .ktn-card-stars {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    background: #FFFBEB;
-    color: #B45309;
-    padding: 2px 6px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 800;
-    flex-shrink: 0;
-}
-
-.ktn-premium-cinema-card .ktn-card-location {
+.ktn-cinema-location {
     display: flex;
     align-items: center;
     gap: 5px;
-    color: var(--ktn-text-secondary);
+    color: #64748b;
     font-size: 13px;
-    margin-bottom: 15px;
     font-weight: 500;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
 }
 
-.ktn-premium-cinema-card .ktn-card-footer {
-    border-top: 1px solid #F3F4F6;
-    padding-top: 12px;
+.ktn-cinema-location svg {
+    flex-shrink: 0;
+    color: #94a3b8;
+}
+
+/* CTA */
+.ktn-cinema-cta {
     margin-top: auto;
-    display: flex;
-    justify-content: center;
-}
-
-.ktn-premium-cinema-card .ktn-card-cta {
-    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 7px;
+    padding: 10px 16px;
+    background: #0f172a;
+    color: #ffffff;
+    border-radius: 10px;
     font-size: 13px;
     font-weight: 700;
-    color: #2271b1;
-    text-decoration: none !important;
-    padding: 8px;
-    border-radius: 8px;
-    background: rgba(34, 113, 177, 0.05);
-    transition: all 0.2s ease;
+    transition: background 0.2s ease, gap 0.2s ease;
+    text-align: center;
 }
 
-.ktn-premium-cinema-card .ktn-card-cta:hover {
-    background: #2271b1;
-    color: #fff;
+.ktn-cinema-cta svg {
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
 }
 
-/* RESPONSIVE CARD ADJUSTMENTS */
+.ktn-premium-cinema-card:hover .ktn-cinema-cta {
+    background: #1e3a5f;
+    gap: 10px;
+}
+
+.ktn-premium-cinema-card:hover .ktn-cinema-cta svg {
+    transform: translateX(-3px);
+}
+
+/* ── Cinema 4/2 Column Grid ── */
+.ktn-cinema-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 22px !important;
+    align-items: stretch;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+    .ktn-cinema-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
 @media (max-width: 768px) {
     .ktn-premium-movie-card .ktn-card-overlay {
         padding: 15px;
@@ -276,16 +310,15 @@
         padding: 4px 8px;
         font-size: 11px;
     }
-    
-    .ktn-premium-cinema-card .ktn-card-media-box {
-        height: 120px;
-        padding: 15px;
+    .ktn-cinema-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 14px !important;
     }
-    .ktn-premium-cinema-card .ktn-card-title {
-        font-size: 0.9rem;
+    .ktn-cinema-name {
+        font-size: 0.92rem;
     }
-    .ktn-premium-cinema-card .ktn-card-body {
-        padding: 12px;
+    .ktn-cinema-body {
+        padding: 12px 14px 14px;
     }
 }
 
@@ -296,13 +329,15 @@
     .ktn-premium-movie-card .ktn-card-genre {
         font-size: 9px;
     }
-    .ktn-premium-cinema-card .ktn-card-media-box {
-        height: 100px;
+    .ktn-cinema-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
     }
-    .ktn-premium-cinema-card .ktn-card-title {
-        font-size: 0.85rem;
+    .ktn-cinema-img-wrap {
+        aspect-ratio: 4 / 3;
     }
-    .ktn-premium-cinema-card .ktn-card-location {
+    .ktn-cinema-cta {
         font-size: 12px;
+        padding: 8px 12px;
     }
 }
