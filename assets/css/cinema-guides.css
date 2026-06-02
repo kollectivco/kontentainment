@@ -3,24 +3,14 @@
  */
 
 .ktn-guides-container {
-    width: 95vw !important;
-    max-width: 1400px !important;
+    width: 100% !important;
+    max-width: 100% !important;
     position: relative !important;
-    left: 50% !important;
-    right: auto !important;
-    transform: translateX(-50%) !important;
     box-sizing: border-box !important;
     margin-top: 40px !important;
     margin-bottom: 40px !important;
     font-family: inherit;
     color: #333;
-}
-
-body.rtl .ktn-guides-container,
-html[dir="rtl"] .ktn-guides-container {
-    left: auto !important;
-    right: 50% !important;
-    transform: translateX(50%) !important;
 }
 
 .ktn-guides-header {
