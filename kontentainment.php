@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment
  * Plugin URI:  https://kollectiv.net
  * Description: A premium movie and cinema discovery platform.
- * Version:     2.0.0
+ * Version:     2.0.1
  * Author:      Kollectiv
  * Author URI:  https://kollectiv.net
  * License:     GPL2
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KTN_PLUGIN_VERSION', '2.0.0');
+define('KTN_PLUGIN_VERSION', '2.0.1');
 define('KTN_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('KTN_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('KTN_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -127,7 +127,10 @@ function ktn_execute_2h_auto_sync() {
 /**
  * Legacy 12-Hour Sync Job (kept for manual/all active)
  */
-add_action('ktn_sync_all_cinemas_cron', 'ktn_execute_legacy_sync');
+add_action('wp_ajax_nopriv_ktn_fetch_daily_box_office', 'ktn_fetch_daily_box_office');
+
+add_action('ktn_async_fetch_box_office', array('Ktn_Box_Office_Scraper', 'scrape_remote_data'));
+
 function ktn_execute_legacy_sync() {
     if (class_exists('Ktn_Cinema_Importer')) {
         Ktn_Cinema_Importer::syncAllCinemas(false); // Sync all active regardless of 2h toggle

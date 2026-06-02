@@ -15,6 +15,14 @@ class Ktn_Box_Office_Scraper
             return $cached;
         }
 
+        // If frontend, do not hang the page. Schedule a background event and return empty.
+        if (!is_admin() && !wp_doing_ajax() && !$force_refresh) {
+            if (!wp_next_scheduled('ktn_async_fetch_box_office')) {
+                wp_schedule_single_event(time(), 'ktn_async_fetch_box_office');
+            }
+            return array();
+        }
+
         return self::scrape_remote_data();
     }
 
@@ -24,7 +32,7 @@ class Ktn_Box_Office_Scraper
             'headers' => array(
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
             ),
-            'timeout' => 30,
+            'timeout' => 5,
             'sslverify' => false
         );
 
