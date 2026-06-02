@@ -307,6 +307,11 @@ function ktn_process_and_save_data($post_id, $data, $imdb_id, $type)
     update_post_meta($post_id, '_movie_writers', array_map('sanitize_text_field', array_unique($writers)));
     update_post_meta($post_id, '_movie_cast', wp_slash(wp_json_encode($cast, JSON_UNESCAPED_UNICODE)));
 
+    // Clear Arabic caches so they regenerate correctly
+    delete_post_meta($post_id, '_movie_cast_arabic');
+    delete_post_meta($post_id, '_movie_director_arabic');
+    delete_post_meta($post_id, '_movie_writers_arabic');
+
     if (!empty($data['videos']['results'])) {
         foreach ($data['videos']['results'] as $vid) {
             if ($vid['type'] === 'Trailer' && $vid['site'] === 'YouTube') {
