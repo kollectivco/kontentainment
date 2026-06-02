@@ -794,7 +794,7 @@ function ktn_get_movie_display_title($scraped_title) {
  * Check if the current page contains the Cinema Guides or Box Office shortcodes or matching slugs
  */
 function ktn_is_cinema_guides_page() {
-    if (is_page('cinema-guides') || is_page('دليل السينما') || get_query_var('movies_status') === 'box-office') {
+    if (is_page('cinema-guides') || is_page('cinema-guide') || is_page('دليل السينما') || get_query_var('movies_status') === 'box-office') {
         return true;
     }
     
@@ -807,7 +807,8 @@ function ktn_is_cinema_guides_page() {
             stripos($post->post_content, 'ktn_box_office') !== false) {
             return true;
         }
-        
+
+
         // Elementor page builder storage check
         $elementor_data = get_post_meta($post->ID, '_elementor_data', true);
         if (!empty($elementor_data)) {
