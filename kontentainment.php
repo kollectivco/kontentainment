@@ -3,7 +3,7 @@
  * Plugin Name: Kontentainment
  * Plugin URI:  https://kollectiv.net
  * Description: A premium movie and cinema discovery platform.
- * Version:     2.0.3
+ * Version:     2.0.4
  * Author:      Kollectiv
  * Author URI:  https://kollectiv.net
  * License:     GPL2
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('KTN_PLUGIN_VERSION', '2.0.3');
+define('KTN_PLUGIN_VERSION', '2.0.4');
 define('KTN_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('KTN_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('KTN_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -104,6 +104,12 @@ function ktn_add_cron_schedules($schedules) {
             'display'  => __('Every 2 Hours', 'kontentainment'),
         );
     }
+    if (!isset($schedules['three_hours'])) {
+        $schedules['three_hours'] = array(
+            'interval' => 3 * HOUR_IN_SECONDS,
+            'display'  => __('Every 3 Hours', 'kontentainment'),
+        );
+    }
     if (!isset($schedules['twelve_hours'])) {
         $schedules['twelve_hours'] = array(
             'interval' => 12 * HOUR_IN_SECONDS,
@@ -129,7 +135,7 @@ function ktn_execute_2h_auto_sync() {
  */
 add_action('wp_ajax_nopriv_ktn_fetch_daily_box_office', 'ktn_fetch_daily_box_office');
 
-add_action('ktn_async_fetch_box_office', array('Ktn_Box_Office_Scraper', 'scrape_remote_data'));
+add_action('ktn_box_office_background_sync', array('Ktn_Box_Office_Scraper', 'background_sync'));
 
 function ktn_execute_legacy_sync() {
     if (class_exists('Ktn_Cinema_Importer')) {
@@ -183,6 +189,11 @@ function ktn_activate_plugin()
     if (!wp_next_scheduled('ktn_sync_all_cinemas_cron')) {
         wp_schedule_event(time(), 'twelve_hours', 'ktn_sync_all_cinemas_cron');
     }
+
+    // Schedule 3-hour Box Office sync
+    if (!wp_next_scheduled('ktn_box_office_background_sync')) {
+        wp_schedule_event(time(), 'three_hours', 'ktn_box_office_background_sync');
+    }
     
     flush_rewrite_rules();
 }
@@ -192,5 +203,6 @@ function ktn_deactivate_plugin()
 {
     wp_clear_scheduled_hook('ktn_cinema_auto_sync_job');
     wp_clear_scheduled_hook('ktn_sync_all_cinemas_cron');
+    wp_clear_scheduled_hook('ktn_box_office_background_sync');
     flush_rewrite_rules();
 }

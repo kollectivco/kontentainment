@@ -8,22 +8,20 @@ class Ktn_Box_Office_Scraper
     private static $TRANSIENT_KEY = 'ktn_box_office_data';
     private static $SOURCE_URL = 'https://cinema-track.com';
 
-    public static function fetch_box_office_data($force_refresh = false)
+    public static function fetch_box_office_data()
     {
-        $cached = get_transient(self::$TRANSIENT_KEY);
-        if ($cached !== false && !$force_refresh) {
+        // Always read from permanent local storage. No live scraping on frontend.
+        $cached = get_option('ktn_box_office_data_permanent');
+        if ($cached !== false && !empty($cached)) {
             return $cached;
         }
 
-        // If frontend, do not hang the page. Schedule a background event and return empty.
-        if (!is_admin() && !wp_doing_ajax() && !$force_refresh) {
-            if (!wp_next_scheduled('ktn_async_fetch_box_office')) {
-                wp_schedule_single_event(time(), 'ktn_async_fetch_box_office');
-            }
-            return array();
-        }
+        return array();
+    }
 
-        return self::scrape_remote_data();
+    public static function background_sync()
+    {
+        self::scrape_remote_data();
     }
 
     public static function scrape_remote_data()
@@ -32,7 +30,7 @@ class Ktn_Box_Office_Scraper
             'headers' => array(
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
             ),
-            'timeout' => 5,
+            'timeout' => 30,
             'sslverify' => false
         );
 
@@ -120,8 +118,11 @@ class Ktn_Box_Office_Scraper
             'scraped_at'   => current_time('mysql')
         );
 
-        // Cache for 12 hours
+        // Cache for 12 hours (kept for compatibility)
         set_transient(self::$TRANSIENT_KEY, $data, 12 * HOUR_IN_SECONDS);
+        
+        // Permanent storage for instant frontend loading
+        update_option('ktn_box_office_data_permanent', $data, false);
         update_option('ktn_box_office_last_synced', current_time('mysql'));
 
         // Sync local movies box office stats!
