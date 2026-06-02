@@ -395,13 +395,7 @@ if (!function_exists('ktn_bo_render_weekly_grid')) {
             </div>
             <?php endforeach; ?>
         </div>
-                        <?php endif; ?>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <?php endforeach; ?>
-    </div>
-    <?php
-    return ob_get_clean();
+        <?php
+        return ob_get_clean();
+    }
 }
