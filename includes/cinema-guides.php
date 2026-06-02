@@ -70,6 +70,9 @@ class Ktn_Cinema_Guides
 
         ob_start();
         ?>
+        <!-- Hardcode CSS Link to ensure it loads even if enqueuing fails -->
+        <link rel="stylesheet" href="<?php echo esc_url(KTN_PLUGIN_URL . 'assets/css/cinema-guides.css?ver=' . KTN_PLUGIN_VERSION); ?>" type="text/css" media="all" />
+        
         <div id="ktn-guides-root" class="ktn-guides-container">
             <header class="ktn-guides-header">
                 <h1><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'دليل السينما' : __('Cinema Guides', 'kontentainment'); ?></h1>
