@@ -3,19 +3,12 @@
  */
 
 .ktn-guides-container {
-    width: 90vw !important;
-    max-width: 1400px !important;
+    width: 100% !important;
+    max-width: 100% !important;
     position: relative !important;
-    left: auto !important;
-    right: auto !important;
-    transform: none !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
     box-sizing: border-box !important;
     margin-top: 40px !important;
     margin-bottom: 40px !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
     font-family: inherit;
     color: #333;
 }
@@ -26,15 +19,23 @@
 }
 
 .ktn-guides-header h1 {
-    font-size: 36px;
-    font-weight: 800;
-    margin: 0 0 10px 0;
-    color: #111;
+    font-size: 36px !important;
+    font-weight: 800 !important;
+    margin: 0 0 10px 0 !important;
+    color: #111 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    line-height: 1.4 !important;
+    display: block !important;
 }
 
 .ktn-guides-header .ktn-subtitle {
-    font-size: 16px;
-    color: #666;
+    font-size: 16px !important;
+    color: #666 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    display: block !important;
 }
 
 /* Tabs */
@@ -52,15 +53,19 @@
 }
 
 .ktn-tab-btn {
-    border: none;
-    background: transparent;
-    padding: 10px 35px;
-    border-radius: 10px;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    color: #64748b;
+    border: none !important;
+    background: transparent !important;
+    padding: 10px 35px !important;
+    border-radius: 10px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    color: #64748b !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    line-height: 1.5 !important;
 }
 
 .ktn-tab-btn:hover {
@@ -89,26 +94,34 @@
 }
 
 .ktn-sub-tabs {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
+    display: flex !important;
+    gap: 15px !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
 }
 
 .ktn-sub-tab {
-    border: none;
-    background: transparent;
-    font-size: 14px;
-    font-weight: 600;
-    color: #888;
-    padding: 8px 15px;
-    border-radius: 30px;
-    cursor: pointer;
-    transition: all 0.2s;
+    border: none !important;
+    background: transparent !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    padding: 8px 16px !important;
+    border-radius: 20px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    display: inline-block !important;
+    visibility: visible !important;
+}
+
+.ktn-sub-tab:hover {
+    color: #1e293b !important;
+    background: #f8fafc !important;
 }
 
 .ktn-sub-tab.active {
-    background: #111;
-    color: #fff;
+    background: #0f172a !important;
+    color: #ffffff !important;
 }
 
 .ktn-search-box {
@@ -145,8 +158,11 @@
 }
 
 .ktn-dropdown-wrapper {
-    flex: 1;
-    min-width: 170px;
+    flex: 1 !important;
+    min-width: 170px !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .ktn-select {
@@ -280,7 +296,7 @@
 
 @media (max-width: 600px) {
     .ktn-guides-container {
-        width: 95vw !important;
+        width: 100% !important;
         padding-left: 15px !important;
         padding-right: 15px !important;
         margin-top: 20px !important;
