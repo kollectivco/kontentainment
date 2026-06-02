@@ -305,7 +305,7 @@ function ktn_process_and_save_data($post_id, $data, $imdb_id, $type)
 
     update_post_meta($post_id, '_movie_director', sanitize_text_field($director));
     update_post_meta($post_id, '_movie_writers', array_map('sanitize_text_field', array_unique($writers)));
-    update_post_meta($post_id, '_movie_cast', wp_json_encode($cast));
+    update_post_meta($post_id, '_movie_cast', wp_slash(wp_json_encode($cast, JSON_UNESCAPED_UNICODE)));
 
     if (!empty($data['videos']['results'])) {
         foreach ($data['videos']['results'] as $vid) {
