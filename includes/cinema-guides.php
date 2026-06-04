@@ -89,7 +89,7 @@ class Ktn_Cinema_Guides
                 <!-- MOVIES TAB -->
                 <div id="tab-movies" class="ktn-tab-panel active">
                     <div class="ktn-filter-row">
-                        <div class="ktn-sub-tabs" id="movie-lang-filters">
+                        <div class="ktn-sub-tabs" id="ktn-lang-filters-wrap">
                             <button class="ktn-sub-tab active" data-lang="all"><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'كل الأفلام' : __('All Movies', 'kontentainment'); ?></button>
                             <button class="ktn-sub-tab" data-lang="en"><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'الأفلام الأجنبية' : __('English Movies', 'kontentainment'); ?></button>
                             <button class="ktn-sub-tab" data-lang="ar"><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'الأفلام العربية' : __('Arabic Movies', 'kontentainment'); ?></button>
