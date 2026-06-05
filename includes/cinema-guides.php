@@ -73,6 +73,33 @@ class Ktn_Cinema_Guides
         <!-- Hardcode CSS Link to ensure it loads even if enqueuing fails -->
         <link rel="stylesheet" href="<?php echo esc_url(KTN_PLUGIN_URL . 'assets/css/cinema-guides.css?ver=' . KTN_PLUGIN_VERSION); ?>" type="text/css" media="all" />
         
+        <!-- Force full-width by overriding Foxiz/Elementor parent wrappers on this page only -->
+        <style>
+        body.ktn-full-width-page .foxiz-wrap,
+        body.ktn-full-width-page .foxiz-content,
+        body.ktn-full-width-page .site-container,
+        body.ktn-full-width-page .site-main,
+        body.ktn-full-width-page .entry-content,
+        body.ktn-full-width-page .content-area,
+        body.ktn-full-width-page .page-content,
+        body.ktn-full-width-page .wp-block-post-content,
+        body.ktn-full-width-page .elementor-section-wrap,
+        body.ktn-full-width-page .elementor-widget-container,
+        body.ktn-full-width-page .elementor-container,
+        body.ktn-full-width-page .e-con-inner,
+        body.ktn-full-width-page .elementor-widget-wrap {
+            max-width: 100% !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        body.ktn-full-width-page #ktn-guides-root {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 20px !important;
+            box-sizing: border-box !important;
+        }
+        </style>
+        
         <div id="ktn-guides-root" class="ktn-guides-container">
             <header class="ktn-guides-header">
                 <h1><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'دليل السينما' : __('Cinema Guides', 'kontentainment'); ?></h1>
