@@ -18,9 +18,7 @@
             $('#tab-' + tab).addClass('active');
 
             currentTab = tab;
-            if (tab !== 'box-office') {
-                applyFilters();
-            }
+            applyFilters();
         });
 
         // Filter Handlers
@@ -132,5 +130,52 @@
             });
         }
     });
+
+    // ============================================================
+    // FULL-WIDTH ENFORCER
+    // Walk up the DOM tree from our container and force every
+    // parent element to be full-width. This is the nuclear option
+    // that works regardless of theme class names.
+    // ============================================================
+    function enforceFullWidth() {
+        var el = document.getElementById('ktn-guides-root');
+        if (!el) return;
+
+        var node = el.parentElement;
+        var depth = 0;
+
+        while (node && node !== document.body && depth < 15) {
+            var tag = node.tagName.toLowerCase();
+            // Skip html/body - we only want content wrappers
+            if (tag !== 'html' && tag !== 'body') {
+                var computed = window.getComputedStyle(node);
+                var mw = parseInt(computed.maxWidth, 10);
+                var w  = parseInt(computed.width, 10);
+
+                // If this element has a max-width less than full viewport, break it open
+                if ((mw > 0 && mw < window.innerWidth - 20) ||
+                    (w  > 0 && w  < window.innerWidth - 20)) {
+                    node.style.setProperty('max-width', '100%', 'important');
+                    node.style.setProperty('width',     '100%', 'important');
+                    node.style.setProperty('padding-left',  '0', 'important');
+                    node.style.setProperty('padding-right', '0', 'important');
+                    node.style.setProperty('margin-left',   '0', 'important');
+                    node.style.setProperty('margin-right',  '0', 'important');
+                    node.style.setProperty('float', 'none', 'important');
+                }
+            }
+            node = node.parentElement;
+            depth++;
+        }
+
+        // Restore padding on our own container
+        el.style.setProperty('padding-left',  '20px', 'important');
+        el.style.setProperty('padding-right', '20px', 'important');
+    }
+
+    // Run immediately and after DOM is ready
+    enforceFullWidth();
+    $(document).ready(function () { enforceFullWidth(); });
+    $(window).on('load', function () { enforceFullWidth(); });
 
 })(jQuery);

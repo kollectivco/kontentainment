@@ -109,7 +109,6 @@ class Ktn_Cinema_Guides
             <nav class="ktn-guides-tabs">
                 <button class="ktn-tab-btn active" data-tab="movies"><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'الأفلام' : __('Movies', 'kontentainment'); ?></button>
                 <button class="ktn-tab-btn" data-tab="cinemas"><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'سينمات' : __('Cinemas', 'kontentainment'); ?></button>
-                <button class="ktn-tab-btn" data-tab="box-office"><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'بوكس أوفيس' : __('Box Office', 'kontentainment'); ?></button>
             </nav>
 
             <div class="ktn-guides-content">
@@ -195,16 +194,6 @@ class Ktn_Cinema_Guides
                     </div>
                 </div>
 
-                <!-- BOX OFFICE TAB -->
-                <div id="tab-box-office" class="ktn-tab-panel">
-                    <?php 
-                    global $ktn_is_box_office_shortcode;
-                    $old_flag = $ktn_is_box_office_shortcode;
-                    $ktn_is_box_office_shortcode = true;
-                    include KTN_PLUGIN_DIR . 'templates/page-box-office.php';
-                    $ktn_is_box_office_shortcode = $old_flag;
-                    ?>
-                </div>
             </div>
         </div>
         <?php
