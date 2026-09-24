@@ -208,11 +208,19 @@ function ktn_translate_frontend_post_titles($title, $post_id = 0)
 
         $original_lang = get_post_meta($post_id, '_movie_original_language', true);
         if ($original_lang === 'ar') {
-            return ktn_get_arabic_movie_title($post_id, $title);
+            $arabic_title = get_post_meta($post_id, '_movie_title_arabic', true);
+            if (!empty($arabic_title)) {
+                return $arabic_title;
+            }
+            $original_title = get_post_meta($post_id, '_movie_original_title', true);
+            if (!empty($original_title)) {
+                return $original_title;
+            }
         }
+        
         $original_title = get_post_meta($post_id, '_movie_original_title', true);
-        if (!empty($original_title)) {
-            return $original_title;
+        if (!empty($original_title) && $original_lang !== 'en') {
+            // Optional: You could return original_title here if needed, but sticking to WP title is safer if not AR.
         }
     }
     return $title;

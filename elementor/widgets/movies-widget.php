@@ -61,13 +61,21 @@ class KTN_Movies_Widget extends KTN_Elementor_Base_Widget {
         ]);
 
         // Cinema dropdown
-        $cinemas = get_posts(['post_type' => 'ktn_cinema', 'posts_per_page' => -1]);
-        $cinema_options = [];
-        if (!empty($cinemas)) {
-            foreach ($cinemas as $cinema) {
-                $cinema_options[$cinema->ID] = $cinema->post_title;
+        $cinemas_cache = get_transient('ktn_all_cinemas_list');
+        if (false === $cinemas_cache) {
+            $cinemas_query = get_posts([
+                'post_type' => 'ktn_cinema', 
+                'posts_per_page' => 500, // Reasonable cap
+                'post_status' => 'publish',
+            ]);
+            $cinemas_cache = [];
+            foreach ($cinemas_query as $c) {
+                $cinemas_cache[$c->ID] = $c->post_title;
             }
+            set_transient('ktn_all_cinemas_list', $cinemas_cache, 12 * HOUR_IN_SECONDS);
         }
+        $cinema_options = !empty($cinemas_cache) ? $cinemas_cache : [];
+        
         $this->add_control('cinema_id', [
             'label' => esc_html__('Select Cinema', 'kontentainment'),
             'type' => \Elementor\Controls_Manager::SELECT,
