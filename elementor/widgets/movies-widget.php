@@ -146,15 +146,16 @@ class KTN_Movies_Widget extends KTN_Elementor_Base_Widget {
         if ($settings['source'] === 'now_playing') {
             $today = date('Y-m-d');
             $now_playing_ids = $wpdb->get_col($wpdb->prepare(
-                "SELECT DISTINCT matched_movie_id FROM {$wpdb->prefix}ktn_showtimes WHERE matched_movie_id IS NOT NULL AND (show_date >= %s OR show_date = 'Today')",
+                "SELECT DISTINCT matched_movie_id FROM {$wpdb->prefix}ktn_showtimes WHERE matched_movie_id IS NOT NULL AND (show_date >= %s OR show_date = 'Today') ORDER BY id DESC",
                 $today
             ));
             if (!empty($now_playing_ids)) {
                 $args['post__in'] = $now_playing_ids;
+                $args['orderby'] = 'post__in';
             } else {
                 $args['post__in'] = [0];
             }
-        } 
+        }
         elseif ($settings['source'] === 'coming_soon') {
             $today = date('Y-m-d');
             $now_playing_ids = $wpdb->get_col($wpdb->prepare(

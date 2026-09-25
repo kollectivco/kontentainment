@@ -269,7 +269,33 @@ class Ktn_Cinema_Guides
             } else {
                 $args['post__in'] = array(0); // Force empty results
             }
+        } else {
+            // No location filter applied -> Default to ONLY movies currently playing globally
+            global $wpdb;
+            $today = date('Y-m-d');
+            $movie_ids = $wpdb->get_col($wpdb->prepare(
+                "SELECT DISTINCT matched_movie_id FROM {$wpdb->prefix}ktn_showtimes 
+                 WHERE matched_movie_id IS NOT NULL 
+                 AND (show_date >= %s OR show_date = 'Today')
+                 ORDER BY id DESC", 
+                $today
+            ));
+            
+            if (!empty($movie_ids)) {
+                $args['post__in'] = array_map('intval', $movie_ids);
+                // Sort by the newest added showtimes (latest imported movies appear first)
+                $args['orderby'] = 'post__in';
+            } else {
+                $args['post__in'] = array(0);
+            }
         }
+
+        // General Sorting if not strictly overriding by post__in
+        if (!isset($args['orderby'])) {
+            $args['orderby'] = 'date';
+            $args['order'] = 'DESC';
+        }
+
 
         $query = new WP_Query($args);
         $html = '';

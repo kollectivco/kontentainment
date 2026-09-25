@@ -272,10 +272,15 @@ class KTN_Movies_Mobile_Widget extends KTN_Elementor_Base_Widget {
         switch ($settings['source']) {
             case 'now_playing':
                 $now_playing_ids = $wpdb->get_col($wpdb->prepare(
-                    "SELECT DISTINCT matched_movie_id FROM {$wpdb->prefix}ktn_showtimes WHERE matched_movie_id IS NOT NULL AND (show_date >= %s OR show_date = 'Today')",
+                    "SELECT DISTINCT matched_movie_id FROM {$wpdb->prefix}ktn_showtimes WHERE matched_movie_id IS NOT NULL AND (show_date >= %s OR show_date = 'Today') ORDER BY id DESC",
                     $today
                 ));
-                $args['post__in'] = !empty($now_playing_ids) ? $now_playing_ids : [0];
+                if (!empty($now_playing_ids)) {
+                    $args['post__in'] = $now_playing_ids;
+                    $args['orderby'] = 'post__in';
+                } else {
+                    $args['post__in'] = [0];
+                }
                 break;
 
             case 'coming_soon':
