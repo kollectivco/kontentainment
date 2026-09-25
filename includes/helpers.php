@@ -830,24 +830,6 @@ function ktn_is_cinema_guides_page() {
     return false;
 }
 
-/**
- * Force full-width layout by adding body class and disabling active sidebars on Cinema Guides pages
- */
-add_filter('body_class', 'ktn_add_body_class_for_guides');
-function ktn_add_body_class_for_guides($classes) {
-    if (ktn_is_cinema_guides_page()) {
-        $classes[] = 'ktn-full-width-page';
-    }
-    return $classes;
-}
-
-add_filter('is_active_sidebar', 'ktn_disable_sidebar_on_guides', 999, 1);
-function ktn_disable_sidebar_on_guides($is_active) {
-    if (ktn_is_cinema_guides_page()) {
-        return false;
-    }
-    return $is_active;
-}
 
 /**
  * Self-healing cleanup hook to automatically remove incorrect cached title for 7 Dogs
