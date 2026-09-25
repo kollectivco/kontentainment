@@ -138,19 +138,19 @@
 /* CINEMA CARD: Premium Modern Redesign */
 .ktn-premium-cinema-card {
     background: #fff;
-    border-radius: 18px;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
-    border: 1px solid rgba(0,0,0,0.06);
-    transition: transform 0.32s cubic-bezier(0.175,0.885,0.32,1.275), box-shadow 0.32s ease;
+    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.03);
+    border: 1px solid #eaf0f6;
+    transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275), box-shadow 0.3s ease;
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
 .ktn-premium-cinema-card:hover {
-    transform: translateY(-7px);
-    box-shadow: 0 16px 48px rgba(0,0,0,0.13);
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
 }
 
 .ktn-cinema-card-link {
@@ -168,7 +168,7 @@
     aspect-ratio: 16 / 10;
     overflow: hidden;
     flex-shrink: 0;
-    background: #111;
+    background: #f8fafc;
 }
 
 .ktn-cinema-img {
@@ -176,19 +176,17 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.55s cubic-bezier(0.165,0.84,0.44,1), filter 0.35s ease;
-    filter: brightness(0.92);
+    transition: transform 0.6s cubic-bezier(0.165,0.84,0.44,1);
 }
 
 .ktn-premium-cinema-card:hover .ktn-cinema-img {
-    transform: scale(1.07);
-    filter: brightness(0.82);
+    transform: scale(1.05);
 }
 
 .ktn-cinema-img-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.18) 0%, transparent 60%);
+    background: linear-gradient(to top, rgba(15,23,42,0.15) 0%, transparent 60%);
     pointer-events: none;
 }
 
@@ -197,7 +195,7 @@
     position: absolute;
     top: 12px;
     left: 12px;
-    background: rgba(0,0,0,0.72);
+    background: rgba(15, 23, 42, 0.6);
     backdrop-filter: blur(8px);
     color: #FFD700;
     font-size: 12px;
@@ -218,19 +216,19 @@
 
 /* ── Card Body ── */
 .ktn-cinema-body {
-    padding: 16px 18px 18px;
+    padding: 18px 20px 20px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
 .ktn-cinema-name {
     margin: 0 !important;
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 800;
-    line-height: 1.35;
-    color: #0f172a;
+    line-height: 1.4;
+    color: #1e293b;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -240,10 +238,10 @@
 .ktn-cinema-location {
     display: flex;
     align-items: center;
-    gap: 5px;
-    color: #64748b;
+    gap: 6px;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
+    color: #64748b;
 }
 
 .ktn-cinema-location svg {
@@ -251,35 +249,45 @@
     color: #94a3b8;
 }
 
-/* CTA */
+/* Call to Action Button */
 .ktn-cinema-cta {
     margin-top: auto;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 16px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
-    padding: 10px 16px;
-    background: #0f172a;
-    color: #ffffff;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    transition: background 0.2s ease, gap 0.2s ease;
-    text-align: center;
-}
-
-.ktn-cinema-cta svg {
-    transition: transform 0.2s ease;
-    flex-shrink: 0;
+    gap: 6px;
+    transition: all 0.3s ease;
 }
 
 .ktn-premium-cinema-card:hover .ktn-cinema-cta {
-    background: #1e3a5f;
+    background: #0f172a;
+    color: #ffffff;
     gap: 10px;
 }
 
+.ktn-cinema-cta svg {
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+body.rtl .ktn-cinema-cta svg,
+html[dir="rtl"] .ktn-cinema-cta svg {
+    transform: rotate(180deg);
+}
+
 .ktn-premium-cinema-card:hover .ktn-cinema-cta svg {
-    transform: translateX(-3px);
+    transform: translateX(4px);
+}
+
+body.rtl .ktn-premium-cinema-card:hover .ktn-cinema-cta svg,
+html[dir="rtl"] .ktn-premium-cinema-card:hover .ktn-cinema-cta svg {
+    transform: rotate(180deg) translateX(4px);
 }
 
 /* ── Cinema 4/2 Column Grid ── */
