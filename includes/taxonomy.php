@@ -82,64 +82,96 @@ function ktn_add_locations_to_menu() {
  */
 add_action('admin_init', 'ktn_seed_cinema_locations');
 function ktn_seed_cinema_locations() {
-    if (get_option('ktn_seeded_locations_v1')) {
-        return; // Already seeded
+    if (get_option('ktn_seeded_locations_v2')) {
+        return; // Already seeded v2
     }
 
     $locations = [
-        'محافظة القاهرة' => [
-            'مدينة نصر',
-            'وسط البلد',
-            'مصر الجديدة',
-            'القاهرة الجديدة',
-            'شبرا',
-            'جاردن سيتي',
-            'المعادي',
-            'مدينة الرحاب',
-            'حدائق القبة',
-            'القطامية',
-            'الزمالك',
-            'منيل الروضة',
-            'حلوان',
-            'روض الفرج'
+        'cairo' => [
+            'name' => 'القاهرة',
+            'old_name' => 'محافظة القاهرة',
+            'cities' => [
+                'nasr-city' => 'مدينة نصر',
+                'downtown-cairo' => ['name' => 'وسط البلد', 'old_name' => 'وسط البلد'],
+                'heliopolis' => 'مصر الجديدة',
+                'new-cairo' => 'القاهرة الجديدة',
+                'shoubra' => 'شبرا',
+                'garden-city' => 'جاردن سيتي',
+                'maadi' => 'المعادي',
+                'rehab-city' => 'مدينة الرحاب',
+                'hadayeq-el-qobbah' => 'حدائق القبة',
+                'kattameya' => 'القطامية',
+                'zamalek' => 'الزمالك',
+                'manial-el-roda' => 'منيل الروضة',
+                'helwan' => 'حلوان',
+                'rod-el-farag' => 'روض الفرج'
+            ]
         ],
-        'محافظة الجيزة' => [
-            '6 أكتوبر',
-            'الدقي',
-            'الهرم'
+        'giza' => [
+            'name' => 'الجيزة',
+            'old_name' => 'محافظة الجيزة',
+            'cities' => [
+                '6th-of-october' => '6 أكتوبر',
+                'dokki' => 'الدقي',
+                'haram' => 'الهرم'
+            ]
         ],
-        'محافظة الأسكندرية' => [
-            'الساحل الشمالي',
-            'عجمى',
-            'وسط البلد', // Note: duplicate name is handled by WP taxonomy slug uniqueness
-            'المنتزة',
-            'محرم بك',
-            'الأنفوشي',
-            'جليم',
-            'سموحة',
-            'مصطفى كامل',
-            'رشدي'
+        'alexandria' => [
+            'name' => 'الأسكندرية',
+            'old_name' => 'محافظة الأسكندرية',
+            'cities' => [
+                'north-coast' => 'الساحل الشمالي',
+                'agami' => 'عجمى',
+                'downtown-alexandria' => ['name' => 'وسط البلد', 'old_name' => 'وسط البلد'],
+                'montaza' => 'المنتزة',
+                'moharam-bek' => 'محرم بك',
+                'anfoushi' => 'الأنفوشي',
+                'gleem' => 'جليم',
+                'smouha' => 'سموحة',
+                'mostafa-kamel' => 'مصطفى كامل',
+                'roshdy' => 'رشدي'
+            ]
         ]
     ];
 
-    foreach ($locations as $gov_name => $cities) {
-        $gov_term = term_exists($gov_name, 'cinema_location');
+    foreach ($locations as $gov_slug => $gov_data) {
+        $gov_name = $gov_data['name'];
+        $gov_old = $gov_data['old_name'];
+        
+        // Find existing by old name, new name, or slug
+        $gov_term = term_exists($gov_old, 'cinema_location') ?: (term_exists($gov_name, 'cinema_location') ?: term_exists($gov_slug, 'cinema_location'));
+        
         if (!$gov_term) {
-            $gov_term = wp_insert_term($gov_name, 'cinema_location');
+            $gov_term = wp_insert_term($gov_name, 'cinema_location', ['slug' => $gov_slug]);
+        } else {
+            // Update existing term to use new name and english slug
+            wp_update_term($gov_term['term_id'], 'cinema_location', [
+                'name' => $gov_name,
+                'slug' => $gov_slug
+            ]);
         }
         
         if (!is_wp_error($gov_term) && isset($gov_term['term_id'])) {
             $parent_id = $gov_term['term_id'];
             
-            foreach ($cities as $city_name) {
-                // Check if it exists under this specific parent to avoid crossing duplicates
-                $city_term = term_exists($city_name, 'cinema_location', $parent_id);
+            foreach ($gov_data['cities'] as $city_slug => $city_val) {
+                $city_name = is_array($city_val) ? $city_val['name'] : $city_val;
+                $city_old = is_array($city_val) ? $city_val['old_name'] : $city_val;
+
+                // Find existing by old name or new name or slug (under this parent)
+                $city_term = term_exists($city_old, 'cinema_location', $parent_id) ?: (term_exists($city_name, 'cinema_location', $parent_id) ?: term_exists($city_slug, 'cinema_location', $parent_id));
+                
                 if (!$city_term) {
-                    wp_insert_term($city_name, 'cinema_location', ['parent' => $parent_id]);
+                    wp_insert_term($city_name, 'cinema_location', ['parent' => $parent_id, 'slug' => $city_slug]);
+                } else {
+                    wp_update_term($city_term['term_id'], 'cinema_location', [
+                        'name' => $city_name,
+                        'slug' => $city_slug
+                    ]);
                 }
             }
         }
     }
 
-    update_option('ktn_seeded_locations_v1', true);
+    update_option('ktn_seeded_locations_v2', true);
 }
