@@ -113,23 +113,7 @@ class Ktn_Cinema_Guides
                             </select>
                         </div>
 
-                        <div class="ktn-dropdown-wrapper">
-                            <select id="movie-city" class="ktn-select">
-                                <option value=""><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'كل المحافظات' : __('All Governorates', 'kontentainment'); ?></option>
-                                <?php
-                                $cities = get_terms(array('taxonomy' => 'cinema_location', 'parent' => 0, 'hide_empty' => true));
-                                foreach ($cities as $city) {
-                                    echo '<option value="' . esc_attr($city->slug) . '">' . esc_html($city->name) . '</option>';
-                                }
-                                ?>
-                            </select>
-                        </div>
 
-                        <div class="ktn-dropdown-wrapper">
-                            <select id="movie-area" class="ktn-select" disabled>
-                                <option value=""><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'اختر المنطقة' : __('Select Area', 'kontentainment'); ?></option>
-                            </select>
-                        </div>
                     </div>
 
                     <div id="movie-results" class="ktn-results-grid">
