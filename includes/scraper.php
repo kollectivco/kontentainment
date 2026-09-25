@@ -126,7 +126,7 @@ class Ktn_Cinema_Scraper
              }
 
              if (!empty($all_dates)) {
-                 foreach (array_unique(array_slice($all_dates, 0, 7)) as $rel_url) {
+                 foreach (array_unique(array_slice($all_dates, 0, 4)) as $rel_url) {
                      $date_url = (strpos($rel_url, 'http') === 0) ? $rel_url : 'https://elcinema.com' . (strpos($rel_url, '/') === 0 ? '' : '/') . $rel_url;
                      
                      // Ensure English URLs remain English if needed
@@ -136,7 +136,7 @@ class Ktn_Cinema_Scraper
                      
                      if (rtrim($date_url, '/') === rtrim($url, '/')) continue;
                      
-                     usleep(300000); 
+                     usleep(100000); 
                      $d_res = wp_remote_get($date_url, $args);
                      if (!is_wp_error($d_res)) {
                          $d_body = wp_remote_retrieve_body($d_res);

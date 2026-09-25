@@ -318,11 +318,20 @@ class Ktn_Bulk_Cinema_Importer {
 
         // Run sync (Full Import)
         $sync_message = '';
-        $sync_res = Ktn_Cinema_Importer::syncCinema($post_id, true);
-        
+        if ($sync_now) {
+            // Prevent PHP timeout for heavy scraping operations
+            if (function_exists('set_time_limit')) {
+                set_time_limit(0);
+            }
+            $sync_res = Ktn_Cinema_Importer::syncCinema($post_id, true);
+            $sync_message = is_array($sync_res) ? $sync_res['message'] : 'Sync completed.';
+            $success = is_array($sync_res) ? $sync_res['success'] : true;
+        } else {
+            $sync_message = 'Imported successfully. Will sync in background.';
+            $success = true;
+        }
+
         $final_name = get_the_title($post_id);
-        $sync_message = is_array($sync_res) ? $sync_res['message'] : 'Sync completed.';
-        $success = is_array($sync_res) ? $sync_res['success'] : true;
 
         if ($success) {
             wp_send_json_success(array(
