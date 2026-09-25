@@ -64,6 +64,20 @@ function ktn_register_taxonomies()
 }
 
 /**
+ * Add Locations to Kontentainment Admin Menu
+ */
+add_action('admin_menu', 'ktn_add_locations_to_menu');
+function ktn_add_locations_to_menu() {
+    add_submenu_page(
+        'edit.php?post_type=movie',
+        __('Cinema Locations', 'kontentainment'),
+        __('Locations', 'kontentainment'),
+        'manage_categories',
+        'edit-tags.php?taxonomy=cinema_location&post_type=ktn_cinema'
+    );
+}
+
+/**
  * Automatically seed the initial governorates and areas.
  */
 add_action('admin_init', 'ktn_seed_cinema_locations');
