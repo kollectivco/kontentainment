@@ -3,21 +3,19 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-/**
- * Bulk Cinema Importer Admin feature
- */
-class Ktn_Bulk_Cinema_Importer {
+class Ktn_Bulk_Importer {
 
     public function __construct() {
         add_action('admin_menu', array($this, 'add_menu_item'));
-        add_action('wp_ajax_ktn_bulk_import_cinema', array($this, 'ajax_bulk_import_handler'));
+        add_action('wp_ajax_ktn_bulk_import_cinema', array($this, 'ajax_bulk_import_cinema_handler'));
+        add_action('wp_ajax_ktn_bulk_import_movie', array($this, 'ajax_bulk_import_movie_handler'));
         add_action('wp_ajax_ktn_get_child_locations_by_id', array($this, 'ajax_get_children_handler'));
     }
 
     public function add_menu_item() {
         add_submenu_page(
             'edit.php?post_type=movie',
-            __('Import Multiple Cinemas', 'kontentainment'),
+            __('Bulk Import', 'kontentainment'),
             __('Bulk Import', 'kontentainment'),
             'manage_options',
             'ktn-bulk-import-cinemas',
@@ -26,73 +24,124 @@ class Ktn_Bulk_Cinema_Importer {
     }
 
     public function render_page() {
+        $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'cinemas';
         ?>
         <div class="wrap ktn-bulk-import-wrap">
-            <h1 class="wp-heading-inline"><?php _e('Import Multiple Cinemas', 'kontentainment'); ?></h1>
+            <h1 class="wp-heading-inline"><?php _e('Bulk Import Tools', 'kontentainment'); ?></h1>
             <hr class="wp-header-end">
 
-            <div class="card" style="max-width: 900px; padding: 30px; margin-top: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                <form id="ktn-bulk-import-form">
-                    <?php wp_nonce_field('ktn_bulk_import_nonce', 'bulk_nonce'); ?>
-                    
-                    <div class="ktn-form-section" style="margin-bottom: 30px;">
-                        <label style="display: block; font-weight: 700; font-size: 1.1rem; margin-bottom: 12px;">
-                            <?php _e('Cinema URLs (Select elCinema Theater Pages)', 'kontentainment'); ?>
-                        </label>
-                        <p class="description" style="margin-bottom: 15px;">
-                            <?php _e('Paste one URL per line. Example: https://elcinema.com/en/theater/3101258/', 'kontentainment'); ?>
-                        </p>
-                        <textarea id="bulk-urls" name="urls" rows="12" style="width: 100%; font-family: monospace; padding: 15px; border-radius: 8px; border: 1px solid #dcdcde;" placeholder="https://elcinema.com/en/theater/3101258/"></textarea>
-                    </div>
+            <h2 class="nav-tab-wrapper" style="margin-top: 15px;">
+                <a href="?post_type=movie&page=ktn-bulk-import-cinemas&tab=cinemas" class="nav-tab <?php echo $active_tab == 'cinemas' ? 'nav-tab-active' : ''; ?>"><?php _e('Cinemas', 'kontentainment'); ?></a>
+                <a href="?post_type=movie&page=ktn-bulk-import-cinemas&tab=movies" class="nav-tab <?php echo $active_tab == 'movies' ? 'nav-tab-active' : ''; ?>"><?php _e('Movies & TV Shows', 'kontentainment'); ?></a>
+            </h2>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; margin-bottom: 30px; background: #f9fafb; padding: 20px; border-radius: 10px; border: 1px solid #f0f0f1;">
-                        <div class="ktn-form-group">
-                            <label style="display: block; font-weight: 600; margin-bottom: 8px;"><?php _e('Source Type', 'kontentainment'); ?></label>
-                            <select name="source_type" style="width: 100%; height: 40px; border-radius: 6px;">
-                                <option value="elcinema_theater"><?php _e('elCinema Theater', 'kontentainment'); ?></option>
-                            </select>
-                        </div>
+            <?php if ($active_tab == 'cinemas'): ?>
+                <!-- CINEMAS IMPORT TAB -->
+                <div class="card" style="max-width: 900px; padding: 30px; margin-top: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <form id="ktn-bulk-import-form">
+                        <?php wp_nonce_field('ktn_bulk_import_nonce', 'bulk_nonce'); ?>
                         
-                        <div class="ktn-form-group">
-                            <label style="display: block; font-weight: 600; margin-bottom: 8px;"><?php _e('City / Governorate', 'kontentainment'); ?></label>
-                            <?php 
-                            wp_dropdown_categories(array(
-                                'show_option_none' => __('Select City', 'kontentainment'),
-                                'taxonomy'         => 'cinema_location',
-                                'name'             => 'city_term',
-                                'id'               => 'city-selector',
-                                'hide_empty'       => 0,
-                                'parent'           => 0,
-                                'hierarchical'     => 1,
-                                'class'            => 'ktn-dropdown',
-                                'style'            => 'width: 100%; height: 40px; border-radius: 6px;'
-                            ));
-                            ?>
+                        <div class="ktn-form-section" style="margin-bottom: 30px;">
+                            <label style="display: block; font-weight: 700; font-size: 1.1rem; margin-bottom: 12px;">
+                                <?php _e('Cinema URLs (Select elCinema Theater Pages)', 'kontentainment'); ?>
+                            </label>
+                            <p class="description" style="margin-bottom: 15px;">
+                                <?php _e('Paste one URL per line. Example: https://elcinema.com/en/theater/3101258/', 'kontentainment'); ?>
+                            </p>
+                            <textarea id="bulk-urls" name="urls" rows="12" style="width: 100%; font-family: monospace; padding: 15px; border-radius: 8px; border: 1px solid #dcdcde;" placeholder="https://elcinema.com/en/theater/3101258/"></textarea>
                         </div>
 
-                        <div class="ktn-form-group">
-                            <label style="display: block; font-weight: 600; margin-bottom: 8px;"><?php _e('Area', 'kontentainment'); ?></label>
-                            <select name="area_term" id="area-selector" style="width: 100%; height: 40px; border-radius: 6px;" disabled>
-                                <option value=""><?php _e('Select City first', 'kontentainment'); ?></option>
-                            </select>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; margin-bottom: 30px; background: #f9fafb; padding: 20px; border-radius: 10px; border: 1px solid #f0f0f1;">
+                            <div class="ktn-form-group">
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px;"><?php _e('Source Type', 'kontentainment'); ?></label>
+                                <select name="source_type" style="width: 100%; height: 40px; border-radius: 6px;">
+                                    <option value="elcinema_theater"><?php _e('elCinema Theater', 'kontentainment'); ?></option>
+                                </select>
+                            </div>
+                            
+                            <div class="ktn-form-group">
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px;"><?php _e('City / Governorate', 'kontentainment'); ?></label>
+                                <?php 
+                                wp_dropdown_categories(array(
+                                    'show_option_none' => __('Select City', 'kontentainment'),
+                                    'taxonomy'         => 'cinema_location',
+                                    'name'             => 'city_term',
+                                    'id'               => 'city-selector',
+                                    'hide_empty'       => 0,
+                                    'parent'           => 0,
+                                    'hierarchical'     => 1,
+                                    'class'            => 'ktn-dropdown',
+                                    'style'            => 'width: 100%; height: 40px; border-radius: 6px;'
+                                ));
+                                ?>
+                            </div>
+
+                            <div class="ktn-form-group">
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px;"><?php _e('Area', 'kontentainment'); ?></label>
+                                <select name="area_term" id="area-selector" style="width: 100%; height: 40px; border-radius: 6px;" disabled>
+                                    <option value=""><?php _e('Select City first', 'kontentainment'); ?></option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="ktn-form-group" style="margin-bottom: 30px; padding: 0 5px;">
-                        <label style="font-weight: 500; display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                            <input type="checkbox" name="sync_now" value="1" checked style="width: 18px; height: 18px; margin: 0;"> 
-                            <?php _e('Fetch cinema details and sync showtimes immediately', 'kontentainment'); ?>
-                        </label>
-                    </div>
+                        <div class="ktn-form-group" style="margin-bottom: 30px; padding: 0 5px;">
+                            <label style="font-weight: 500; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" name="sync_now" value="1" checked style="width: 18px; height: 18px; margin: 0;"> 
+                                <?php _e('Fetch cinema details and sync showtimes immediately', 'kontentainment'); ?>
+                            </label>
+                        </div>
 
-                    <div class="ktn-form-actions">
-                        <button type="submit" class="button button-primary button-hero" id="start-bulk-import" style="padding: 0 40px; display: inline-flex; align-items: center; gap: 10px;">
-                            <span class="dashicons dashicons-download" style="margin-top: 5px;"></span>
-                            <?php _e('Import Cinemas', 'kontentainment'); ?>
-                        </button>
-                    </div>
-                </form>
-            </div>
+                        <div class="ktn-form-actions">
+                            <button type="submit" class="button button-primary button-hero" id="start-bulk-import" style="padding: 0 40px; display: inline-flex; align-items: center; gap: 10px;">
+                                <span class="dashicons dashicons-download" style="margin-top: 5px;"></span>
+                                <?php _e('Import Cinemas', 'kontentainment'); ?>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            <?php else: ?>
+                <!-- MOVIES IMPORT TAB -->
+                <div class="card" style="max-width: 900px; padding: 30px; margin-top: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <form id="ktn-bulk-movie-import-form">
+                        <?php wp_nonce_field('ktn_bulk_import_nonce', 'bulk_nonce'); ?>
+                        
+                        <div class="ktn-form-section" style="margin-bottom: 30px;">
+                            <label style="display: block; font-weight: 700; font-size: 1.1rem; margin-bottom: 12px;">
+                                <?php _e('Movie/TV Show IDs or URLs', 'kontentainment'); ?>
+                            </label>
+                            <p class="description" style="margin-bottom: 15px;">
+                                <?php _e('Paste one ID or URL per line. Supports TMDB IDs, IMDb IDs (tt1234567), or TMDB full URLs.', 'kontentainment'); ?>
+                            </p>
+                            <textarea id="bulk-movie-urls" name="urls" rows="12" style="width: 100%; font-family: monospace; padding: 15px; border-radius: 8px; border: 1px solid #dcdcde;" placeholder="533535&#10;tt1234567&#10;https://www.themoviedb.org/movie/533535-deadpool-wolverine"></textarea>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px; background: #f9fafb; padding: 20px; border-radius: 10px; border: 1px solid #f0f0f1;">
+                            <div class="ktn-form-group">
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px;"><?php _e('Post Type', 'kontentainment'); ?></label>
+                                <select name="post_type" style="width: 100%; height: 40px; border-radius: 6px;">
+                                    <option value="movie"><?php _e('Movie', 'kontentainment'); ?></option>
+                                    <option value="tv"><?php _e('TV Show', 'kontentainment'); ?></option>
+                                </select>
+                            </div>
+                            
+                            <div class="ktn-form-group">
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px;"><?php _e('Language', 'kontentainment'); ?></label>
+                                <select name="language" style="width: 100%; height: 40px; border-radius: 6px;">
+                                    <option value="ar"><?php _e('Arabic (ar)', 'kontentainment'); ?></option>
+                                    <option value="en-US" selected><?php _e('English (en-US)', 'kontentainment'); ?></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="ktn-form-actions">
+                            <button type="submit" class="button button-primary button-hero" id="start-bulk-movie-import" style="padding: 0 40px; display: inline-flex; align-items: center; gap: 10px;">
+                                <span class="dashicons dashicons-download" style="margin-top: 5px;"></span>
+                                <?php _e('Import Media', 'kontentainment'); ?>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            <?php endif; ?>
 
             <div id="bulk-results" style="margin-top: 40px; display: none; max-width: 1000px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -103,8 +152,8 @@ class Ktn_Bulk_Cinema_Importer {
                 <table class="wp-list-table widefat fixed striped" style="border-radius: 8px; overflow: hidden; border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
                     <thead>
                         <tr>
-                            <th style="width: 35%;"><?php _e('Source URL', 'kontentainment'); ?></th>
-                            <th style="width: 20%;"><?php _e('Cinema Name', 'kontentainment'); ?></th>
+                            <th style="width: 35%;"><?php _e('Source', 'kontentainment'); ?></th>
+                            <th style="width: 20%;"><?php _e('Name', 'kontentainment'); ?></th>
                             <th style="width: 15%; text-align: center;"><?php _e('Status', 'kontentainment'); ?></th>
                             <th style="width: 30%;"><?php _e('Result Details', 'kontentainment'); ?></th>
                         </tr>
@@ -116,7 +165,7 @@ class Ktn_Bulk_Cinema_Importer {
         </div>
 
         <style>
-            .ktn-bulk-import-wrap h1 { margin-bottom: 25px; }
+            .ktn-bulk-import-wrap h1 { margin-bottom: 15px; }
             #results-body tr td { vertical-align: middle; padding: 12px 10px; }
             .ktn-status-badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-weight: 700; font-size: 11px; text-transform: uppercase; }
             .status-imported { background: #dcfce7; color: #166534; }
@@ -131,47 +180,28 @@ class Ktn_Bulk_Cinema_Importer {
             $('#city-selector').on('change', function() {
                 var cityId = $(this).val();
                 var areaSelector = $('#area-selector');
-                
                 if (!cityId) {
                     areaSelector.prop('disabled', true).html('<option value=""><?php _e('Select City first', 'kontentainment'); ?></option>');
                     return;
                 }
-
                 areaSelector.prop('disabled', false).html('<option value=""><?php _e('Loading Areas...', 'kontentainment'); ?></option>');
-                
-                $.post(ajaxurl, {
-                    action: 'ktn_get_child_locations_by_id',
-                    parent_id: cityId,
-                    nonce: '<?php echo wp_create_nonce('ktn_bulk_import_nonce'); ?>'
-                }, function(res) {
+                $.post(ajaxurl, { action: 'ktn_get_child_locations_by_id', parent_id: cityId, nonce: '<?php echo wp_create_nonce('ktn_bulk_import_nonce'); ?>' }, function(res) {
                     if (res.success) {
                         var options = '<option value=""><?php _e('-- Select Area (Optional) --', 'kontentainment'); ?></option>';
-                        res.data.forEach(function(item) {
-                            options += '<option value="'+item.id+'">'+item.name+'</option>';
-                        });
+                        res.data.forEach(function(item) { options += '<option value="'+item.id+'">'+item.name+'</option>'; });
                         areaSelector.html(options);
                     }
                 });
             });
 
+            // Cinema Form
             $('#ktn-bulk-import-form').on('submit', function(e) {
                 e.preventDefault();
                 var $btn = $('#start-bulk-import');
                 var urls = $('#bulk-urls').val().split('\n').filter(function(u){ return u.trim().length > 0; });
-                
-                if (urls.length === 0) {
-                    alert('<?php _e('Please enter at least one URL.', 'kontentainment'); ?>');
-                    return;
-                }
-
-                if (!$('#city-selector').val()) {
-                    alert('<?php _e('Please select a City/Governorate.', 'kontentainment'); ?>');
-                    return;
-                }
-
-                if (!confirm('<?php _e('Are you sure you want to import ', 'kontentainment'); ?>' + urls.length + ' <?php _e(' cinemas?', 'kontentainment'); ?>')) {
-                    return;
-                }
+                if (urls.length === 0) return alert('<?php _e('Please enter at least one URL.', 'kontentainment'); ?>');
+                if (!$('#city-selector').val()) return alert('<?php _e('Please select a City/Governorate.', 'kontentainment'); ?>');
+                if (!confirm('<?php _e('Are you sure you want to import ', 'kontentainment'); ?>' + urls.length + ' <?php _e(' cinemas?', 'kontentainment'); ?>')) return;
 
                 $btn.prop('disabled', true).addClass('updating');
                 $('#bulk-results').show();
@@ -198,25 +228,19 @@ class Ktn_Bulk_Cinema_Importer {
                         source_type: $('select[name="source_type"]').val(),
                         nonce: $('#bulk_nonce').val()
                     }, function(res) {
-                        var status_html = '';
-                        var name = '---';
-                        var details = '';
-                        
+                        var status_html = '', name = '---', details = '';
                         if (res.success) {
                             var cls = res.data.status_label === 'IMPORTED' ? 'status-imported' : 'status-updated';
                             status_html = '<span class="ktn-status-badge '+cls+'">'+res.data.status_label+'</span>';
-                            name = res.data.name;
-                            details = res.data.message;
+                            name = res.data.name; details = res.data.message;
                         } else {
                             status_html = '<span class="ktn-status-badge status-failed"><?php _e('Failed', 'kontentainment'); ?></span>';
                             details = res.data ? res.data.message : (res.error || 'Unknown Error');
                         }
-                        
                         var $row = $('#' + rowId);
                         $row.find('td:nth-child(2)').html('<strong>'+name+'</strong>');
                         $row.find('td:nth-child(3)').html(status_html);
                         $row.find('td:nth-child(4)').text(details);
-                        
                         $('#bulk-progress').text((index + 1) + ' / ' + urls.length);
                         processUrl(index + 1);
                     }).fail(function() {
@@ -226,7 +250,62 @@ class Ktn_Bulk_Cinema_Importer {
                          processUrl(index + 1);
                     });
                 };
+                processUrl(0);
+            });
 
+            // Movie Form
+            $('#ktn-bulk-movie-import-form').on('submit', function(e) {
+                e.preventDefault();
+                var $btn = $('#start-bulk-movie-import');
+                var urls = $('#bulk-movie-urls').val().split('\n').filter(function(u){ return u.trim().length > 0; });
+                if (urls.length === 0) return alert('<?php _e('Please enter at least one ID.', 'kontentainment'); ?>');
+                if (!confirm('<?php _e('Are you sure you want to import ', 'kontentainment'); ?>' + urls.length + ' <?php _e(' items?', 'kontentainment'); ?>')) return;
+
+                $btn.prop('disabled', true).addClass('updating');
+                $('#bulk-results').show();
+                $('#results-body').empty();
+                $('#bulk-progress').html('0 / ' + urls.length);
+
+                var processUrl = function(index) {
+                    if (index >= urls.length) {
+                        $btn.prop('disabled', false).removeClass('updating');
+                        $('#bulk-progress').css('background', '#22c55e').css('color', '#fff');
+                        return;
+                    }
+
+                    var currentInput = urls[index].trim();
+                    var rowId = 'row-' + index;
+                    $('#results-body').append('<tr id="'+rowId+'"><td><code>'+currentInput+'<code></td><td>---</td><td style="text-align:center;"><span class="ktn-status-badge status-processing"><?php _e('Working', 'kontentainment'); ?></span></td><td><?php _e('Fetching TMDB...', 'kontentainment'); ?></td></tr>');
+
+                    $.post(ajaxurl, {
+                        action: 'ktn_bulk_import_movie',
+                        input: currentInput,
+                        post_type: $('select[name="post_type"]').val(),
+                        language: $('select[name="language"]').val(),
+                        nonce: $('#bulk_nonce').val()
+                    }, function(res) {
+                        var status_html = '', name = '---', details = '';
+                        if (res.success) {
+                            var cls = res.data.status_label === 'IMPORTED' ? 'status-imported' : 'status-updated';
+                            status_html = '<span class="ktn-status-badge '+cls+'">'+res.data.status_label+'</span>';
+                            name = res.data.name; details = res.data.message;
+                        } else {
+                            status_html = '<span class="ktn-status-badge status-failed"><?php _e('Failed', 'kontentainment'); ?></span>';
+                            details = res.data ? res.data.message : (res.error || 'Unknown Error');
+                        }
+                        var $row = $('#' + rowId);
+                        $row.find('td:nth-child(2)').html('<strong>'+name+'</strong>');
+                        $row.find('td:nth-child(3)').html(status_html);
+                        $row.find('td:nth-child(4)').text(details);
+                        $('#bulk-progress').text((index + 1) + ' / ' + urls.length);
+                        processUrl(index + 1);
+                    }).fail(function() {
+                         var $row = $('#' + rowId);
+                         $row.find('td:nth-child(3)').html('<span class="ktn-status-badge status-failed">ERROR</span>');
+                         $row.find('td:nth-child(4)').text('Server Timeout or Connection Error');
+                         processUrl(index + 1);
+                    });
+                };
                 processUrl(0);
             });
         });
@@ -237,23 +316,15 @@ class Ktn_Bulk_Cinema_Importer {
     public function ajax_get_children_handler() {
         check_ajax_referer('ktn_bulk_import_nonce', 'nonce');
         $parent_id = intval($_POST['parent_id']);
-        
-        $terms = get_terms(array(
-            'taxonomy' => 'cinema_location',
-            'parent'   => $parent_id,
-            'hide_empty' => false
-        ));
-
+        $terms = get_terms(array('taxonomy' => 'cinema_location', 'parent' => $parent_id, 'hide_empty' => false));
         $results = array();
         if (!is_wp_error($terms)) {
-            foreach ($terms as $t) {
-                $results[] = array('id' => $t->term_id, 'name' => $t->name);
-            }
+            foreach ($terms as $t) { $results[] = array('id' => $t->term_id, 'name' => $t->name); }
         }
         wp_send_json_success($results);
     }
 
-    public function ajax_bulk_import_handler() {
+    public function ajax_bulk_import_cinema_handler() {
         check_ajax_referer('ktn_bulk_import_nonce', 'nonce');
         
         $url = esc_url_raw($_POST['url']);
@@ -266,11 +337,8 @@ class Ktn_Bulk_Cinema_Importer {
              wp_send_json_error(array('message' => __('Invalid URL provided.', 'kontentainment')));
         }
 
-        // Extract ID for duplicate check
         $elcinema_id = '';
-        if (preg_match('/theater\/([0-9]+)/', $url, $m)) {
-            $elcinema_id = $m[1];
-        }
+        if (preg_match('/theater\/([0-9]+)/', $url, $m)) { $elcinema_id = $m[1]; }
 
         $existing_id = $this->find_existing_cinema($url, $elcinema_id);
         
@@ -278,7 +346,6 @@ class Ktn_Bulk_Cinema_Importer {
             $status_label = 'UPDATED';
             $post_id = $existing_id;
             $msg_prefix = __('Updated existing Cinema.', 'kontentainment');
-            // Update source if it changed
             update_post_meta($post_id, '_ktn_cinema_url', $url);
         } else {
             $status_label = 'IMPORTED';
@@ -295,34 +362,21 @@ class Ktn_Bulk_Cinema_Importer {
             wp_send_json_error(array('message' => $post_id->get_error_message()));
         }
 
-        // Set static data from form
         update_post_meta($post_id, '_ktn_cinema_type', $source_type);
         update_post_meta($post_id, '_ktn_cinema_auto_sync', 'yes');
         update_post_meta($post_id, '_ktn_cinema_status', 'active');
 
-        // Save City/Area Meta for the edit screen
         $city_term = get_term($city_id, 'cinema_location');
         $area_term = get_term($area_id, 'cinema_location');
-        if ($city_term && !is_wp_error($city_term)) {
-            update_post_meta($post_id, '_ktn_cinema_city', $city_term->name);
-        }
-        if ($area_term && !is_wp_error($area_term)) {
-            update_post_meta($post_id, '_ktn_cinema_area', $area_term->name);
-        }
+        if ($city_term && !is_wp_error($city_term)) update_post_meta($post_id, '_ktn_cinema_city', $city_term->name);
+        if ($area_term && !is_wp_error($area_term)) update_post_meta($post_id, '_ktn_cinema_area', $area_term->name);
 
-        // Assign Taxonomy (City/Area)
         $term_ids = array_filter(array($city_id, $area_id));
-        if (!empty($term_ids)) {
-            wp_set_object_terms($post_id, array_map('intval', $term_ids), 'cinema_location', false);
-        }
+        if (!empty($term_ids)) wp_set_object_terms($post_id, array_map('intval', $term_ids), 'cinema_location', false);
 
-        // Run sync (Full Import)
         $sync_message = '';
         if ($sync_now) {
-            // Prevent PHP timeout for heavy scraping operations
-            if (function_exists('set_time_limit')) {
-                set_time_limit(0);
-            }
+            if (function_exists('set_time_limit')) set_time_limit(0);
             $sync_res = Ktn_Cinema_Importer::syncCinema($post_id, true);
             $sync_message = is_array($sync_res) ? $sync_res['message'] : 'Sync completed.';
             $success = is_array($sync_res) ? $sync_res['success'] : true;
@@ -334,28 +388,121 @@ class Ktn_Bulk_Cinema_Importer {
         $final_name = get_the_title($post_id);
 
         if ($success) {
-            wp_send_json_success(array(
-                'id' => $post_id,
-                'name' => $final_name,
-                'status_label' => $status_label,
-                'message' => $msg_prefix . ' ' . $sync_message
-            ));
+            wp_send_json_success(array('id' => $post_id, 'name' => $final_name, 'status_label' => $status_label, 'message' => $msg_prefix . ' ' . $sync_message));
         } else {
-            wp_send_json_error(array(
-                'name' => $final_name,
-                'message' => $sync_message
-            ));
+            wp_send_json_error(array('name' => $final_name, 'message' => $sync_message));
         }
     }
 
+    public function ajax_bulk_import_movie_handler() {
+        check_ajax_referer('ktn_bulk_import_nonce', 'nonce');
+
+        if (!function_exists('ktn_get_tmdb_media_details')) {
+             wp_send_json_error(array('message' => 'TMDB functions not found.'));
+        }
+
+        $input = sanitize_text_field($_POST['input']);
+        $post_type = sanitize_text_field($_POST['post_type']);
+        $post_type = ($post_type === 'tv') ? 'tv_show' : 'movie';
+        $tmdb_type = ($post_type === 'tv_show') ? 'tv' : 'movie';
+        $language = sanitize_text_field($_POST['language']) ?: 'en-US';
+
+        $token = get_option('ktn_tmdb_bearer_token');
+        if (empty($token)) {
+            wp_send_json_error(array('message' => __('TMDB Bearer Token missing in settings.', 'kontentainment')));
+        }
+
+        // Parse Input
+        $imdb_id = '';
+        $tmdb_id = '';
+
+        if (preg_match('/^tt\d{7,}$/', $input)) {
+            $imdb_id = $input;
+        } elseif (preg_match('/themoviedb\.org\/(movie|tv)\/(\d+)/', $input, $m)) {
+            $tmdb_type = $m[1];
+            $post_type = ($tmdb_type === 'tv') ? 'tv_show' : 'movie';
+            $tmdb_id = $m[2];
+        } elseif (is_numeric($input)) {
+            $tmdb_id = $input;
+        } else {
+            wp_send_json_error(array('message' => __('Unrecognized format. Enter IMDb ID, TMDB ID, or TMDB URL.', 'kontentainment')));
+        }
+
+        if (empty($tmdb_id) && !empty($imdb_id)) {
+            $tmdb_id = ktn_get_tmdb_id_by_imdb($imdb_id, $token, $language);
+            if (is_wp_error($tmdb_id)) {
+                wp_send_json_error(array('message' => $tmdb_id->get_error_message()));
+            }
+            if (!$tmdb_id) {
+                wp_send_json_error(array('message' => __('Could not resolve IMDb ID to a TMDB ID.', 'kontentainment')));
+            }
+        }
+
+        // Check if exists
+        $existing_id = $this->find_existing_movie($tmdb_id, $imdb_id, $post_type);
+        
+        $status_label = $existing_id ? 'UPDATED' : 'IMPORTED';
+        $post_id = $existing_id;
+
+        if (!$post_id) {
+            $post_id = wp_insert_post(array(
+                'post_type'   => $post_type,
+                'post_title'  => 'Importing...',
+                'post_status' => 'publish',
+            ));
+        }
+
+        if (is_wp_error($post_id)) {
+            wp_send_json_error(array('message' => $post_id->get_error_message()));
+        }
+
+        // Fetch details
+        $details = ktn_get_tmdb_media_details($tmdb_id, $tmdb_type, $token, $language);
+        if (is_wp_error($details)) {
+             if (!$existing_id) wp_delete_post($post_id, true);
+             wp_send_json_error(array('message' => $details->get_error_message()));
+        }
+
+        // Save
+        $saved = ktn_process_and_save_data($post_id, $details, $imdb_id, $tmdb_type);
+        if (is_wp_error($saved)) {
+             wp_send_json_error(array('message' => $saved->get_error_message()));
+        }
+
+        $final_name = get_the_title($post_id);
+        
+        wp_send_json_success(array(
+            'id' => $post_id, 
+            'name' => $final_name, 
+            'status_label' => $status_label, 
+            'message' => __('TMDB Data saved successfully.', 'kontentainment')
+        ));
+    }
+
+    private function find_existing_movie($tmdb_id, $imdb_id, $post_type) {
+        $meta_query = array('relation' => 'OR');
+        if ($tmdb_id) {
+            $meta_query[] = array('key' => '_movie_tmdb_id', 'value' => $tmdb_id, 'compare' => '=');
+        }
+        if ($imdb_id) {
+            $meta_query[] = array('key' => '_movie_imdb_id', 'value' => $imdb_id, 'compare' => '=');
+        }
+
+        $args = array(
+            'post_type' => $post_type,
+            'meta_query' => $meta_query,
+            'posts_per_page' => 1,
+            'fields' => 'ids'
+        );
+        $query = new WP_Query($args);
+        return $query->have_posts() ? $query->posts[0] : false;
+    }
+
     private function find_existing_cinema($url, $elcinema_id) {
-        // 1. Check by elCinema ID (most accurate)
         if ($elcinema_id) {
             $args = array(
                 'post_type' => 'ktn_cinema',
-                'meta_query' => array(
-                    array('key' => '_ktn_cinema_theater_id', 'value' => $elcinema_id, 'compare' => '=')
-                ),
+                'meta_query' => array(array('key' => '_ktn_cinema_theater_id', 'value' => $elcinema_id, 'compare' => '=')),
                 'posts_per_page' => 1,
                 'fields' => 'ids'
             );
@@ -363,20 +510,16 @@ class Ktn_Bulk_Cinema_Importer {
             if ($query->have_posts()) return $query->posts[0];
         }
 
-        // 2. Check by exact URL
         $args = array(
             'post_type' => 'ktn_cinema',
-            'meta_query' => array(
-                array('key' => '_ktn_cinema_url', 'value' => $url, 'compare' => '=')
-            ),
+            'meta_query' => array(array('key' => '_ktn_cinema_url', 'value' => $url, 'compare' => '=')),
             'posts_per_page' => 1,
             'fields' => 'ids'
         );
         $query = new WP_Query($args);
         if ($query->have_posts()) return $query->posts[0];
-
         return false;
     }
 }
 
-new Ktn_Bulk_Cinema_Importer();
+new Ktn_Bulk_Importer();
