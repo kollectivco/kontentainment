@@ -91,16 +91,16 @@
 
 /* Filter Row */
 .ktn-filter-row {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr 1fr !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
     gap: 15px !important;
     align-items: center !important;
     margin-bottom: 40px !important;
     background: #ffffff !important;
-    padding: 25px !important;
-    border: 1px solid #f1f5f9 !important;
-    border-radius: 20px !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
+    padding: 20px !important;
+    border: 1px solid #eaf0f6 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04) !important;
 }
 
 #ktn-lang-filters-wrap {
@@ -178,18 +178,25 @@
     width: 100%;
     height: 48px;
     padding: 0 15px 0 45px !important;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid #eaf0f6 !important;
     border-radius: 12px !important;
-    font-size: 15px !important;
+    font-size: 14px !important;
     font-weight: 500 !important;
+    color: #334155 !important;
+    background-color: #f8fafc !important;
     outline: none !important;
     transition: all 0.2s ease !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+}
+
+body.rtl .ktn-search-box input,
+html[dir="rtl"] .ktn-search-box input {
+    padding: 0 45px 0 15px !important;
 }
 
 .ktn-search-box input:focus {
-    border-color: #0f172a !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 0 0 3px rgba(226, 232, 240, 0.5) !important;
 }
 
 .ktn-search-box .dashicons {
@@ -197,8 +204,14 @@
     left: 15px;
     top: 50%;
     transform: translateY(-50%);
-    color: #94a3b8;
+    color: #64748b;
     font-size: 18px;
+}
+
+body.rtl .ktn-search-box .dashicons,
+html[dir="rtl"] .ktn-search-box .dashicons {
+    left: auto;
+    right: 15px;
 }
 
 .ktn-dropdown-wrapper {
@@ -213,17 +226,18 @@
     width: 100%;
     height: 48px;
     padding: 0 40px 0 15px !important;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid #eaf0f6 !important;
     border-radius: 12px !important;
-    font-size: 15px !important;
+    font-size: 14px !important;
     font-weight: 500 !important;
-    background-color: #fff !important;
+    color: #334155 !important;
+    background-color: #f8fafc !important;
     cursor: pointer !important;
     appearance: none !important;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
     background-position: right 15px center !important;
-    background-size: 18px !important;
+    background-size: 16px !important;
     transition: all 0.2s ease !important;
 }
 
@@ -234,7 +248,9 @@ html[dir="rtl"] .ktn-select {
 }
 
 .ktn-select:focus {
-    border-color: #0f172a !important;
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 0 0 3px rgba(226, 232, 240, 0.5) !important;
     outline: none !important;
 }
 
