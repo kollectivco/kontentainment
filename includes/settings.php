@@ -128,6 +128,24 @@ function ktn_settings_page_html() {
 				</td>
 			</tr>
 		</table>
+
+        <hr style="margin: 40px 0 20px 0; border: 0; border-top: 1px solid #ccc;" />
+
+        <h2><?php esc_html_e( 'Auto-Tag Articles to Actors', 'kontentainment' ); ?></h2>
+        <p><?php esc_html_e( 'Scan all standard posts and automatically tag them with existing actors if their names are found in the post title.', 'kontentainment' ); ?></p>
+        
+        <table class="form-table">
+            <tr valign="top">
+                <th scope="row"><?php esc_html_e( 'Run Auto-Tagger', 'kontentainment' ); ?></th>
+                <td>
+                    <button type="button" id="ktn-auto-tag-actors-btn" class="button button-primary">
+                        <span class="dashicons dashicons-admin-links" style="vertical-align: middle; margin-right: 4px;"></span>
+                        <?php esc_html_e( 'Auto-Tag Posts Now', 'kontentainment' ); ?>
+                    </button>
+                    <span id="ktn-auto-tag-status" style="margin-left: 10px; font-weight: 600; vertical-align: middle;"></span>
+                </td>
+            </tr>
+        </table>
 	</div>
 
 	<script>
@@ -163,6 +181,37 @@ function ktn_settings_page_html() {
 					status.css('color', 'red').text('<?php esc_html_e( 'Request failed.', 'kontentainment' ); ?>');
 				}
 			});
+			$('#ktn-auto-tag-actors-btn').on('click', function(e) {
+				e.preventDefault();
+				var btn = $(this);
+				var status = $('#ktn-auto-tag-status');
+				
+				if (btn.hasClass('disabled')) return;
+				
+				btn.addClass('disabled').attr('disabled', 'disabled');
+				status.css('color', '#f59e0b').text('Processing... This may take a while.');
+				
+				$.ajax({
+					url: ajaxurl,
+					type: 'POST',
+					data: {
+						action: 'ktn_auto_tag_actors',
+						security: '<?php echo wp_create_nonce("ktn_settings_nonce"); ?>'
+					},
+					success: function(response) {
+						btn.removeClass('disabled').removeAttr('disabled');
+						if (response.success) {
+							status.css('color', 'green').text(response.data.message);
+						} else {
+							status.css('color', 'red').text('Error: ' + response.data);
+						}
+					},
+					error: function() {
+						btn.removeClass('disabled').removeAttr('disabled');
+						status.css('color', 'red').text('Request failed.');
+					}
+				});
+			});
 		});
 	});
 	</script>
@@ -188,3 +237,76 @@ function wp_ajax_ktn_force_sync_box_office_handler() {
 }
 
 
+
+/**
+ * AJAX handler to auto-tag actors in posts
+ */
+add_action('wp_ajax_ktn_auto_tag_actors', 'wp_ajax_ktn_auto_tag_actors_handler');
+function wp_ajax_ktn_auto_tag_actors_handler() {
+    check_ajax_referer('ktn_settings_nonce', 'security');
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('Unauthorized');
+    }
+
+    // Get all actors
+    $actors = get_terms(array(
+        'taxonomy' => 'ktn_cast',
+        'hide_empty' => false,
+    ));
+
+    if (empty($actors) || is_wp_error($actors)) {
+        wp_send_json_error('No actors found.');
+    }
+
+    // Get all posts
+    $posts = get_posts(array(
+        'post_type' => 'post',
+        'posts_per_page' => -1,
+        'post_status' => 'publish',
+    ));
+
+    if (empty($posts)) {
+        wp_send_json_error('No posts found.');
+    }
+
+    $tagged_count = 0;
+
+    foreach ($posts as $post) {
+        $post_title = $post->post_title;
+        $post_content = $post->post_content;
+        $terms_to_add = array();
+
+        foreach ($actors as $actor) {
+            $arabic_name = get_term_meta($actor->term_id, '_ktn_cast_arabic_name', true);
+            $names_to_check = array($actor->name);
+            if (!empty($arabic_name)) {
+                $names_to_check[] = $arabic_name;
+            }
+
+            foreach ($names_to_check as $name) {
+                if (empty(trim($name))) continue;
+                // Simple case-insensitive search in title or tags. We'll just do title to be safe and avoid matching random words in content.
+                if (stripos($post_title, $name) !== false) {
+                    $terms_to_add[] = $actor->term_id;
+                    break;
+                }
+                
+                // Also check if the post has a tag with the actor's name
+                $post_tags = wp_get_post_tags($post->ID);
+                foreach($post_tags as $tag) {
+                    if (strcasecmp($tag->name, $name) === 0) {
+                        $terms_to_add[] = $actor->term_id;
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        if (!empty($terms_to_add)) {
+            wp_set_object_terms($post->ID, $terms_to_add, 'ktn_cast', true);
+            $tagged_count++;
+        }
+    }
+
+    wp_send_json_success(array('message' => sprintf(__('Successfully scanned posts and tagged %d posts with actors.', 'kontentainment'), $tagged_count)));
+}

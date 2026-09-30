@@ -416,6 +416,48 @@ endif; ?>
             <?php
 endif; ?>
 
+            <?php
+            // Query related articles
+            $related_posts_query = new WP_Query(array(
+                'post_type' => 'post',
+                'posts_per_page' => 12,
+                'tax_query' => array(
+                    array(
+                        'taxonomy' => 'ktn_cast',
+                        'field' => 'term_id',
+                        'terms' => $term->term_id
+                    )
+                )
+            ));
+
+            if ($related_posts_query->have_posts()):
+            ?>
+            <div style="margin-bottom: 40px; margin-top: 20px;">
+                <h2 style="font-size: 1.3em; font-weight: bold; margin-bottom: 15px;"><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'أحدث الأخبار والمقالات' : 'Latest News & Articles'; ?></h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+                    <?php while ($related_posts_query->have_posts()): $related_posts_query->the_post(); ?>
+                    <a href="<?php the_permalink(); ?>" class="ktn-related-article-card"
+                        style="text-decoration: none; color: inherit; display: block; background: #fff; border: 1px solid #eaf0f6; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.02); transition: transform 0.2s, box-shadow 0.2s;">
+                        <?php if (has_post_thumbnail()): ?>
+                            <img src="<?php the_post_thumbnail_url('medium'); ?>" alt="<?php the_title_attribute(); ?>" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;">
+                        <?php else: ?>
+                            <div style="width: 100%; aspect-ratio: 16/9; background: #f8fafc; display: flex; align-items: center; justify-content: center;">
+                                <span class="dashicons dashicons-format-aside" style="font-size: 30px; color: #cbd5e1;"></span>
+                            </div>
+                        <?php endif; ?>
+                        <div style="padding: 15px;">
+                            <h3 style="font-size: 1.05em; font-weight: bold; color: #0f172a; margin: 0 0 8px 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"><?php the_title(); ?></h3>
+                            <span style="font-size: 0.85em; color: #64748b;"><?php echo get_the_date(); ?></span>
+                        </div>
+                    </a>
+                    <?php endwhile; wp_reset_postdata(); ?>
+                </div>
+            </div>
+            <style>
+                .ktn-related-article-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.06) !important; }
+            </style>
+            <?php endif; ?>
+
         </div>
     </div>
 

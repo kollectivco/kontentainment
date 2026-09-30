@@ -38,7 +38,7 @@ function ktn_register_taxonomies()
         'query_var' => true,
         'rewrite' => array('slug' => 'cast'),
     );
-    register_taxonomy('ktn_cast', array('movie', 'tv_show'), $cast_args);
+    register_taxonomy('ktn_cast', array('movie', 'tv_show', 'post'), $cast_args);
 
     // Cinema Location Taxonomy (Hierarchical City > Area)
     $location_labels = array(

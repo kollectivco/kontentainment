@@ -904,3 +904,36 @@ function ktn_cleanup_incorrect_movie_meta() {
         }
     }
 }
+/**
+ * Append mentioned actors to the bottom of single posts
+ */
+add_filter('the_content', 'ktn_append_actors_to_post_content');
+function ktn_append_actors_to_post_content($content) {
+    if (is_single() && get_post_type() === 'post') {
+        $actors = wp_get_post_terms(get_the_ID(), 'ktn_cast');
+        if (!empty($actors) && !is_wp_error($actors)) {
+            $html = '<div class="ktn-post-actors-section" style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eaf0f6;">';
+            $html .= '<h3 style="font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #0f172a;">' . ((get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'شخصيات مذكورة في هذا المقال' : 'Mentioned in this article') . '</h3>';
+            $html .= '<div style="display: flex; flex-wrap: wrap; gap: 15px;">';
+            
+            foreach ($actors as $actor) {
+                $term_link = get_term_link($actor);
+                if (is_wp_error($term_link)) continue;
+                
+                $profile_path = get_term_meta($actor->term_id, '_ktn_cast_profile_path', true);
+                $image_url = $profile_path ? "https://image.tmdb.org/t/p/w185" . $profile_path : KTN_PLUGIN_URL . 'assets/img/no-poster.png';
+                $arabic_name = get_term_meta($actor->term_id, '_ktn_cast_arabic_name', true);
+                $display_name = $arabic_name ? $arabic_name : $actor->name;
+
+                $html .= '<a href="' . esc_url($term_link) . '" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 8px; border: 1px solid #eaf0f6; border-radius: 50px; text-decoration: none; color: #0f172a; transition: all 0.2s; background: #fff;" onmouseover="this.style.background=\'#f8fafc\'; this.style.borderColor=\'#cbd5e1\';" onmouseout="this.style.background=\'#fff\'; this.style.borderColor=\'#eaf0f6\';">';
+                $html .= '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($display_name) . '" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: block; margin: 0;">';
+                $html .= '<span style="font-weight: 600; font-size: 0.95em;">' . esc_html($display_name) . '</span>';
+                $html .= '</a>';
+            }
+            
+            $html .= '</div></div>';
+            $content .= $html;
+        }
+    }
+    return $content;
+}
