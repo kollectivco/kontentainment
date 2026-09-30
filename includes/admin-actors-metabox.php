@@ -22,7 +22,7 @@ class Ktn_Admin_Actors_Metabox {
             // Add our custom select2 box
             add_meta_box(
                 'ktn_cast_select2_box',
-                (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'طاقم العمل / الممثلين' : __('Cast / Actors', 'kontentainment'),
+                __('Cast / Actors', 'kontentainment'),
                 [__CLASS__, 'render_metabox'],
                 $pt,
                 'side',
@@ -55,12 +55,12 @@ class Ktn_Admin_Actors_Metabox {
                 </option>
             <?php endforeach; ?>
         </select>
-        <p class="description"><?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'ابحث عن اسم الممثل لربطه بهذا المقال.' : esc_html__('Search for an actor to link them to this post.', 'kontentainment'); ?></p>
+        <p class="description"><?php esc_html_e('Search for an actor to link them to this post.', 'kontentainment'); ?></p>
 
         <script>
         jQuery(document).ready(function($) {
             $('#ktn-actors-select2').select2({
-                placeholder: '<?php echo (get_locale() === 'ar' || strpos(get_locale(), 'ar') === 0) ? 'ابحث أو أضف ممثل جديد...' : esc_js(__('Search or add actors...', 'kontentainment')); ?>',
+                placeholder: '<?php echo esc_js(__('Search or add actors...', 'kontentainment')); ?>',
                 tags: true,
                 createTag: function (params) {
                     var term = $.trim(params.term);

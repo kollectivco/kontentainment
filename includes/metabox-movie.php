@@ -366,9 +366,6 @@ function ktn_movie_extra_details_html($post)
 
     <div class="ktn-admin-form-row" style="margin-top: 15px;">
         <label><strong><?php esc_html_e('Keywords:', 'kontentainment'); ?></strong></label>
-        <input type="text" name="ktn_keywords" value="<?php echo esc_attr($keywords); ?>" class="widefat" />
-    </div>
-
     <div class="ktn-admin-form-row" style="margin-top: 15px; border-top: 1px solid #ccc; padding-top: 15px;">
         <label><strong><?php esc_html_e('Arabic Title Override:', 'kontentainment'); ?></strong></label>
         <input type="text" name="ktn_movie_title_arabic" value="<?php echo esc_attr(get_post_meta($post->ID, '_movie_title_arabic', true)); ?>" class="widefat" />
@@ -379,6 +376,8 @@ function ktn_movie_extra_details_html($post)
         <label><strong><?php esc_html_e('Arabic Overview Override:', 'kontentainment'); ?></strong></label>
         <textarea name="ktn_movie_overview_arabic" rows="4" class="widefat"><?php echo esc_textarea(get_post_meta($post->ID, '_movie_overview_arabic', true)); ?></textarea>
         <p class="description">Manually set the Arabic overview/bio. This overrides the automatic fallback.</p>
+    </div>
+        <input type="text" name="ktn_keywords" value="<?php echo esc_attr($keywords); ?>" class="widefat" />
     </div>
     <?php
 }
@@ -495,13 +494,6 @@ function ktn_save_movie_details($post_id)
     if (isset($_POST['ktn_keywords'])) {
         $data = array_map('trim', explode(',', $_POST['ktn_keywords']));
         update_post_meta($post_id, '_movie_keywords', array_map('sanitize_text_field', $data));
-    // Arabic Overrides
-    if (isset($_POST['ktn_movie_title_arabic'])) {
-        update_post_meta($post_id, '_movie_title_arabic', sanitize_text_field($_POST['ktn_movie_title_arabic']));
-    }
-    if (isset($_POST['ktn_movie_overview_arabic'])) {
-        update_post_meta($post_id, '_movie_overview_arabic', sanitize_textarea_field($_POST['ktn_movie_overview_arabic']));
-    }
     }
 
     // Box Office Stats saving logic
