@@ -1,0 +1,12 @@
+    <tr class="form-field">
+        <th scope="row" valign="top"><label for="term_meta_arabic_bio"><?php _e('Arabic Bio', 'kontentainment'); ?></label></th>
+        <td>
+            <textarea name="term_meta[_ktn_cast_arabic_bio]" id="term_meta_arabic_bio" rows="5"><?php echo esc_textarea(get_term_meta($term_id, '_ktn_cast_arabic_bio', true)); ?></textarea>
+        </td>
+    </tr>
+    <tr class="form-field">
+        <th scope="row" valign="top"><label for="term_meta_arabic_place_of_birth"><?php _e('Arabic Place of Birth', 'kontentainment'); ?></label></th>
+        <td>
+            <input type="text" name="term_meta[_ktn_cast_arabic_place_of_birth]" id="term_meta_arabic_place_of_birth" value="<?php echo esc_attr(get_term_meta($term_id, '_ktn_cast_arabic_place_of_birth', true)); ?>">
+        </td>
+    </tr>

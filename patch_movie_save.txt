@@ -1,0 +1,7 @@
+    // Arabic Overrides
+    if (isset($_POST['ktn_movie_title_arabic'])) {
+        update_post_meta($post_id, '_movie_title_arabic', sanitize_text_field($_POST['ktn_movie_title_arabic']));
+    }
+    if (isset($_POST['ktn_movie_overview_arabic'])) {
+        update_post_meta($post_id, '_movie_overview_arabic', sanitize_textarea_field($_POST['ktn_movie_overview_arabic']));
+    }

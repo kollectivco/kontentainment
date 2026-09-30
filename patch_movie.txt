@@ -1,0 +1,11 @@
+    <div class="ktn-admin-form-row" style="margin-top: 15px; border-top: 1px solid #ccc; padding-top: 15px;">
+        <label><strong><?php esc_html_e('Arabic Title Override:', 'kontentainment'); ?></strong></label>
+        <input type="text" name="ktn_movie_title_arabic" value="<?php echo esc_attr(get_post_meta($post->ID, '_movie_title_arabic', true)); ?>" class="widefat" />
+        <p class="description">Manually set the Arabic title. This overrides the automatic TMDB or Google Translate fallback.</p>
+    </div>
+    
+    <div class="ktn-admin-form-row" style="margin-top: 15px;">
+        <label><strong><?php esc_html_e('Arabic Overview Override:', 'kontentainment'); ?></strong></label>
+        <textarea name="ktn_movie_overview_arabic" rows="4" class="widefat"><?php echo esc_textarea(get_post_meta($post->ID, '_movie_overview_arabic', true)); ?></textarea>
+        <p class="description">Manually set the Arabic overview/bio. This overrides the automatic fallback.</p>
+    </div>

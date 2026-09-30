@@ -186,6 +186,14 @@ function ktn_cast_add_new_meta_field() {
         <p class="description"><?php _e('Enter the Arabic name for this actor.', 'kontentainment'); ?></p>
     </div>
     <div class="form-field">
+        <label for="term_meta_arabic_bio"><?php _e('Arabic Bio', 'kontentainment'); ?></label>
+        <textarea name="term_meta[_ktn_cast_arabic_bio]" id="term_meta_arabic_bio" rows="5"></textarea>
+    </div>
+    <div class="form-field">
+        <label for="term_meta_arabic_place_of_birth"><?php _e('Arabic Place of Birth', 'kontentainment'); ?></label>
+        <input type="text" name="term_meta[_ktn_cast_arabic_place_of_birth]" id="term_meta_arabic_place_of_birth" value="">
+    </div>
+    <div class="form-field">
         <label for="term_meta_profile_path"><?php _e('TMDB Profile Path', 'kontentainment'); ?></label>
         <input type="text" name="term_meta[_ktn_cast_profile_path]" id="term_meta_profile_path" value="">
         <p class="description"><?php _e('e.g. /123456.jpg', 'kontentainment'); ?></p>
@@ -207,6 +215,18 @@ function ktn_cast_edit_meta_field($term) {
         </td>
     </tr>
     <tr class="form-field">
+        <th scope="row" valign="top"><label for="term_meta_arabic_bio"><?php _e('Arabic Bio', 'kontentainment'); ?></label></th>
+        <td>
+            <textarea name="term_meta[_ktn_cast_arabic_bio]" id="term_meta_arabic_bio" rows="5"><?php echo esc_textarea(get_term_meta($term_id, '_ktn_cast_arabic_bio', true)); ?></textarea>
+        </td>
+    </tr>
+    <tr class="form-field">
+        <th scope="row" valign="top"><label for="term_meta_arabic_place_of_birth"><?php _e('Arabic Place of Birth', 'kontentainment'); ?></label></th>
+        <td>
+            <input type="text" name="term_meta[_ktn_cast_arabic_place_of_birth]" id="term_meta_arabic_place_of_birth" value="<?php echo esc_attr(get_term_meta($term_id, '_ktn_cast_arabic_place_of_birth', true)); ?>">
+        </td>
+    </tr>
+    <tr class="form-field">
         <th scope="row" valign="top"><label for="term_meta_profile_path"><?php _e('TMDB Profile Path', 'kontentainment'); ?></label></th>
         <td>
             <input type="text" name="term_meta[_ktn_cast_profile_path]" id="term_meta_profile_path" value="<?php echo esc_attr($profile_path); ?>">
@@ -216,6 +236,18 @@ function ktn_cast_edit_meta_field($term) {
                     <img src="https://image.tmdb.org/t/p/w185<?php echo esc_attr($profile_path); ?>" style="border-radius: 8px; width: 90px; height: 135px; object-fit: cover;" />
                 </div>
             <?php endif; ?>
+        </td>
+    </tr>
+    <tr class="form-field">
+        <th scope="row" valign="top"><label for="term_meta_arabic_bio"><?php _e('Arabic Bio', 'kontentainment'); ?></label></th>
+        <td>
+            <textarea name="term_meta[_ktn_cast_arabic_bio]" id="term_meta_arabic_bio" rows="5"><?php echo esc_textarea(get_term_meta($term_id, '_ktn_cast_arabic_bio', true)); ?></textarea>
+        </td>
+    </tr>
+    <tr class="form-field">
+        <th scope="row" valign="top"><label for="term_meta_arabic_place_of_birth"><?php _e('Arabic Place of Birth', 'kontentainment'); ?></label></th>
+        <td>
+            <input type="text" name="term_meta[_ktn_cast_arabic_place_of_birth]" id="term_meta_arabic_place_of_birth" value="<?php echo esc_attr(get_term_meta($term_id, '_ktn_cast_arabic_place_of_birth', true)); ?>">
         </td>
     </tr>
     <?php
