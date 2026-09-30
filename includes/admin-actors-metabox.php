@@ -60,7 +60,18 @@ class Ktn_Admin_Actors_Metabox {
         <script>
         jQuery(document).ready(function($) {
             $('#ktn-actors-select2').select2({
-                placeholder: '<?php echo esc_js(__('Search actors...', 'kontentainment')); ?>',
+                placeholder: '<?php echo esc_js(__('Search or add actors...', 'kontentainment')); ?>',
+                tags: true,
+                createTag: function (params) {
+                    var term = $.trim(params.term);
+                    if (term === '') {
+                        return null;
+                    }
+                    return {
+                        id: term,
+                        text: term + ' (New)'
+                    }
+                },
                 ajax: {
                     url: ajaxurl,
                     dataType: 'json',
@@ -99,7 +110,24 @@ class Ktn_Admin_Actors_Metabox {
             return;
         }
 
-        $term_ids = isset($_POST['ktn_cast_terms']) ? array_map('intval', $_POST['ktn_cast_terms']) : [];
+        $term_ids = [];
+        if (!empty($_POST['ktn_cast_terms'])) {
+            foreach ($_POST['ktn_cast_terms'] as $val) {
+                if (is_numeric($val)) {
+                    $term_ids[] = intval($val);
+                } else {
+                    $val = sanitize_text_field($val);
+                    $term_info = term_exists($val, 'ktn_cast');
+                    if (!$term_info) {
+                        $term_info = wp_insert_term($val, 'ktn_cast');
+                    }
+                    if (!is_wp_error($term_info) && isset($term_info['term_id'])) {
+                        $term_ids[] = intval($term_info['term_id']);
+                    }
+                }
+            }
+        }
+        
         wp_set_object_terms($post_id, $term_ids, 'ktn_cast', false);
     }
 
