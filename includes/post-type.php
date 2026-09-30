@@ -10,7 +10,7 @@ function ktn_register_post_types()
     $movie_labels = array(
         'name'               => _x('Movies', 'post type general name', 'kontentainment'),
         'singular_name'      => _x('Movie', 'post type singular name', 'kontentainment'),
-        'menu_name'          => _x('Kontentainment', 'admin menu', 'kontentainment'),
+        'menu_name'          => _x('K Cinema', 'admin menu', 'kontentainment'),
         'name_admin_bar'     => _x('Movie', 'add new on admin bar', 'kontentainment'),
         'add_new'            => _x('Add New Movie', 'movie', 'kontentainment'),
         'add_new_item'       => __('Add New Movie', 'kontentainment'),
