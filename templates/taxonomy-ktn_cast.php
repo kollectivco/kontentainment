@@ -239,7 +239,7 @@ $tw_icon = '<svg fill="currentColor" width="24" height="24" viewBox="0 0 24 24">
 ?>
 
 <style>
-.ktn-actor-container { max-width: 1200px; margin: 40px auto; padding: 0 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Almarai"; }
+.ktn-actor-container { width: 100%; padding: 20px 0; }
 .ktn-actor-layout { display: flex; flex-direction: column; gap: 40px; }
 @media (min-width: 900px) { .ktn-actor-layout { flex-direction: row; } }
 .ktn-actor-sidebar { flex: 0 0 300px; }
@@ -256,9 +256,9 @@ $tw_icon = '<svg fill="currentColor" width="24" height="24" viewBox="0 0 24 24">
 .ktn-actor-info-value { display: block; font-size: 1em; color: #0f172a; font-weight: 600; line-height: 1.4; }
 
 .ktn-actor-main { flex: 1; min-width: 0; }
-.ktn-actor-name { font-size: 3em; font-weight: 900; margin: 0 0 25px 0; color: #0f172a; letter-spacing: -0.5px; line-height: 1.2; }
-.ktn-actor-section-title { font-size: 1.6em; font-weight: 800; margin: 0 0 20px 0; color: #0f172a; }
-.ktn-actor-bio { font-size: 1.1em; line-height: 1.8; color: #334155; margin-bottom: 50px; }
+.ktn-actor-name { font-size: 2.5em; font-weight: 800; margin: 0 0 25px 0; color: #0f172a; line-height: 1.2; }
+.ktn-actor-section-title { font-size: 1.5em; font-weight: 700; margin: 0 0 20px 0; color: #0f172a; }
+.ktn-actor-bio { font-size: 1.05em; line-height: 1.8; color: #334155; margin-bottom: 50px; }
 
 .ktn-known-for-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; margin-bottom: 60px; }
 .ktn-known-card { text-decoration: none; display: block; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
