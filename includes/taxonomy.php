@@ -175,3 +175,59 @@ function ktn_seed_cinema_locations() {
 
     update_option('ktn_seeded_locations_v2', true);
 }
+// --- Add Custom Fields to ktn_cast Taxonomy ---
+
+add_action('ktn_cast_add_form_fields', 'ktn_cast_add_new_meta_field', 10, 2);
+function ktn_cast_add_new_meta_field() {
+    ?>
+    <div class="form-field">
+        <label for="term_meta_arabic_name"><?php _e('Arabic Name', 'kontentainment'); ?></label>
+        <input type="text" name="term_meta[_ktn_cast_arabic_name]" id="term_meta_arabic_name" value="">
+        <p class="description"><?php _e('Enter the Arabic name for this actor.', 'kontentainment'); ?></p>
+    </div>
+    <div class="form-field">
+        <label for="term_meta_profile_path"><?php _e('TMDB Profile Path', 'kontentainment'); ?></label>
+        <input type="text" name="term_meta[_ktn_cast_profile_path]" id="term_meta_profile_path" value="">
+        <p class="description"><?php _e('e.g. /123456.jpg', 'kontentainment'); ?></p>
+    </div>
+    <?php
+}
+
+add_action('ktn_cast_edit_form_fields', 'ktn_cast_edit_meta_field', 10, 2);
+function ktn_cast_edit_meta_field($term) {
+    $term_id = $term->term_id;
+    $arabic_name = get_term_meta($term_id, '_ktn_cast_arabic_name', true);
+    $profile_path = get_term_meta($term_id, '_ktn_cast_profile_path', true);
+    ?>
+    <tr class="form-field">
+        <th scope="row" valign="top"><label for="term_meta_arabic_name"><?php _e('Arabic Name', 'kontentainment'); ?></label></th>
+        <td>
+            <input type="text" name="term_meta[_ktn_cast_arabic_name]" id="term_meta_arabic_name" value="<?php echo esc_attr($arabic_name); ?>">
+            <p class="description"><?php _e('Enter the Arabic name for this actor.', 'kontentainment'); ?></p>
+        </td>
+    </tr>
+    <tr class="form-field">
+        <th scope="row" valign="top"><label for="term_meta_profile_path"><?php _e('TMDB Profile Path', 'kontentainment'); ?></label></th>
+        <td>
+            <input type="text" name="term_meta[_ktn_cast_profile_path]" id="term_meta_profile_path" value="<?php echo esc_attr($profile_path); ?>">
+            <p class="description"><?php _e('e.g. /123456.jpg', 'kontentainment'); ?></p>
+            <?php if ($profile_path): ?>
+                <div style="margin-top: 10px;">
+                    <img src="https://image.tmdb.org/t/p/w185<?php echo esc_attr($profile_path); ?>" style="border-radius: 8px; width: 90px; height: 135px; object-fit: cover;" />
+                </div>
+            <?php endif; ?>
+        </td>
+    </tr>
+    <?php
+}
+
+add_action('edited_ktn_cast', 'ktn_save_cast_custom_meta', 10, 2);  
+add_action('create_ktn_cast', 'ktn_save_cast_custom_meta', 10, 2);
+function ktn_save_cast_custom_meta($term_id) {
+    if (isset($_POST['term_meta'])) {
+        $term_meta = $_POST['term_meta'];
+        foreach ($term_meta as $key => $value) {
+            update_term_meta($term_id, sanitize_key($key), sanitize_text_field($value));
+        }
+    }
+}
