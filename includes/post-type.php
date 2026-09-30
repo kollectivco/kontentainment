@@ -34,7 +34,7 @@ function ktn_register_post_types()
         'capability_type'    => 'post',
         'has_archive'        => true,
         'hierarchical'       => false,
-        'menu_position'      => 20,
+        'menu_position'      => 4,
         'menu_icon'          => 'dashicons-video-alt3',
         'supports'           => array('title', 'editor', 'excerpt', 'thumbnail')
     );
