@@ -12,7 +12,7 @@ class KTN_Areas_Widget extends KTN_Elementor_Base_Widget {
     }
 
     public function get_title() {
-        return esc_html__('Kueue Areas', 'kontentainment');
+        return esc_html__('Kontentainment Areas', 'kontentainment');
     }
 
     public function get_icon() {

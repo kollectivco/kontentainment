@@ -12,7 +12,7 @@ class KTN_Movie_Single_Widget extends KTN_Elementor_Base_Widget {
     }
 
     public function get_title() {
-        return esc_html__('Kueue Movie Single Data', 'kontentainment');
+        return esc_html__('Kontentainment Movie Single Data', 'kontentainment');
     }
 
     public function get_icon() {

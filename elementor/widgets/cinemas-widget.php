@@ -12,7 +12,7 @@ class KTN_Cinemas_Widget extends KTN_Elementor_Base_Widget {
     }
 
     public function get_title() {
-        return esc_html__('Kueue Cinemas', 'kontentainment');
+        return esc_html__('Kontentainment Cinemas', 'kontentainment');
     }
 
     public function get_icon() {
