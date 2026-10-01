@@ -28,14 +28,14 @@ class KTN_Movies_Widget extends KTN_Elementor_Base_Widget {
         $this->add_control('source', [
             'label' => esc_html__('Source', 'kontentainment'),
             'type' => \Elementor\Controls_Manager::SELECT,
-            'default' => 'latest',
+            'default' => 'now_playing',
             'options' => [
-                'latest'      => esc_html__('Latest Movies', 'kontentainment'),
-                'now_playing' => esc_html__('Now Playing', 'kontentainment'),
+                'now_playing' => esc_html__('Now Playing (Cinemas)', 'kontentainment'),
                 'coming_soon' => esc_html__('Coming Soon', 'kontentainment'),
-                'manual'      => esc_html__('Manual Selection', 'kontentainment'),
-                'area'        => esc_html__('Movies by Area', 'kontentainment'),
-                'cinema'      => esc_html__('Movies by Cinema', 'kontentainment'),
+                'latest_movies' => esc_html__('Latest Added (All)', 'kontentainment'),
+                'manual' => esc_html__('Manual Selection', 'kontentainment'),
+                'area' => esc_html__('By Area', 'kontentainment'),
+                'cinema' => esc_html__('By Cinema', 'kontentainment'),
             ],
         ]);
 
@@ -45,12 +45,12 @@ class KTN_Movies_Widget extends KTN_Elementor_Base_Widget {
             'condition' => ['source' => 'manual'],
         ]);
 
-        // Areas dropdown (dynamically populated)
-        $areas = get_terms(['taxonomy' => 'cinema_area', 'hide_empty' => false]);
+        // Area dropdown
+        $areas_query = get_terms(['taxonomy' => 'cinema_area', 'hide_empty' => false]);
         $area_options = [];
-        if (!is_wp_error($areas) && !empty($areas)) {
-            foreach ($areas as $area) {
-                $area_options[$area->slug] = $area->name;
+        if (!is_wp_error($areas_query) && !empty($areas_query)) {
+            foreach ($areas_query as $a) {
+                $area_options[$a->slug] = $a->name;
             }
         }
         $this->add_control('area_slug', [
@@ -90,6 +90,17 @@ class KTN_Movies_Widget extends KTN_Elementor_Base_Widget {
             'condition' => ['source!' => 'manual'],
         ]);
 
+        $this->add_control('layout_mode', [
+            'label' => esc_html__('Layout Mode', 'kontentainment'),
+            'type' => \Elementor\Controls_Manager::SELECT,
+            'default' => 'grid',
+            'options' => [
+                'grid' => esc_html__('Grid', 'kontentainment'),
+                'carousel' => esc_html__('Carousel Slider', 'kontentainment'),
+            ],
+            'separator' => 'before'
+        ]);
+
         $skins = [
             'grid_1' => 'Grid 1 (Standard)',
             'grid_2' => 'Grid 2 (Bordered)',
@@ -110,8 +121,6 @@ class KTN_Movies_Widget extends KTN_Elementor_Base_Widget {
         ]);
 
         $visibility_controls = [
-            'show_poster' => 'Show Poster',
-            'show_title'  => 'Show Title',
             'show_rating' => 'Show Rating',
             'show_genres' => 'Show Genres',
             'show_date'   => 'Show Release Date',
@@ -129,6 +138,109 @@ class KTN_Movies_Widget extends KTN_Elementor_Base_Widget {
                 'return_value' => 'yes',
             ]);
         }
+
+        $this->add_control('cta_text', [
+            'label' => esc_html__('Custom CTA Text', 'kontentainment'),
+            'type' => \Elementor\Controls_Manager::TEXT,
+            'default' => __('احجز تذكرتك', 'kontentainment'),
+            'condition' => ['show_cta' => 'yes']
+        ]);
+
+        $this->end_controls_section();
+
+        // ----------------- STYLE TABS ----------------- //
+
+        $this->start_controls_section('section_style_card', [
+            'label' => esc_html__('Card Style', 'kontentainment'),
+            'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+        ]);
+
+        $this->add_control('card_border_radius', [
+            'label' => esc_html__('Border Radius', 'kontentainment'),
+            'type' => \Elementor\Controls_Manager::SLIDER,
+            'size_units' => ['px', '%'],
+            'range' => [
+                'px' => ['min' => 0, 'max' => 50],
+            ],
+            'selectors' => [
+                '{{WRAPPER}} .ktn-premium-movie-card .ktn-card-media' => 'border-radius: {{SIZE}}{{UNIT}};',
+            ],
+        ]);
+
+        $this->add_group_control(\Elementor\Group_Control_Box_Shadow::get_type(), [
+            'name' => 'card_box_shadow',
+            'label' => esc_html__('Box Shadow', 'kontentainment'),
+            'selector' => '{{WRAPPER}} .ktn-premium-movie-card .ktn-card-media',
+        ]);
+
+        $this->add_control('overlay_color', [
+            'label' => esc_html__('Overlay Gradient Color', 'kontentainment'),
+            'type' => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [
+                '{{WRAPPER}} .ktn-premium-movie-card .ktn-card-overlay' => 'background: linear-gradient(to top, {{VALUE}} 10%, rgba(0,0,0,0) 100%);',
+            ],
+        ]);
+
+        $this->end_controls_section();
+
+        // Typography Section
+        $this->start_controls_section('section_style_typography', [
+            'label' => esc_html__('Typography & Colors', 'kontentainment'),
+            'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+        ]);
+
+        $this->add_control('title_color', [
+            'label' => esc_html__('Title Color', 'kontentainment'),
+            'type' => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [
+                '{{WRAPPER}} .ktn-premium-movie-card .ktn-card-title' => 'color: {{VALUE}};',
+            ],
+        ]);
+
+        $this->add_group_control(\Elementor\Group_Control_Typography::get_type(), [
+            'name' => 'title_typography',
+            'label' => esc_html__('Title Typography', 'kontentainment'),
+            'selector' => '{{WRAPPER}} .ktn-premium-movie-card .ktn-card-title',
+        ]);
+
+        $this->add_control('genre_color', [
+            'label' => esc_html__('Genre Color', 'kontentainment'),
+            'type' => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [
+                '{{WRAPPER}} .ktn-premium-movie-card .ktn-card-genre' => 'color: {{VALUE}};',
+            ],
+            'separator' => 'before'
+        ]);
+
+        $this->add_group_control(\Elementor\Group_Control_Typography::get_type(), [
+            'name' => 'genre_typography',
+            'label' => esc_html__('Genre Typography', 'kontentainment'),
+            'selector' => '{{WRAPPER}} .ktn-premium-movie-card .ktn-card-genre',
+        ]);
+
+        $this->add_control('cta_bg_color', [
+            'label' => esc_html__('CTA Background', 'kontentainment'),
+            'type' => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [
+                '{{WRAPPER}} .ktn-premium-movie-card .ktn-card-cta-btn' => 'background-color: {{VALUE}};',
+            ],
+            'separator' => 'before'
+        ]);
+
+        $this->add_control('cta_text_color', [
+            'label' => esc_html__('CTA Text Color', 'kontentainment'),
+            'type' => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [
+                '{{WRAPPER}} .ktn-premium-movie-card .ktn-card-cta-btn' => 'color: {{VALUE}};',
+            ],
+        ]);
+
+        $this->add_group_control(\Elementor\Group_Control_Typography::get_type(), [
+            'name' => 'cta_typography',
+            'label' => esc_html__('CTA Typography', 'kontentainment'),
+            'selector' => '{{WRAPPER}} .ktn-premium-movie-card .ktn-card-cta-btn',
+        ]);
+
         $this->end_controls_section();
     }
 
@@ -181,7 +293,6 @@ class KTN_Movies_Widget extends KTN_Elementor_Base_Widget {
             $args['posts_per_page'] = -1;
         }
         elseif ($settings['source'] === 'area' && !empty($settings['area_slug'])) {
-            // Find cinemas in the area, then get showtimes for those cinemas
             $cinemas = get_posts([
                 'post_type' => 'ktn_cinema',
                 'posts_per_page' => -1,
@@ -223,22 +334,90 @@ class KTN_Movies_Widget extends KTN_Elementor_Base_Widget {
         }
 
         $query = new \WP_Query($args);
+        $layout = isset($settings['layout_mode']) ? $settings['layout_mode'] : 'grid';
 
-        echo '<div class="ktn-elementor-movies-wrapper ktn-skin-' . esc_attr($settings['layout_skin']) . '">';
+        echo '<div class="ktn-elementor-movies-wrapper ktn-skin-' . esc_attr($settings['layout_skin']) . ' layout-' . esc_attr($layout) . '">';
         if ($query->have_posts()) {
-            echo '<div class="ktn-elementor-grid">';
+            
+            if ($layout === 'carousel') {
+                $uid = 'swiper-' . uniqid();
+                echo '<div class="swiper-container ktn-movies-carousel" id="' . esc_attr($uid) . '">';
+                echo '<div class="swiper-wrapper">';
+            } else {
+                echo '<div class="ktn-elementor-grid">';
+            }
+
             while ($query->have_posts()) {
                 $query->the_post();
                 $post_id = get_the_ID();
+                
+                if ($layout === 'carousel') {
+                    echo '<div class="swiper-slide">';
+                }
+
                 echo Ktn_Card_System::render_movie_card($post_id, array(
                     'show_rating'  => ($settings['show_rating'] === 'yes'),
                     'show_year'    => ($settings['show_date'] === 'yes'),
                     'show_genre'   => ($settings['show_genres'] === 'yes'),
                     'show_excerpt' => ($settings['show_excerpt'] === 'yes'),
-                    'show_cta'     => ($settings['show_cta'] === 'yes')
+                    'show_cta'     => ($settings['show_cta'] === 'yes'),
+                    'cta_text'     => $settings['cta_text']
                 ));
+
+                if ($layout === 'carousel') {
+                    echo '</div>';
+                }
             }
-            echo '</div>';
+            
+            if ($layout === 'carousel') {
+                echo '</div>'; // end swiper-wrapper
+                echo '</div>'; // end swiper-container
+                
+                // Pure CSS scroll snap as fallback/modern alternative to JS swiper
+                // We inject minimal CSS here just for the carousel
+                ?>
+                <style>
+                    #<?php echo $uid; ?> {
+                        display: flex;
+                        overflow-x: auto;
+                        scroll-snap-type: x mandatory;
+                        scroll-behavior: smooth;
+                        -webkit-overflow-scrolling: touch;
+                        gap: 20px;
+                        padding-bottom: 20px;
+                    }
+                    #<?php echo $uid; ?>::-webkit-scrollbar {
+                        height: 6px;
+                    }
+                    #<?php echo $uid; ?>::-webkit-scrollbar-track {
+                        background: rgba(0,0,0,0.05);
+                        border-radius: 10px;
+                    }
+                    #<?php echo $uid; ?>::-webkit-scrollbar-thumb {
+                        background: rgba(0,0,0,0.2);
+                        border-radius: 10px;
+                    }
+                    #<?php echo $uid; ?> .swiper-slide {
+                        flex: 0 0 calc(100% / <?php echo $settings['columns'] ? $settings['columns'] : 4; ?> - 20px);
+                        scroll-snap-align: start;
+                    }
+                    @media (max-width: 1024px) {
+                        #<?php echo $uid; ?> .swiper-slide {
+                            flex: 0 0 calc(100% / <?php echo $settings['columns_tablet'] ? $settings['columns_tablet'] : 2; ?> - 20px);
+                        }
+                    }
+                    @media (max-width: 767px) {
+                        #<?php echo $uid; ?> .swiper-slide {
+                            flex: 0 0 calc(100% / <?php echo $settings['columns_mobile'] ? $settings['columns_mobile'] : 1; ?> - 20px);
+                            flex: 0 0 85%; /* Slightly peek the next slide on mobile */
+                        }
+                    }
+                </style>
+                <?php
+            } else {
+                echo '</div>';
+            }
+            
             wp_reset_postdata();
         } else {
             echo '<p class="ktn-elem-empty">' . esc_html__('No movies found matching criteria.', 'kontentainment') . '</p>';

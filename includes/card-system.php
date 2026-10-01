@@ -96,8 +96,10 @@ class Ktn_Card_System
                                 <p class="ktn-card-excerpt"><?php echo wp_trim_words(esc_html($excerpt), 12); ?></p>
                             <?php endif; ?>
 
-                            <?php if ($settings['show_cta']): ?>
-                                <span class="ktn-card-cta-btn"><?php _e('View Details', 'kontentainment'); ?></span>
+                            <?php if ($settings['show_cta']): 
+                                $cta_text = !empty($settings['cta_text']) ? $settings['cta_text'] : __('View Details', 'kontentainment');
+                            ?>
+                                <span class="ktn-card-cta-btn"><?php echo esc_html($cta_text); ?></span>
                             <?php endif; ?>
                         </div>
                     </div>
